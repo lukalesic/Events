@@ -1,14 +1,17 @@
 import SwiftUI
+import PhotosUI
 
 struct CounterDetailView: View {
     @Environment(CountdownViewModel.self) private var viewModel
     var countdown: Countdown
 
+    @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var image: UIImage? = nil
+
     var body: some View {
         ZStack {
-            // 🌈 Gradient in the background
             LinearGradient(
-                gradient: Gradient(colors: [countdown.color.opacity(0.5), .clear]),
+                gradient: Gradient(colors: [countdown.color.opacity(0.2), .clear]),
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -16,17 +19,8 @@ struct CounterDetailView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // 🔥 Emoji at the top
-                    HStack {
-                        Text(countdown.emoji)
-                            .font(.system(size: 64))
-                            .padding(.leading, 24)
-                        Spacer()
-                    }
-                    .padding(.top, 24)
-
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("\(countdown.daysLeft) days left")
+                        Text("\(countdown.daysLeft) days left \(countdown.emoji)")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(countdown.color)
@@ -34,6 +28,7 @@ struct CounterDetailView: View {
                         Text(countdown.name)
                             .font(.title2)
                             .fontWeight(.semibold)
+                            .lineLimit(3)
 
                         if !countdown.description.isEmpty {
                             Text(countdown.description)
@@ -67,9 +62,36 @@ struct CounterDetailView: View {
                             }
                         }
 
-                        // TODO: Photo section, etc.
+                        // 📸 Photo Display
+                        if let image = image ?? countdown.photo {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(height: 200)
+                                .frame(maxWidth: .infinity)
+                                .clipped()
+                                .cornerRadius(12)
+                        }
+
+                        // 📤 Photo Picker
+                        PhotosPicker("Choose a Photo", selection: $selectedItem, matching: .images)
+                            .font(.body)
+                            .padding(.top, 8)
                     }
                     .padding()
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .onAppear {
+                image = countdown.photo // Load existing image on appear
+            }
+            .onChange(of: selectedItem) { newItem in
+                Task {
+                    if let data = try? await newItem?.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data) {
+                        image = uiImage
+                        viewModel.updatePhoto(for: countdown.id, image: uiImage)
+                    }
                 }
             }
         }

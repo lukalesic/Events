@@ -41,6 +41,12 @@ extension CountdownViewModel {
             countdowns[index].priority = newPriority
         }
     }
+    
+    func updatePhoto(for id: UUID, image: UIImage) {
+        if let index = countdowns.firstIndex(where: { $0.id == id }) {
+            countdowns[index].photo = image
+        }
+    }
 }
 
 struct Countdown: Identifiable {
