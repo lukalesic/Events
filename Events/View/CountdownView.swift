@@ -1,10 +1,3 @@
-//
-//  CountdownView.swift
-//  Events
-//
-//  Created by Luka Lešić on 23.03.25.
-//
-
 import Foundation
 import SwiftUI
 import Observation
@@ -12,28 +5,16 @@ import Observation
 struct CountdownView: View {
     @Environment(CountdownViewModel.self) private var viewModel
     @Namespace private var countdowns
-    
-    @State private var columnCount: Int = 2
-    
+
+    @State private var gridState: GridState = .grid
+
     private var columns: [GridItem] {
-        Array(repeating: GridItem(.flexible()), count: columnCount)
+        gridState == .grid ? Array(repeating: GridItem(.flexible()), count: 2) : [GridItem(.flexible())]
     }
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
-//                VStack {
-//                    LinearGradient(
-//                        gradient: Gradient(colors: [Color.red.opacity(0.6), Color.clear]),
-//                        startPoint: .top,
-//                        endPoint: .bottom
-//                    )
-//                    .ignoresSafeArea()
-//                    .frame(height: 50)
-//                    .frame(maxWidth: .infinity)
-//                    
-//                    Spacer()
-//                }
                 VStack(spacing: 0) {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 16) {
@@ -41,30 +22,34 @@ struct CountdownView: View {
                                 NavigationLink {
                                     CounterDetailView(countdown: countdown)
                                         .navigationTransition(.zoom(sourceID: countdown.id, in: countdowns))
-
                                 } label: {
-                                    CounterBlockView(countdown: countdown)
+                                    CounterBlockView(countdown: countdown, gridState: gridState)
                                         .matchedTransitionSource(id: countdown.id, in: countdowns)
                                 }
                             }
                         }
                         .padding()
-                        .animation(.easeInOut, value: columnCount)
+                        .animation(.spring(duration: 0.4, bounce: 0.25), value: gridState)
+//                        .animation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2), value: gridState)
                     }
                 }
                 .navigationTitle("Countdowns")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(action: {
-                            columnCount = columnCount == 1 ? 2 : columnCount == 2 ? 3 : 1
+                            gridState = gridState == .grid ? .rows : .grid
                         }) {
-                            Image(systemName: "square.grid.2x2")
-//                                .tint(.red)
-                                .accentColor(.accentColor)
+                            Image(systemName: gridState == .grid ? "list.bullet" : "square.grid.2x2")
+                                .foregroundColor(.accentColor)
                         }
                     }
                 }
             }
         }
     }
+}
+
+enum GridState {
+    case grid
+    case rows
 }
