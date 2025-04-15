@@ -27,12 +27,6 @@ struct CounterBlockView: View {
                     .padding(.top, -7)
                     .multilineTextAlignment(.leading)
 
-                    // Date Below Name
-//                    Text(countdown.date, style: .date) // Displays the date
-//                        .font(.footnote)
-//                        .foregroundColor(.white.opacity(0.8))
-//                        .padding(.leading, 10)
-
                     Spacer()
                         .frame(maxHeight: 1)
 

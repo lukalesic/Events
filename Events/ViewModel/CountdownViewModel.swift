@@ -35,6 +35,14 @@ class CountdownViewModel {
     }
 }
 
+extension CountdownViewModel {
+    func updatePriority(for id: UUID, to newPriority: Priority) {
+        if let index = countdowns.firstIndex(where: { $0.id == id }) {
+            countdowns[index].priority = newPriority
+        }
+    }
+}
+
 struct Countdown: Identifiable {
     var id = UUID()
     var color: Color = Countdown.randomColor()
@@ -44,16 +52,24 @@ struct Countdown: Identifiable {
     var emoji: String
     var priority: Priority
     var date: Date
+    var photo: UIImage? = nil  // Optional photo support
 
-    // Function to return a random SwiftUI Color
     static func randomColor() -> Color {
         let colors: [Color] = [.red, .blue, .green, .yellow, .purple, .orange, .pink]
         return colors.randomElement() ?? .gray
     }
 }
 
-enum Priority {
+enum Priority: CaseIterable {
     case small
     case medium
     case large
+
+    var displayName: String {
+        switch self {
+        case .small: return "Low"
+        case .medium: return "Medium"
+        case .large: return "High"
+        }
+    }
 }
