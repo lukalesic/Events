@@ -1,15 +1,23 @@
 import SwiftUI
 import PhotosUI
+import UIKit
 
 struct CounterDetailView: View {
     @Environment(CountdownViewModel.self) private var viewModel
     var countdown: Countdown
+    @State private var isPresentingEdit = false
+    @State private var selectedMode: TimeDisplayMode = .days
 
     @Namespace private var imageNamespace
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var image: UIImage? = nil
     @State private var showFullImage: Bool = false
     @State private var dragOffset: CGSize = .zero
+    
+    // States for description editing
+    @State private var isEditingDescription: Bool = false
+    @State private var editedDescription: String = ""
+    @FocusState private var isDescriptionFocused: Bool
 
     var body: some View {
         ZStack {
@@ -23,20 +31,64 @@ struct CounterDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("\(countdown.daysLeft) days left \(countdown.emoji)")
+                        Text("\(viewModel.formattedTimeRemaining(for: countdown)) left \(countdown.emoji)")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(countdown.color)
+                        
+                        Picker("Display Mode", selection: $selectedMode) {
+                            ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
+                                Text(mode.rawValue).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: selectedMode) {
+                            viewModel.selectedDisplayMode = selectedMode
+                        }
+                        .padding(.bottom, 8)
                         
                         Text(countdown.name)
                             .font(.title2)
                             .fontWeight(.semibold)
                             .lineLimit(3)
                         
-                        if !countdown.description.isEmpty {
-                            Text(countdown.description)
-                                .font(.body)
-                                .foregroundColor(.secondary)
+                        // Editable description section
+                        VStack(alignment: .leading, spacing: 4) {
+                            if isEditingDescription {
+                                TextField("Description", text: $editedDescription, axis: .vertical)
+                                    .font(.body)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.1))
+                                    .cornerRadius(8)
+                                    .focused($isDescriptionFocused)
+                                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                                    .onAppear {
+                                        isDescriptionFocused = true
+                                    }
+                            } else {
+                                if countdown.description.isEmpty {
+                                    Text("Tap to add a description...")
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                        .italic()
+                                        .onTapGesture {
+                                            editedDescription = countdown.description
+                                            withAnimation(.easeInOut(duration: 0.25)) {
+                                                isEditingDescription = true
+                                            }
+                                        }
+                                } else {
+                                    Text(countdown.description)
+                                        .font(.body)
+                                        .foregroundColor(.secondary)
+                                        .onTapGesture {
+                                            editedDescription = countdown.description
+                                            withAnimation(.easeInOut(duration: 0.25)) {
+                                                isEditingDescription = true
+                                            }
+                                        }
+                                }
+                            }
                         }
                         
                         // 🌟 Priority Menu
@@ -67,31 +119,43 @@ struct CounterDetailView: View {
                         
                         // 📸 Tappable Image with matchedGeometryEffect
                         if let image = image ?? countdown.photo {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 200)
-                                .frame(maxWidth: .infinity)
-                                .clipped()
-                                .cornerRadius(12)
-                                .matchedGeometryEffect(id: "image", in: imageNamespace)
-                                .onTapGesture {
-                                    withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
-                                        showFullImage = true
+                            // Only apply matchedGeometryEffect when not showing fullscreen
+                            if !showFullImage {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: 200)
+                                    .frame(maxWidth: .infinity)
+                                    .clipped()
+                                    .cornerRadius(12)
+                                    .matchedGeometryEffect(id: "image", in: imageNamespace)
+                                    .onTapGesture {
+                                        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                                            showFullImage = true
+                                        }
                                     }
-                                }
+                            } else {
+                                // Placeholder with same dimensions but invisible
+                                Color.clear
+                                    .frame(height: 200)
+                                    .frame(maxWidth: .infinity)
+                            }
                         }
                         
                         PhotosPicker("Choose a Photo", selection: $selectedItem, matching: .images)
                             .font(.body)
                             .padding(.top, 8)
                     }
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
                     .padding()
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .onAppear {
                 image = countdown.photo
+                editedDescription = countdown.description
+                selectedMode = viewModel.selectedDisplayMode
             }
             .onChange(of: selectedItem) { newItem in
                 Task {
@@ -112,6 +176,7 @@ struct CounterDetailView: View {
                         .transition(.opacity)
                         .zIndex(1)
                     
+                    // Apply matchedGeometryEffect only when showing fullscreen
                     Image(uiImage: fullImage)
                         .resizable()
                         .scaledToFit()
@@ -129,7 +194,6 @@ struct CounterDetailView: View {
                                             dragOffset = .zero
                                         }
                                     } else {
-                                        
                                         withAnimation(.spring(bounce: 0.25)) {
                                             dragOffset = .zero
                                         }
@@ -137,7 +201,7 @@ struct CounterDetailView: View {
                                 }
                         )
                         .onTapGesture {
-                            withAnimation(.easeInOut(duration: 0.2)) {
+                            withAnimation(.spring(bounce: 0.25)) {
                                 showFullImage = false
                             }
                         }
@@ -145,8 +209,90 @@ struct CounterDetailView: View {
                 }
             }
         }
+        .onTapGesture {
+            if isEditingDescription {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    isEditingDescription = false
+                    isDescriptionFocused = false
+                    viewModel.updateDescription(for: countdown.id, description: editedDescription)
+                }
+            }
+        }
         .navigationTitle("Countdown Detail")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Edit") {
+                    isPresentingEdit = true
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $isPresentingEdit) {
+            CountdownFormView(existingCountdown: countdown)
+        }
+        .onTapGesture {
+            if isEditingDescription && !isDescriptionFocused {
+                isEditingDescription = false
+            }
+        }
+    }
+    
+    // Share functionality
+    func shareCountdown() {
+        // Create formatted text for sharing
+        let shareText = """
+        🎯 Countdown: \(countdown.name)
+        ⏱ \(countdown.daysLeft) days left \(countdown.emoji)
+        🔔 Priority: \(countdown.priority.displayName)
+        
+        \(countdown.description)
+        
+        Shared from my Countdown App
+        """
+        
+        // Items to share
+        var itemsToShare: [Any] = [shareText]
+        
+        // Add image if available
+        if let shareImage = image ?? countdown.photo {
+            itemsToShare.append(shareImage)
+        }
+        
+        // Create and present the activity view controller
+        let activityViewController = UIActivityViewController(
+            activityItems: itemsToShare,
+            applicationActivities: nil
+        )
+        
+        // Present the activity view controller
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            return
+        }
+        
+        // Find the top-most presented view controller
+        var topController = rootViewController
+        while let presenter = topController.presentedViewController {
+            topController = presenter
+        }
+        
+        // For iPad, set the popover presentation controller
+        if let popover = activityViewController.popoverPresentationController {
+            popover.sourceView = topController.view
+            popover.sourceRect = CGRect(x: topController.view.bounds.midX, y: topController.view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        
+        topController.present(activityViewController, animated: true)
+    }
+}
+
+// Extension for CountdownViewModel to add updateDescription functionality
+extension CountdownViewModel {
+    func updateDescription(for id: UUID, description: String) {
+        if let index = countdowns.firstIndex(where: { $0.id == id }) {
+            countdowns[index].description = description
+        }
     }
 }
 
@@ -161,3 +307,4 @@ struct VisualEffectBlur: UIViewRepresentable {
 
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }
+
