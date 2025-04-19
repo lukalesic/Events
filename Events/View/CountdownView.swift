@@ -81,7 +81,7 @@ struct CountdownFormView: View {
     
     @State private var name: String
     @State private var description: String
-    @State private var emoji: String
+    @State private var emoji: String = "📅"
     @State private var selectedPriority: Priority
     @State private var selectedDate: Date
     @State private var selectedPhoto: UIImage?
@@ -210,13 +210,15 @@ struct CountdownFormView: View {
                             let target = Calendar.current.startOfDay(for: selectedDate)
                             let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
                             
+                            let finalEmoji = emoji.isEmpty ? "📅" : emoji
+
                             let updatedCountdown = Countdown(
                                 id: existingCountdown?.id ?? UUID(),
                                 color: color,
                                 daysLeft: newDaysLeft,
                                 name: name,
                                 description: description,
-                                emoji: emoji,
+                                emoji: finalEmoji,
                                 priority: selectedPriority,
                                 date: selectedDate,
                                 photo: selectedPhoto,
@@ -231,6 +233,7 @@ struct CountdownFormView: View {
                             
                             dismiss()
                         }
+                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
             }

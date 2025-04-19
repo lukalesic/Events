@@ -57,6 +57,13 @@ struct CounterDetailView: View {
                             .fontWeight(.semibold)
                             .lineLimit(3)
                         
+                        if countdown.repeatFrequency != .none {
+                            Text("Repeats \(countdown.repeatFrequency.rawValue.lowercased())")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .transition(.opacity)
+                        }
+                        
                         // Editable description section
                         VStack(alignment: .leading, spacing: 4) {
                             if isEditingDescription {
