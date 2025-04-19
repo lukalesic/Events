@@ -8,8 +8,8 @@ struct CountdownView: View {
     @Namespace private var countdowns
     @State private var isShowingAddSheet = false
 
-    @State private var gridState: GridState = .grid
-
+    @State private var gridState: GridState = UserDefaults.standard.savedGridState
+    
     private var columns: [GridItem] {
         gridState == .grid ? Array(repeating: GridItem(.flexible()), count: 2) : [GridItem(.flexible())]
     }
@@ -50,6 +50,7 @@ struct CountdownView: View {
 
                             Button(action: {
                                 gridState = gridState == .grid ? .rows : .grid
+                                UserDefaults.standard.savedGridState = gridState
                             }) {
                                 Image(systemName: gridState == .grid ? "list.bullet" : "square.grid.2x2")
                                     .foregroundColor(.accentColor)
@@ -65,7 +66,7 @@ struct CountdownView: View {
     }
 }
 
-enum GridState {
+enum GridState: String {
     case grid
     case rows
 }
@@ -289,5 +290,25 @@ struct EmojiPickerView: View {
             .padding(.top)
         }
         .navigationTitle("Pick an Emoji")
+    }
+}
+
+
+extension UserDefaults {
+    private enum Keys {
+        static let gridState = "gridState"
+    }
+
+    var savedGridState: GridState {
+        get {
+            guard let raw = string(forKey: Keys.gridState),
+                  let state = GridState(rawValue: raw) else {
+                return .grid
+            }
+            return state
+        }
+        set {
+            set(newValue.rawValue, forKey: Keys.gridState)
+        }
     }
 }

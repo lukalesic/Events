@@ -6,7 +6,7 @@ struct CounterDetailView: View {
     @Environment(CountdownViewModel.self) private var viewModel
     var countdown: Countdown
     @State private var isPresentingEdit = false
-    @State private var selectedMode: TimeDisplayMode = .days
+    @State private var selectedMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
     @Environment(\.presentationMode) private var presentationMode
 
     @Namespace private var imageNamespace
@@ -49,6 +49,7 @@ struct CounterDetailView: View {
                         .pickerStyle(.segmented)
                         .onChange(of: selectedMode) {
                             viewModel.selectedDisplayMode = selectedMode
+                            UserDefaults.standard.savedDisplayMode = selectedMode
                         }
                         .padding(.bottom, 8)
                         
@@ -168,7 +169,8 @@ struct CounterDetailView: View {
             .onAppear {
                 image = countdown.photo
                 editedDescription = countdown.description
-                selectedMode = viewModel.selectedDisplayMode
+                selectedMode = UserDefaults.standard.savedDisplayMode
+                viewModel.selectedDisplayMode = selectedMode
             }
             .onChange(of: selectedItem) { newItem in
                 Task {

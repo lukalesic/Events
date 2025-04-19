@@ -189,3 +189,22 @@ extension Countdown {
         return Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
     }
 }
+
+extension UserDefaults {
+    private enum Keys {
+        static let selectedDisplayMode = "selectedDisplayMode"
+    }
+
+    var savedDisplayMode: TimeDisplayMode {
+        get {
+            guard let raw = string(forKey: Keys.selectedDisplayMode),
+                  let mode = TimeDisplayMode(rawValue: raw) else {
+                return .days // fallback
+            }
+            return mode
+        }
+        set {
+            set(newValue.rawValue, forKey: Keys.selectedDisplayMode)
+        }
+    }
+}
