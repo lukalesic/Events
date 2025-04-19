@@ -155,9 +155,6 @@ enum TimeDisplayMode: String, CaseIterable {
 }
 
 
-
-
-
 enum RepeatFrequency: String, CaseIterable, Identifiable {
     case none = "None"
     case daily = "Daily"
