@@ -38,7 +38,9 @@ struct CounterDetailView: View {
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(countdown.color)
-                        
+                            .contentTransition(.numericText())
+                            .animation(.default, value: viewModel.formattedTimeRemaining(for: countdown))
+
                         Picker("Display Mode", selection: $selectedMode) {
                             ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
                                 Text(mode.rawValue).tag(mode)
