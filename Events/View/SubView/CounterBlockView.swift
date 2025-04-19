@@ -33,14 +33,14 @@ struct CounterBlockView: View {
                     // Days Left (Bottom Right)
                     HStack(alignment: .bottom) {
                         
-                        Text(countdown.date, style: .date) // Displays the date
+                        Text(countdown.nextDate, style: .date)
                             .font(.footnote)
                             .foregroundColor(.white.opacity(0.8))
                             .padding(.leading, 10)
-
+                        
                         Spacer()
                         VStack(spacing: 1) {
-                            Text("\(countdown.daysLeft)")
+                            Text("\(countdown.daysLeftUntilNextDate)")
                                 .font(.largeTitle)
                                 .foregroundColor(.white)
                             

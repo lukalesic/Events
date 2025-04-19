@@ -54,9 +54,34 @@ extension CountdownViewModel {
         }
     }
     
+    func adjustedDate(for countdown: Countdown) -> Date {
+        var nextDate = countdown.date
+        let now = Date()
+
+        while nextDate < now {
+            switch countdown.repeatFrequency {
+            case .daily:
+                nextDate = Calendar.current.date(byAdding: .day, value: 1, to: nextDate) ?? nextDate
+            case .weekly:
+                nextDate = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: nextDate) ?? nextDate
+            case .monthly:
+                nextDate = Calendar.current.date(byAdding: .month, value: 1, to: nextDate) ?? nextDate
+            case .yearly:
+                nextDate = Calendar.current.date(byAdding: .year, value: 1, to: nextDate) ?? nextDate
+            case .none:
+                break
+            }
+            if countdown.repeatFrequency == .none { break }
+        }
+
+        return nextDate
+    }
+    
     func formattedTimeRemaining(for countdown: Countdown) -> String {
-        let totalDays = max(countdown.daysLeft, 0)  // prevent negative countdowns
-        
+        let now = Calendar.current.startOfDay(for: .now)
+        let target = Calendar.current.startOfDay(for: adjustedDate(for: countdown))
+        let totalDays = Calendar.current.dateComponents([.day], from: now, to: target).day ?? 0
+
         switch selectedDisplayMode {
         case .days:
             return "\(totalDays) day\(totalDays == 1 ? "" : "s")"
@@ -100,6 +125,7 @@ struct Countdown: Identifiable {
     var priority: Priority
     var date: Date
     var photo: UIImage? = nil  // Optional photo support
+    var repeatFrequency: RepeatFrequency = .none
 
     static func randomColor() -> Color {
         let colors: [Color] = [.red, .blue, .green, .yellow, .purple, .orange, .pink]
@@ -131,3 +157,38 @@ enum TimeDisplayMode: String, CaseIterable {
 
 
 
+
+enum RepeatFrequency: String, CaseIterable, Identifiable {
+    case none = "None"
+    case daily = "Daily"
+    case weekly = "Weekly"
+    case monthly = "Monthly"
+    case yearly = "Yearly"
+
+    var id: String { self.rawValue }
+}
+
+extension Countdown {
+    var nextDate: Date {
+        switch repeatFrequency {
+        case .daily:
+            return Calendar.current.nextDate(after: .now, matching: Calendar.current.dateComponents([.hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+        case .weekly:
+            return Calendar.current.nextDate(after: .now, matching: Calendar.current.dateComponents([.weekday, .hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+        case .monthly:
+            let components = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: date)
+            return Calendar.current.nextDate(after: .now, matching: components, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+        case .yearly:
+            let components = Calendar.current.dateComponents([.month, .day, .hour, .minute, .second], from: date)
+            return Calendar.current.nextDate(after: .now, matching: components, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+        case .none:
+            return date
+        }
+    }
+
+    var daysLeftUntilNextDate: Int {
+        let today = Calendar.current.startOfDay(for: .now)
+        let target = Calendar.current.startOfDay(for: nextDate)
+        return Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
+    }
+}

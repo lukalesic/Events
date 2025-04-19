@@ -155,6 +155,7 @@ struct CounterDetailView: View {
                     .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
                     .padding()
                 }
+                .animation(.default, value: viewModel.formattedTimeRemaining(for: countdown))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .onAppear {

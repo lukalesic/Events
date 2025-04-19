@@ -75,6 +75,7 @@ struct CountdownFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(CountdownViewModel.self) private var viewModel
     @Binding var navigateToRoot: Bool
+    @State private var selectedRepeatFrequency: RepeatFrequency
 
     var existingCountdown: Countdown?
 
@@ -99,6 +100,7 @@ struct CountdownFormView: View {
         _selectedDate = State(initialValue: existingCountdown?.date ?? .now)
         _selectedPhoto = State(initialValue: existingCountdown?.photo)
         _color = State(initialValue: existingCountdown?.color ?? Countdown.randomColor())
+        _selectedRepeatFrequency = State(initialValue: existingCountdown?.repeatFrequency ?? .none)
     }
 
     var body: some View {
@@ -124,6 +126,14 @@ struct CountdownFormView: View {
 
                 Section(header: Text("Countdown Date")) {
                     DatePicker("Select date", selection: $selectedDate, displayedComponents: .date)
+                }
+                
+                Section(header: Text("Repeat")) {
+                    Picker("Repeat Every", selection: $selectedRepeatFrequency) {
+                        ForEach(RepeatFrequency.allCases) { freq in
+                            Text(freq.rawValue).tag(freq)
+                        }
+                    }
                 }
 
                 Section(header: Text("Photo (Optional)")) {
@@ -196,9 +206,10 @@ struct CountdownFormView: View {
                             emoji: emoji,
                             priority: selectedPriority,
                             date: selectedDate,
-                            photo: selectedPhoto
+                            photo: selectedPhoto,
+                            repeatFrequency: selectedRepeatFrequency
                         )
-
+                        
                         if existingCountdown != nil {
                             viewModel.updateCountdown(updatedCountdown)
                         } else {
