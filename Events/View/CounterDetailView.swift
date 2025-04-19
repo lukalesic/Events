@@ -7,12 +7,15 @@ struct CounterDetailView: View {
     var countdown: Countdown
     @State private var isPresentingEdit = false
     @State private var selectedMode: TimeDisplayMode = .days
+    @Environment(\.presentationMode) private var presentationMode
 
     @Namespace private var imageNamespace
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var image: UIImage? = nil
     @State private var showFullImage: Bool = false
     @State private var dragOffset: CGSize = .zero
+    
+    @State private var shouldNavigateToRoot = false
     
     // States for description editing
     @State private var isEditingDescription: Bool = false
@@ -228,7 +231,14 @@ struct CounterDetailView: View {
             }
         }
         .fullScreenCover(isPresented: $isPresentingEdit) {
-            CountdownFormView(existingCountdown: countdown)
+            CountdownFormView(existingCountdown: countdown, navigateToRoot: $shouldNavigateToRoot)
+        }
+        .onChange(of: shouldNavigateToRoot) { navigateToRoot in
+            if navigateToRoot {
+                withAnimation {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
         }
         .onTapGesture {
             if isEditingDescription && !isDescriptionFocused {

@@ -74,6 +74,7 @@ enum GridState {
 struct CountdownFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(CountdownViewModel.self) private var viewModel
+    @Binding var navigateToRoot: Bool
 
     var existingCountdown: Countdown?
 
@@ -88,8 +89,9 @@ struct CountdownFormView: View {
     
     @State private var photoItem: PhotosPickerItem?
 
-    init(existingCountdown: Countdown? = nil) {
+    init(existingCountdown: Countdown? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
         self.existingCountdown = existingCountdown
+        self._navigateToRoot = navigateToRoot
         _name = State(initialValue: existingCountdown?.name ?? "")
         _description = State(initialValue: existingCountdown?.description ?? "")
         _emoji = State(initialValue: existingCountdown?.emoji ?? "")
@@ -164,6 +166,9 @@ struct CountdownFormView: View {
                     if let countdownToDelete = existingCountdown {
                         viewModel.deleteCountdown(countdownToDelete)
                         dismiss()
+                        withAnimation {
+                            navigateToRoot = true
+                        }
                     }
                 }
                 Button("Cancel", role: .cancel) { }
