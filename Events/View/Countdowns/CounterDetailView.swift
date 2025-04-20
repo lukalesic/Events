@@ -243,7 +243,7 @@ struct CounterDetailView: View {
             }
         }
         .fullScreenCover(isPresented: $isPresentingEdit) {
-            CountdownFormView(existingCountdown: countdown, navigateToRoot: $shouldNavigateToRoot)
+            CountdownFormSheetView(existingCountdown: countdown, navigateToRoot: $shouldNavigateToRoot)
         }
         .onChange(of: shouldNavigateToRoot) { navigateToRoot in
             if navigateToRoot {
@@ -317,16 +317,3 @@ extension CountdownViewModel {
         }
     }
 }
-
-import SwiftUI
-
-struct VisualEffectBlur: UIViewRepresentable {
-    var style: UIBlurEffect.Style = .systemUltraThinMaterial
-
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        UIVisualEffectView(effect: UIBlurEffect(style: style))
-    }
-
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
-}
-

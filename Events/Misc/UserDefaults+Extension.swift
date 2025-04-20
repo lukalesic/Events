@@ -7,11 +7,10 @@
 
 import Foundation
 
-//TODO MERGE
-
 extension UserDefaults {
     private enum Keys {
         static let selectedDisplayMode = "selectedDisplayMode"
+        static let gridState = "gridState"
     }
 
     var savedDisplayMode: TimeDisplayMode {
@@ -24,6 +23,19 @@ extension UserDefaults {
         }
         set {
             set(newValue.rawValue, forKey: Keys.selectedDisplayMode)
+        }
+    }
+    
+    var savedGridState: GridState {
+        get {
+            guard let raw = string(forKey: Keys.gridState),
+                  let state = GridState(rawValue: raw) else {
+                return .grid
+            }
+            return state
+        }
+        set {
+            set(newValue.rawValue, forKey: Keys.gridState)
         }
     }
 }
