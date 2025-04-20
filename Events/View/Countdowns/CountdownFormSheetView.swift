@@ -1,5 +1,5 @@
 //
-//  CountdownSheetView.swift
+//  CountdownFormSheetView.swift
 //  Events
 //
 //  Created by Luka Lešić on 20.04.25.
@@ -13,89 +13,74 @@ struct CountdownFormSheetView: View {
     @Environment(CountdownViewModel.self) private var viewModel
     
     @Binding var navigateToRoot: Bool
-    @State private var selectedRepeatFrequency: RepeatFrequency
-    
     var existingCountdown: Countdown?
     
-    @State private var name: String
-    @State private var description: String
-    @State private var emoji: String = "📅"
-    @State private var selectedPriority: Priority
-    @State private var selectedDate: Date
-    @State private var selectedPhoto: UIImage?
-    @State private var color: Color
+    @State private var formData: CountdownFormData
+    @State private var photoItem: PhotosPickerItem?
     @State private var showDeleteConfirmation = false
     @State private var isShowingEmojiPicker = false
-    
-    @State private var photoItem: PhotosPickerItem?
-    
+
     init(existingCountdown: Countdown? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
         self.existingCountdown = existingCountdown
         self._navigateToRoot = navigateToRoot
-        _name = State(initialValue: existingCountdown?.name ?? "")
-        _description = State(initialValue: existingCountdown?.description ?? "")
-        _emoji = State(initialValue: existingCountdown?.emoji ?? "")
-        _selectedPriority = State(initialValue: existingCountdown?.priority ?? .medium)
-        _selectedDate = State(initialValue: existingCountdown?.date ?? .now)
-        _selectedPhoto = State(initialValue: existingCountdown?.photo)
-        _color = State(initialValue: existingCountdown?.color ?? Countdown.randomColor())
-        _selectedRepeatFrequency = State(initialValue: existingCountdown?.repeatFrequency ?? .none)
+        self._formData = State(initialValue: CountdownFormData(from: existingCountdown))
     }
-    
+
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Basics")) {
-                    TextField("Name", text: $name)
-                    TextField("Description", text: $description)
-                    
+                Section(header: Text(Strings.CountdownForm.basicsSection)) {
+                    TextField(Strings.CountdownForm.name, text: $formData.name)
+                    TextField(Strings.CountdownForm.description, text: $formData.description)
                     emojiButton()
                 }
-                    
-                    Section(header: Text("Priority & Color")) {
-                        priorityPicker()
-                        ColorPicker("Color", selection: $color)
-                    }
-                    
-                    Section(header: Text("Countdown Date")) {
-                        DatePicker("Select date",
-                                   selection: $selectedDate,
-                                   in: Date()..., displayedComponents: .date)
-                    }
-                    
-                    Section(header: Text("Repeat")) {
-                        repeatFrequencyPicker()
-                    }
-                    
-                    Section(header: Text("Photo")) {
-                        photoPicker()
-                    }
-                    
-                    // Only show if editing an existing countdown
-                    if existingCountdown != nil {
-                        deleteSection()
+
+                Section(header: Text(Strings.CountdownForm.priorityColorSection)) {
+                    priorityPicker()
+                    ColorPicker(Strings.CountdownForm.color, selection: $formData.color)
+                }
+
+                Section(header: Text(Strings.CountdownForm.dateSection)) {
+                    DatePicker(Strings.CountdownForm.selectDate, selection: $formData.date, in: Date()..., displayedComponents: .date)
+                }
+
+                Section(header: Text(Strings.CountdownForm.repeatSection)) {
+                    repeatFrequencyPicker()
+                }
+
+                Section(header: Text(Strings.CountdownForm.photoSection)) {
+                    photoPicker()
+                }
+
+                if existingCountdown != nil {
+                    deleteSection()
+                }
+            }
+            .confirmationDialog(Strings.CountdownForm.deleteConfirmTitle,
+                                isPresented: $showDeleteConfirmation,
+                                titleVisibility: .visible) {
+                deleteCountdownButton()
+                Button(Strings.CountdownForm.cancel, role: .cancel) {}
+            }
+            .navigationTitle(existingCountdown == nil ? Strings.CountdownForm.newTitle : Strings.CountdownForm.editTitle)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(Strings.CountdownForm.cancel) {
+                        dismiss()
                     }
                 }
-                .confirmationDialog("Are you sure you want to delete this countdown?", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
-                    deleteCountdownButton()
-                    
-                    Button("Cancel", role: .cancel) { }
-                }
-                .navigationTitle(existingCountdown == nil ? "New Countdown" : "Edit Countdown")
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            dismiss()
-                        }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(Strings.CountdownForm.save) {
+                        viewModel.saveCountdown(from: formData, existing: existingCountdown)
+                        dismiss()
                     }
-                    
-                    ToolbarItem(placement: .confirmationAction) {
-                        saveButton()
-                    }
+                    .disabled(formData.name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }
     }
+}
 
 private extension CountdownFormSheetView {
     
@@ -105,76 +90,76 @@ private extension CountdownFormSheetView {
             isShowingEmojiPicker = true
         } label: {
             HStack {
-                Text("Emoji")
+                Text(Strings.CountdownForm.emoji)
                 Spacer()
-                Text(emoji.isEmpty ? "📅" : emoji)
+                Text(formData.emoji.isEmpty ? Strings.CountdownForm.defaultEmoji : formData.emoji)
                     .font(.system(size: 24))
             }
         }
         .sheet(isPresented: $isShowingEmojiPicker) {
             NavigationStack {
-                EmojiPickerView(selectedEmoji: $emoji)
+                EmojiPickerView(selectedEmoji: $formData.emoji)
             }
         }
     }
     
     @ViewBuilder
     func priorityPicker() -> some View {
-        Picker("Priority", selection: $selectedPriority) {
+        Picker(Strings.CountdownForm.priority, selection: $formData.priority) {
             ForEach(Priority.allCases, id: \.self) { priority in
                 Text(priority.displayName).tag(priority)
             }
         }
     }
-    
+
     @ViewBuilder
     func repeatFrequencyPicker() -> some View {
-        Picker("Repeat Every", selection: $selectedRepeatFrequency) {
+        Picker(Strings.CountdownForm.repeatEvery, selection: $formData.repeatFrequency) {
             ForEach(RepeatFrequency.allCases) { freq in
                 Text(freq.rawValue).tag(freq)
             }
         }
     }
-    
+
     @ViewBuilder
     func photoPicker() -> some View {
         PhotosPicker(selection: $photoItem, matching: .images) {
-            if let selectedPhoto {
-                Image(uiImage: selectedPhoto)
+            if let selected = formData.photo {
+                Image(uiImage: selected)
                     .resizable()
                     .scaledToFill()
                     .frame(height: 150)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             } else {
-                Label("Pick a Photo", systemImage: "photo")
+                Label(Strings.CountdownForm.pickPhoto, systemImage: "photo")
             }
         }
         .onChange(of: photoItem) { newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self),
-                   let uiImage = UIImage(data: data) {
-                    selectedPhoto = uiImage
+                   let image = UIImage(data: data) {
+                    formData.photo = image
                 }
             }
         }
     }
-    
+
     @ViewBuilder
     func deleteSection() -> some View {
         Section {
             Button(role: .destructive) {
                 showDeleteConfirmation = true
             } label: {
-                Label("Delete Countdown", systemImage: "trash")
+                Label(Strings.CountdownForm.delete, systemImage: "trash")
                     .frame(maxWidth: .infinity, alignment: .center)
             }
             .listRowBackground(Color.red.opacity(0.1))
         }
     }
-    
+
     @ViewBuilder
     func deleteCountdownButton() -> some View {
-        Button("Delete", role: .destructive) {
+        Button(Strings.CountdownForm.deleteConfirm, role: .destructive) {
             if let countdownToDelete = existingCountdown {
                 viewModel.deleteCountdown(countdownToDelete)
                 dismiss()
@@ -184,39 +169,28 @@ private extension CountdownFormSheetView {
             }
         }
     }
-    
-    @ViewBuilder
-    func saveButton() -> some View {
-        Button("Save") {
-            let today = Calendar.current.startOfDay(for: .now)
-            let target = Calendar.current.startOfDay(for: selectedDate)
-            let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
-            
-            let finalEmoji = emoji.isEmpty ? "📅" : emoji
+}
 
-            let updatedCountdown = Countdown(
-                id: existingCountdown?.id ?? UUID(),
-                color: color,
-                daysLeft: newDaysLeft,
-                name: name,
-                description: description,
-                emoji: finalEmoji,
-                priority: selectedPriority,
-                date: selectedDate,
-                photo: selectedPhoto,
-                repeatFrequency: selectedRepeatFrequency
-            )
-            
-            if existingCountdown != nil {
-                viewModel.updateCountdown(updatedCountdown)
-            } else {
-                viewModel.addCountdown(updatedCountdown)
-            }
-            
-            dismiss()
+struct CountdownFormData {
+    var name: String = ""
+    var description: String = ""
+    var emoji: String = Strings.CountdownForm.defaultEmoji
+    var priority: Priority = .medium
+    var date: Date = Date()
+    var photo: UIImage? = nil
+    var color: Color = Countdown.randomColor()
+    var repeatFrequency: RepeatFrequency = .none
+    
+    init(from countdown: Countdown? = nil) {
+        if let c = countdown {
+            name = c.name
+            description = c.description
+            emoji = c.emoji
+            priority = c.priority
+            date = c.date
+            photo = c.photo
+            color = c.color
+            repeatFrequency = c.repeatFrequency
         }
-        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
     }
-    
-    
 }

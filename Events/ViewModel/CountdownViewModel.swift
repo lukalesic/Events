@@ -41,6 +41,33 @@ extension CountdownViewModel {
             countdowns.remove(at: index)
         }
     }
+    
+    func saveCountdown(from form: CountdownFormData, existing: Countdown? = nil) {
+        let today = Calendar.current.startOfDay(for: .now)
+        let target = Calendar.current.startOfDay(for: form.date)
+        let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
+
+        let finalEmoji = form.emoji.isEmpty ? "📅" : form.emoji
+
+        let countdown = Countdown(
+            id: existing?.id ?? UUID(),
+            color: form.color,
+            daysLeft: newDaysLeft,
+            name: form.name,
+            description: form.description,
+            emoji: finalEmoji,
+            priority: form.priority,
+            date: form.date,
+            photo: form.photo,
+            repeatFrequency: form.repeatFrequency
+        )
+
+        if existing != nil {
+            updateCountdown(countdown)
+        } else {
+            addCountdown(countdown)
+        }
+    }
 }
 
 extension CountdownViewModel {
