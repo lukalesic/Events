@@ -31,28 +31,18 @@ struct CountdownView: View {
                             }
                         }
                         .padding()
-                        .animation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2), value: gridState)
+                        .animation(.spring(response: 0.4,
+                                           dampingFraction: 0.75,
+                                           blendDuration: 0.2),
+                                   value: gridState)
                     }
                 }
                 .navigationTitle("Countdowns")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack {
-                            Button(action: {
-                                isShowingAddSheet = true
-                            }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.accentColor)
-                            }
-
-                            Button(action: {
-                                gridState = gridState == .grid ? .rows : .grid
-                                UserDefaults.standard.savedGridState = gridState
-                            }) {
-                                Image(systemName: gridState == .grid ? "list.bullet" : "square.grid.2x2")
-                                    .foregroundColor(.accentColor)
-                            }
+                            gridButton()
+                            addNewButton()
                         }
                     }
                 }
@@ -62,4 +52,30 @@ struct CountdownView: View {
             }
         }
     }
+}
+
+private extension CountdownView {
+    
+    @ViewBuilder
+    func gridButton() -> some View {
+        Button(action: {
+            gridState = gridState == .grid ? .rows : .grid
+            UserDefaults.standard.savedGridState = gridState
+        }) {
+            Image(systemName: gridState == .grid ? "list.bullet" : "square.grid.2x2")
+                .foregroundColor(.accentColor)
+        }
+    }
+    
+    @ViewBuilder
+    func addNewButton() -> some View {
+        Button(action: {
+            isShowingAddSheet = true
+        }) {
+            Image(systemName: "plus.circle.fill")
+                .font(.title2)
+                .foregroundColor(.accentColor)
+        }
+    }
+
 }

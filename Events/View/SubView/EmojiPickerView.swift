@@ -37,16 +37,7 @@ struct EmojiPickerView: View {
 
                         LazyVGrid(columns: columns, spacing: 12) {
                             ForEach(section.emojis, id: \.self) { emoji in
-                                Text(emoji)
-                                    .font(.system(size: 28))
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .padding(6)
-                                    .background(selectedEmoji == emoji ? Color.accentColor.opacity(0.3) : Color.clear)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    .onTapGesture {
-                                        selectedEmoji = emoji
-                                        dismiss()
-                                    }
+                                emojiView(emoji: emoji)
                             }
                         }
                         .padding(.horizontal)
@@ -56,5 +47,22 @@ struct EmojiPickerView: View {
             .padding(.top)
         }
         .navigationTitle("Pick an Emoji")
+    }
+}
+
+private extension EmojiPickerView {
+    
+    @ViewBuilder
+    func emojiView(emoji: String) -> some View {
+        Text(emoji)
+            .font(.system(size: 28))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(6)
+            .background(selectedEmoji == emoji ? Color.accentColor.opacity(0.3) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .onTapGesture {
+                selectedEmoji = emoji
+                dismiss()
+            }
     }
 }
