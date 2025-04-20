@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CounterBlockView: View {
-    var countdown: Countdown
+    var countdown: CountdownVM
     var gridState: GridState
 
     var body: some View {

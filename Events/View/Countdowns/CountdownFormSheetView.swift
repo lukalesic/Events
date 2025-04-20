@@ -13,14 +13,14 @@ struct CountdownFormSheetView: View {
     @Environment(CountdownViewModel.self) private var viewModel
     
     @Binding var navigateToRoot: Bool
-    var existingCountdown: Countdown?
+    var existingCountdown: CountdownVM?
     
     @State private var formData: CountdownFormData
     @State private var photoItem: PhotosPickerItem?
     @State private var showDeleteConfirmation = false
     @State private var isShowingEmojiPicker = false
 
-    init(existingCountdown: Countdown? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
+    init(existingCountdown: CountdownVM? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
         self.existingCountdown = existingCountdown
         self._navigateToRoot = navigateToRoot
         self._formData = State(initialValue: CountdownFormData(from: existingCountdown))
@@ -181,16 +181,16 @@ struct CountdownFormData {
     var color: Color = Countdown.randomColor()
     var repeatFrequency: RepeatFrequency = .none
     
-    init(from countdown: Countdown? = nil) {
-        if let c = countdown {
-            name = c.name
-            description = c.description
-            emoji = c.emoji
-            priority = c.priority
-            date = c.date
-            photo = c.photo
-            color = c.color
-            repeatFrequency = c.repeatFrequency
+    init(from countdown: CountdownVM? = nil) {
+        if let countdown = countdown {
+            name = countdown.name
+            description = countdown.description
+            emoji = countdown.emoji
+            priority = countdown.priority
+            date = countdown.date
+            photo = countdown.photo
+            color = countdown.color
+            repeatFrequency = countdown.repeatFrequency
         }
     }
 }

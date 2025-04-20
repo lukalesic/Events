@@ -7,7 +7,7 @@ struct CounterDetailView: View {
     @Environment(\.presentationMode) private var presentationMode
     @Namespace private var imageNamespace
 
-    var countdown: Countdown
+    var countdown: CountdownVM
     
     @State private var isPresentingEdit = false
     @State private var selectedMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
@@ -322,7 +322,7 @@ private extension CounterDetailView {
     @ViewBuilder
     func shareButton() -> some View {
         Button {
-            viewModel.share(countdown: countdown, image: image)
+            viewModel.share(countdownVM: countdown, image: image)
         } label: {
             Image(systemName: "square.and.arrow.up")
         }
