@@ -71,7 +71,7 @@ extension CountdownViewModel {
 }
 
 extension CountdownViewModel {
-    //MARK: Secondary characteristics - priority, image
+    //MARK: Secondary characteristics - priority, image, description
     
     func updatePriority(for id: UUID, to newPriority: Priority) {
         if let index = countdowns.firstIndex(where: { $0.id == id }) {
@@ -84,6 +84,55 @@ extension CountdownViewModel {
             countdowns[index].photo = image
         }
     }
+    
+    func updateDescription(for id: UUID, description: String) {
+        if let index = countdowns.firstIndex(where: { $0.id == id }) {
+            countdowns[index].description = description
+        }
+    }
+}
+
+extension CountdownViewModel {
+    //MARK: Share functionality
+    
+    func share(countdown: Countdown, image: UIImage?) {
+        let shareText = """
+        🎯 Countdown: \(countdown.name)
+        ⏱ \(countdown.daysLeft) day\(countdown.daysLeft == 1 ? "" : "s") left \(countdown.emoji)
+        🔔 Priority: \(countdown.priority.displayName)
+
+        \(countdown.description)
+
+        Shared from my Countdown App
+        """
+        
+        var itemsToShare: [Any] = [shareText]
+        
+        if let shareImage = image ?? countdown.photo {
+            itemsToShare.append(shareImage)
+        }
+        
+        let activityVC = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
+
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootVC = windowScene.windows.first?.rootViewController else {
+            return
+        }
+
+        var topVC = rootVC
+        while let presented = topVC.presentedViewController {
+            topVC = presented
+        }
+
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = topVC.view
+            popover.sourceRect = CGRect(x: topVC.view.bounds.midX, y: topVC.view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+
+        topVC.present(activityVC, animated: true)
+    }
+
 }
 
 extension CountdownViewModel {
@@ -149,4 +198,150 @@ extension CountdownViewModel {
         }
     }
 }
+//
 
+
+// CountdownViewModel.swift
+// Events
+
+//import Foundation
+//import SwiftUI
+//import Observation
+//
+//@Observable
+//class CountdownViewModel {
+//    // MARK: - State
+//    var countdowns: [Countdown] = []
+//    var selectedCountdown: Countdown? = nil
+//    var selectedDisplayMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
+//
+//    init() {
+//        // Temporary sample countdown
+//        let testCountdown = Countdown(daysLeft: 33, name: "Sample Countdown", description: "Something big is coming!", emoji: "🔥", priority: .small, date: .now)
+//        countdowns.append(testCountdown)
+//    }
+//}
+//
+//// MARK: - CRUD
+//extension CountdownViewModel {
+//    func addCountdown(_ countdown: Countdown) {
+//        countdowns.append(countdown)
+//    }
+//
+//    func updateCountdown(_ updated: Countdown) {
+//        if let index = countdowns.firstIndex(where: { $0.id == updated.id }) {
+//            countdowns[index] = updated
+//        }
+//    }
+//
+//    func deleteCountdown(_ countdown: Countdown) {
+//        countdowns.removeAll { $0.id == countdown.id }
+//        if selectedCountdown?.id == countdown.id {
+//            selectedCountdown = nil
+//        }
+//    }
+//
+//    func saveCountdown(from form: CountdownFormData, existing: Countdown? = nil) {
+//        let today = Calendar.current.startOfDay(for: .now)
+//        let target = Calendar.current.startOfDay(for: form.date)
+//        let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
+//        let finalEmoji = form.emoji.isEmpty ? "📅" : form.emoji
+//
+//        let countdown = Countdown(
+//            id: existing?.id ?? UUID(),
+//            color: form.color,
+//            daysLeft: newDaysLeft,
+//            name: form.name,
+//            description: form.description,
+//            emoji: finalEmoji,
+//            priority: form.priority,
+//            date: form.date,
+//            photo: form.photo,
+//            repeatFrequency: form.repeatFrequency
+//        )
+//
+//        if existing != nil {
+//            updateCountdown(countdown)
+//        } else {
+//            addCountdown(countdown)
+//        }
+//    }
+//}
+//
+//// MARK: - Updates for Selected Countdown
+//extension CountdownViewModel {
+//    func updateSelectedDescription(_ description: String) {
+//        guard var countdown = selectedCountdown else { return }
+//        countdown.description = description
+//        updateCountdown(countdown)
+//        selectedCountdown = countdown
+//    }
+//
+//    func updateSelectedPriority(_ priority: Priority) {
+//        guard var countdown = selectedCountdown else { return }
+//        countdown.priority = priority
+//        updateCountdown(countdown)
+//        selectedCountdown = countdown
+//    }
+//
+//    func updateSelectedPhoto(_ image: UIImage) {
+//        guard var countdown = selectedCountdown else { return }
+//        countdown.photo = image
+//        updateCountdown(countdown)
+//        selectedCountdown = countdown
+//    }
+//}
+//
+//// MARK: - Time Formatting
+//extension CountdownViewModel {
+//    func adjustedDate(for countdown: Countdown) -> Date {
+//        var nextDate = countdown.date
+//        let now = Date()
+//
+//        while nextDate < now {
+//            switch countdown.repeatFrequency {
+//            case .daily: nextDate = Calendar.current.date(byAdding: .day, value: 1, to: nextDate) ?? nextDate
+//            case .weekly: nextDate = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: nextDate) ?? nextDate
+//            case .monthly: nextDate = Calendar.current.date(byAdding: .month, value: 1, to: nextDate) ?? nextDate
+//            case .yearly: nextDate = Calendar.current.date(byAdding: .year, value: 1, to: nextDate) ?? nextDate
+//            case .none: break
+//            }
+//            if countdown.repeatFrequency == .none { break }
+//        }
+//        return nextDate
+//    }
+//
+//    func formattedTimeRemaining() -> String {
+//        guard let countdown = selectedCountdown else { return "" }
+//        let now = Calendar.current.startOfDay(for: .now)
+//        let target = Calendar.current.startOfDay(for: adjustedDate(for: countdown))
+//        let totalDays = Calendar.current.dateComponents([.day], from: now, to: target).day ?? 0
+//
+//        switch selectedDisplayMode {
+//        case .days:
+//            return "\(totalDays) day\(totalDays == 1 ? "" : "s")"
+//        case .weeks:
+//            let weeks = totalDays / 7
+//            let days = totalDays % 7
+//            return "\(weeks) week\(weeks == 1 ? "" : "s")" + (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "")
+//        case .months:
+//            let months = totalDays / 30
+//            let remainder = totalDays % 30
+//            let weeks = remainder / 7
+//            let days = remainder % 7
+//            return "\(months) month\(months == 1 ? "" : "s")" +
+//                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
+//                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "")
+//        case .years:
+//            let years = totalDays / 365
+//            let remainder = totalDays % 365
+//            let months = remainder / 30
+//            let weeks = (remainder % 30) / 7
+//            let days = remainder % 7
+//            return "\(years) year\(years == 1 ? "" : "s")" +
+//                   (months > 0 ? ", \(months) month\(months == 1 ? "" : "s")" : "") +
+//                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
+//                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "")
+//        }
+//    }
+//}
