@@ -31,9 +31,7 @@ struct CountdownView: View {
                             }
                         }
                         .padding()
-                        .animation(.default, value: gridState) //TODO Check 120 fps
-//                        .animation(.spring(duration: 0.4, bounce: 0.25), value: gridState)
-//                        .animation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2), value: gridState)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2), value: gridState)
                     }
                 }
                 .navigationTitle("Countdowns")

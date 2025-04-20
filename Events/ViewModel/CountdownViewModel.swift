@@ -19,12 +19,12 @@ class CountdownViewModel {
         
         //TODO delete
         let testCountdown2 = Countdown(daysLeft: 33, name: "name", description: "desc", emoji: "🔥", priority: .small, date: .now)
-                
         self.countdowns.append(testCountdown2)
     }
 }
 
 extension CountdownViewModel {
+    //MARK: Essential CRUD operations
     
     func addCountdown(_ countdown: Countdown) {
         countdowns.append(countdown)
@@ -41,6 +41,10 @@ extension CountdownViewModel {
             countdowns.remove(at: index)
         }
     }
+}
+
+extension CountdownViewModel {
+    //MARK: Secondary characteristics - priority, image
     
     func updatePriority(for id: UUID, to newPriority: Priority) {
         if let index = countdowns.firstIndex(where: { $0.id == id }) {
@@ -53,6 +57,10 @@ extension CountdownViewModel {
             countdowns[index].photo = image
         }
     }
+}
+
+extension CountdownViewModel {
+    //MARK: Calculating dates
     
     func adjustedDate(for countdown: Countdown) -> Date {
         var nextDate = countdown.date
@@ -115,96 +123,3 @@ extension CountdownViewModel {
     }
 }
 
-struct Countdown: Identifiable {
-    var id = UUID()
-    var color: Color = Countdown.randomColor()
-    var daysLeft: Int
-    var name: String
-    var description: String
-    var emoji: String
-    var priority: Priority
-    var date: Date
-    var photo: UIImage? = nil  // Optional photo support
-    var repeatFrequency: RepeatFrequency = .none
-
-    static func randomColor() -> Color {
-        let colors: [Color] = [.red, .blue, .green, .yellow, .purple, .orange, .pink]
-        return colors.randomElement() ?? .gray
-    }
-}
-
-enum Priority: CaseIterable {
-    case small
-    case medium
-    case large
-
-    var displayName: String {
-        switch self {
-        case .small: return "Low"
-        case .medium: return "Medium"
-        case .large: return "High"
-        }
-    }
-}
-
-enum TimeDisplayMode: String, CaseIterable {
-    case days = "Days"
-    case weeks = "Weeks"
-    case months = "Months"
-    case years = "Years"
-}
-
-
-enum RepeatFrequency: String, CaseIterable, Identifiable {
-    case none = "None"
-    case daily = "Daily"
-    case weekly = "Weekly"
-    case monthly = "Monthly"
-    case yearly = "Yearly"
-
-    var id: String { self.rawValue }
-}
-
-extension Countdown {
-    var nextDate: Date {
-        switch repeatFrequency {
-        case .daily:
-            return Calendar.current.nextDate(after: .now, matching: Calendar.current.dateComponents([.hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .weekly:
-            return Calendar.current.nextDate(after: .now, matching: Calendar.current.dateComponents([.weekday, .hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .monthly:
-            let components = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: date)
-            return Calendar.current.nextDate(after: .now, matching: components, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .yearly:
-            let components = Calendar.current.dateComponents([.month, .day, .hour, .minute, .second], from: date)
-            return Calendar.current.nextDate(after: .now, matching: components, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .none:
-            return date
-        }
-    }
-
-    var daysLeftUntilNextDate: Int {
-        let today = Calendar.current.startOfDay(for: .now)
-        let target = Calendar.current.startOfDay(for: nextDate)
-        return Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
-    }
-}
-
-extension UserDefaults {
-    private enum Keys {
-        static let selectedDisplayMode = "selectedDisplayMode"
-    }
-
-    var savedDisplayMode: TimeDisplayMode {
-        get {
-            guard let raw = string(forKey: Keys.selectedDisplayMode),
-                  let mode = TimeDisplayMode(rawValue: raw) else {
-                return .days // fallback
-            }
-            return mode
-        }
-        set {
-            set(newValue.rawValue, forKey: Keys.selectedDisplayMode)
-        }
-    }
-}
