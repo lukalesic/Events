@@ -46,6 +46,14 @@ class Countdown {
         }
     }
     
+    var previewImage: UIImage? {
+        guard let data = photoData,
+              let image = UIImage(data: data) else { return nil }
+        
+        let targetSize = CGSize(width: 30, height: 30)
+        return image.resized(to: targetSize)
+    }
+    
     init(id: UUID = UUID(),
          color: Color = Countdown.randomColor(),
          daysLeft: Int = 0,
@@ -137,5 +145,16 @@ extension Color {
         let b = Double(rgb & 0xFF) / 255.0
         
         self.init(red: r, green: g, blue: b)
+    }
+}
+
+
+extension UIImage {
+    func resized(to targetSize: CGSize) -> UIImage {
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: targetSize, format: format).image { _ in
+            self.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
     }
 }

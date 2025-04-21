@@ -82,15 +82,42 @@ private extension CounterBlockView {
     @ViewBuilder
     func countdownBackground() -> some View {
         ZStack {
-            if let photo = countdown.photo {
-                Image(uiImage: photo)
-                    .resizable()
-                    .scaledToFill()
-                    .blur(radius: 2.12)
-                    .overlay(Color.black.opacity(0.2))
-            } else {
-                countdown.color
+            if gridState == .rows {
+                if let photo = countdown.previewImage {
+                    Image(uiImage: photo)
+                        .resizable()
+                        .frame(width: 400, height: 150)
+                        .blur(radius: 4)
+                } else {
+                    countdown.color
+                }
+            } else
+            {
+                if let photo = countdown.previewImage {
+                    Image(uiImage: photo)
+                        .resizable()
+                        .frame(width: 200, height: 150)
+                        .blur(radius: 4)
+                    
+                } else {
+                    countdown.color
+                    
+                }
             }
-        }
+            
+//            if let photo = countdown.photo {
+//                Image(uiImage: photo)
+//                    .resizable()
+//                    .drawingGroup(opaque: true)
+//                    .scaledToFill()
+//                    .blur(radius: 4)
+//                    .overlay(Color.black.opacity(0.2))
+//            } else {
+        //TODO Performance issues!
+//                countdown.color
+            }
+//                            .drawingGroup(opaque: true)
+
+//        }
     }
 }

@@ -29,6 +29,8 @@ struct CountdownView: View {
                                 } label: {
                                     CounterBlockView(countdown: countdown, gridState: gridState)
                                         .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
+                                        .animation(nil, value: countdown.photoData)
+
                                 }
                             }
                         }
