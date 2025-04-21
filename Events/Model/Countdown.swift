@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUICore
 import UIKit
+import SwiftData
 
 struct Countdown: Identifiable {
     var id = UUID()
@@ -18,7 +19,7 @@ struct Countdown: Identifiable {
     var emoji: String
     var priority: Priority
     var date: Date
-    var photo: UIImage? = nil  // Optional photo support
+    var photo: UIImage? = nil
     var repeatFrequency: RepeatFrequency = .none
 
     static func randomColor() -> Color {

@@ -51,6 +51,7 @@ struct CountdownView: View {
                 }
             }
         }
+        .accentColor(.primary)
     }
 }
 
@@ -72,7 +73,7 @@ private extension CountdownView {
         Button(action: {
             isShowingAddSheet = true
         }) {
-            Image(systemName: "plus.circle.fill")
+            Image(systemName: "plus.circle")
                 .font(.title2)
                 .foregroundColor(.accentColor)
         }

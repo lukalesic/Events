@@ -79,6 +79,7 @@ struct CountdownFormSheetView: View {
                 }
             }
         }
+        .accentColor(.primary)
     }
 }
 

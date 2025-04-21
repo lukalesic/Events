@@ -86,7 +86,7 @@ private extension CounterBlockView {
                 Image(uiImage: photo)
                     .resizable()
                     .scaledToFill()
-                    .blur(radius: 1.5)
+                    .blur(radius: 2.12)
                     .overlay(Color.black.opacity(0.2))
             } else {
                 countdown.color

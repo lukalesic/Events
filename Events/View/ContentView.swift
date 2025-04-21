@@ -13,6 +13,7 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
+            
             CountdownView()
                 .environment(countdownViewModel)
                 .tabItem {
@@ -30,6 +31,6 @@ struct ContentView: View {
                 }
 
         }
-
+        .accentColor(.primary)
     }
 }
