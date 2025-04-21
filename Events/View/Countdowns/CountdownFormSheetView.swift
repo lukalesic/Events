@@ -13,14 +13,14 @@ struct CountdownFormSheetView: View {
     @Environment(CountdownViewModel.self) private var viewModel
     
     @Binding var navigateToRoot: Bool
-    var existingCountdown: CountdownVM?
+    var existingCountdown: Countdown?
     
     @State private var formData: CountdownFormData
     @State private var photoItem: PhotosPickerItem?
     @State private var showDeleteConfirmation = false
     @State private var isShowingEmojiPicker = false
 
-    init(existingCountdown: CountdownVM? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
+    init(existingCountdown: Countdown? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
         self.existingCountdown = existingCountdown
         self._navigateToRoot = navigateToRoot
         self._formData = State(initialValue: CountdownFormData(from: existingCountdown))
@@ -107,7 +107,7 @@ private extension CountdownFormSheetView {
     @ViewBuilder
     func priorityPicker() -> some View {
         Picker(Strings.CountdownForm.priority, selection: $formData.priority) {
-            ForEach(Priority.allCases, id: \.self) { priority in
+            ForEach(EventPriority.allCases, id: \.self) { priority in
                 Text(priority.displayName).tag(priority)
             }
         }
@@ -176,16 +176,16 @@ struct CountdownFormData {
     var name: String = ""
     var description: String = ""
     var emoji: String = Strings.CountdownForm.defaultEmoji
-    var priority: Priority = .medium
+    var priority: EventPriority = .medium
     var date: Date = Date()
     var photo: UIImage? = nil
     var color: Color = Countdown.randomColor()
     var repeatFrequency: RepeatFrequency = .none
     
-    init(from countdown: CountdownVM? = nil) {
+    init(from countdown: Countdown? = nil) {
         if let countdown = countdown {
             name = countdown.name
-            description = countdown.description
+            description = countdown.descriptionText
             emoji = countdown.emoji
             priority = countdown.priority
             date = countdown.date

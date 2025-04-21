@@ -4,14 +4,15 @@ import UIKit
 
 struct CounterDetailView: View {
     @Environment(CountdownViewModel.self) private var viewModel
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.presentationMode) private var presentationMode
     @Namespace private var imageNamespace
-
-    var countdown: CountdownVM
+    
+    var countdown: Countdown
     
     @State private var isPresentingEdit = false
     @State private var selectedMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
-
+    
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var image: UIImage? = nil
     @State private var showFullImage: Bool = false
@@ -23,100 +24,102 @@ struct CounterDetailView: View {
     @State private var isEditingDescription: Bool = false
     @State private var editedDescription: String = ""
     @FocusState private var isDescriptionFocused: Bool
-
+    
     var body: some View {
-            ZStack {
-                linearGradient()
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        VStack(alignment: .leading, spacing: 16) {
-                            timeRemainingLabel()
-                            
-                            timeDisplayModePicker()
-                                .padding(.bottom, 8)
-                            
-                            countdownName()
-                            
-                            if countdown.repeatFrequency != .none {
-                                repeatLabel()
-                            }
-                            
-                            descriptionSection()
-                            
-                            priorityMenu()
-                            
-                            imageView()
-                            
-                            photoPickerButton()
+        ZStack {
+            linearGradient()
+                .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        timeRemainingLabel()
+                        
+                        timeDisplayModePicker()
+                            .padding(.bottom, 8)
+                        
+                        countdownName()
+                        
+                        if countdown.repeatFrequency != .none {
+                            repeatLabel()
                         }
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
-                        .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
-                        .padding()
+                        
+                        descriptionSection()
+                        
+                        priorityMenu()
+                        
+                        imageView()
+                        
+                        photoPickerButton()
                     }
-                    .animation(.default, value: viewModel.formattedTimeRemaining(for: countdown))
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
+                    .padding()
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .onAppear {
-                    image = countdown.photo
-                    editedDescription = countdown.description
-                    selectedMode = UserDefaults.standard.savedDisplayMode
-                    viewModel.selectedDisplayMode = selectedMode
-                }
-                .onChange(of: selectedItem) { newItem in
-                    Task {
-                        if let data = try? await newItem?.loadTransferable(type: Data.self),
-                           let uiImage = UIImage(data: data) {
-                            image = uiImage
-                            viewModel.updatePhoto(for: countdown.id, image: uiImage)
-                        }
+                .animation(.default, value: viewModel.formattedTimeRemaining(for: countdown))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .onAppear {
+                image = countdown.photo
+                editedDescription = countdown.descriptionText
+                selectedMode = UserDefaults.standard.savedDisplayMode
+                viewModel.selectedDisplayMode = selectedMode
+            }
+            .onChange(of: selectedItem) { newItem in
+                Task {
+                    if let data = try? await newItem?.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data) {
+                        image = uiImage
+                        // Update directly on the SwiftData model
+                        countdown.photo = uiImage
+                        try? modelContext.save()
                     }
                 }
-                
-                fullscreenImageOverlay()
             }
             
-            .onTapGesture {
-                if isEditingDescription {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        isEditingDescription = false
-                        isDescriptionFocused = false
-                        viewModel.updateDescription(for: countdown.id, description: editedDescription)
-                    }
+            fullscreenImageOverlay()
+        }
+        
+        .onTapGesture {
+            if isEditingDescription {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    isEditingDescription = false
+                    isDescriptionFocused = false
+                    // Update directly on the SwiftData model
+                    countdown.descriptionText = editedDescription
+                    try? modelContext.save()
                 }
             }
-            .navigationTitle("Countdown Detail")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button("Edit") {
-                        isPresentingEdit = true
-                    }
-                    
-                    shareButton()
+        }
+        .navigationTitle("Countdown Detail")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button("Edit") {
+                    isPresentingEdit = true
                 }
                 
+                shareButton()
             }
-            .tint(countdown.color)
-            .fullScreenCover(isPresented: $isPresentingEdit) {
-                CountdownFormSheetView(existingCountdown: countdown, navigateToRoot: $shouldNavigateToRoot)
-            }
-            .onChange(of: shouldNavigateToRoot) { navigateToRoot in
-                if navigateToRoot {
-                    withAnimation {
-                        presentationMode.wrappedValue.dismiss()
-                    }
+        }
+        .tint(countdown.color)
+        .fullScreenCover(isPresented: $isPresentingEdit) {
+            CountdownFormSheetView(existingCountdown: countdown, navigateToRoot: $shouldNavigateToRoot)
+        }
+        .onChange(of: shouldNavigateToRoot) { navigateToRoot in
+            if navigateToRoot {
+                withAnimation {
+                    presentationMode.wrappedValue.dismiss()
                 }
             }
-            .onTapGesture {
-                if isEditingDescription && !isDescriptionFocused {
-                    isEditingDescription = false
-                }
+        }
+        .onTapGesture {
+            if isEditingDescription && !isDescriptionFocused {
+                isEditingDescription = false
             }
+        }
     }
 }
-
 
 private extension CounterDetailView {
     
@@ -187,23 +190,23 @@ private extension CounterDetailView {
                         isDescriptionFocused = true
                     }
             } else {
-                if countdown.description.isEmpty {
+                if countdown.descriptionText.isEmpty {
                     Text("Tap to add a description...")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .italic()
                         .onTapGesture {
-                            editedDescription = countdown.description
+                            editedDescription = countdown.descriptionText
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 isEditingDescription = true
                             }
                         }
                 } else {
-                    Text(countdown.description)
+                    Text(countdown.descriptionText)
                         .font(.body)
                         .foregroundColor(.secondary)
                         .onTapGesture {
-                            editedDescription = countdown.description
+                            editedDescription = countdown.descriptionText
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 isEditingDescription = true
                             }
@@ -220,9 +223,9 @@ private extension CounterDetailView {
                 .fontWeight(.medium)
             
             Menu {
-                ForEach(Priority.allCases, id: \.self) { priority in
+                ForEach(EventPriority.allCases, id: \.self) { priority in
                     Button(priority.displayName) {
-                        viewModel.updatePriority(for: countdown.id, to: priority)
+                        viewModel.updatePriority(for: countdown, to: priority)
                     }
                 }
             } label: {
@@ -325,7 +328,7 @@ private extension CounterDetailView {
     @ViewBuilder
     func shareButton() -> some View {
         Button {
-            viewModel.share(countdownVM: countdown, image: image)
+            viewModel.share(countdown: countdown, image: image)
         } label: {
             Image(systemName: "square.and.arrow.up")
                 .scaleEffect(0.9)

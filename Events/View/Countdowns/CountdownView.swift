@@ -2,10 +2,12 @@ import Foundation
 import SwiftUI
 import Observation
 import PhotosUI
+import SwiftData
 
 struct CountdownView: View {
     @Environment(CountdownViewModel.self) private var viewModel
-    @Namespace private var countdowns
+    @Query private var countdowns: [Countdown]
+    @Namespace private var countdownsNamespace
     
     @State private var isShowingAddSheet = false
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
@@ -20,21 +22,21 @@ struct CountdownView: View {
                 VStack(spacing: 0) {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 16) {
-                            ForEach(viewModel.countdowns) { countdown in
+                            ForEach(countdowns) { countdown in
                                 NavigationLink {
                                     CounterDetailView(countdown: countdown)
-                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdowns))
+                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
                                 } label: {
                                     CounterBlockView(countdown: countdown, gridState: gridState)
-                                        .matchedTransitionSource(id: countdown.id, in: countdowns)
+                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
                                 }
                             }
                         }
                         .padding()
                         .animation(.spring(response: 0.4,
-                                           dampingFraction: 0.75,
-                                           blendDuration: 0.2),
-                                   value: gridState)
+                                         dampingFraction: 0.75,
+                                         blendDuration: 0.2),
+                                 value: gridState)
                     }
                 }
                 .navigationTitle("Countdowns")

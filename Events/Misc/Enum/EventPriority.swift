@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Priority: CaseIterable {
+enum EventPriority: String, CaseIterable, Codable {
     case small
     case medium
     case large

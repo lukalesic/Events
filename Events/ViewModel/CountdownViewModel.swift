@@ -8,98 +8,128 @@
 import Foundation
 import SwiftUI
 import Observation
+import SwiftData
 
 @Observable
 class CountdownViewModel {
     
-    var countdowns: [CountdownVM] = []
     var selectedDisplayMode: TimeDisplayMode = .days
+    private var modelContext: ModelContext
     
-    init() {}
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
+    
+    // Returns countdowns directly from SwiftData
+    func fetchCountdowns() -> [Countdown] {
+        let descriptor = FetchDescriptor<Countdown>()
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch countdowns: \(error)")
+            return []
+        }
+    }
 }
 
 // MARK: - CRUD operations
-
 extension CountdownViewModel {
     
-    func addCountdown(_ countdown: CountdownVM) {
-        countdowns.append(countdown)
+    func addCountdown(_ countdown: Countdown) {
+        modelContext.insert(countdown)
+        saveContext()
     }
     
-    func updateCountdown(_ updated: CountdownVM) {
-        if let index = countdowns.firstIndex(where: { $0.id == updated.id }) {
-            countdowns[index] = updated
-        }
+    func updateCountdown(_ countdown: Countdown) {
+        // No need to explicitly update - SwiftData tracks changes to managed objects
+        saveContext()
     }
     
-    func deleteCountdown(_ countdown: CountdownVM) {
-        countdowns.removeAll { $0.id == countdown.id }
+    func deleteCountdown(_ countdown: Countdown) {
+        modelContext.delete(countdown)
+        saveContext()
     }
     
-    func saveCountdown(from form: CountdownFormData, existing: CountdownVM? = nil) {
+    func saveCountdown(from form: CountdownFormData, existing: Countdown? = nil) {
         let today = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: form.date)
         let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
         let finalEmoji = form.emoji.isEmpty ? "📅" : form.emoji
         
-        let countdown = Countdown(
-            id: existing?.id ?? UUID(),
-            color: form.color,
-            daysLeft: newDaysLeft,
-            name: form.name,
-            description: form.description,
-            emoji: finalEmoji,
-            priority: form.priority,
-            date: form.date,
-            photo: form.photo,
-            repeatFrequency: form.repeatFrequency
-        )
-        
-        let vm = CountdownVM(countdown: countdown)
-        
-        if let existing = existing {
-            updateCountdown(vm)
+        if let existingCountdown = existing {
+            // Update existing countdown
+            existingCountdown.color = form.color
+            existingCountdown.daysLeft = newDaysLeft
+            existingCountdown.name = form.name
+            existingCountdown.descriptionText = form.description
+            existingCountdown.emoji = finalEmoji
+            existingCountdown.priority = form.priority
+            existingCountdown.date = form.date
+            existingCountdown.photo = form.photo
+            existingCountdown.repeatFrequency = form.repeatFrequency
         } else {
-            addCountdown(vm)
+            // Create new countdown
+            let countdown = Countdown()
+            countdown.id = UUID()
+            countdown.color = form.color
+            countdown.daysLeft = newDaysLeft
+            countdown.name = form.name
+            countdown.descriptionText = form.description
+            countdown.emoji = finalEmoji
+            countdown.priority = form.priority
+            countdown.date = form.date
+            countdown.photo = form.photo
+            countdown.repeatFrequency = form.repeatFrequency
+            
+            addCountdown(countdown)
+        }
+    }
+    
+    private func saveContext() {
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error saving context: \(error)")
         }
     }
 }
 
 // MARK: - Property updates
-
 extension CountdownViewModel {
     
-    func updatePriority(for id: UUID, to newPriority: Priority) {
-        countdowns.first(where: { $0.id == id })?.priority = newPriority
+    func updatePriority(for countdown: Countdown, to newPriority: EventPriority) {
+        countdown.priority = newPriority
+        saveContext()
     }
     
-    func updatePhoto(for id: UUID, image: UIImage) {
-        countdowns.first(where: { $0.id == id })?.photo = image
+    func updatePhoto(for countdown: Countdown, image: UIImage) {
+        countdown.photo = image
+        saveContext()
     }
     
-    func updateDescription(for id: UUID, description: String) {
-        countdowns.first(where: { $0.id == id })?.description = description
+    func updateDescription(for countdown: Countdown, description: String) {
+        countdown.descriptionText = description
+        saveContext()
     }
 }
 
 // MARK: - Sharing
-
 extension CountdownViewModel {
     
-    func share(countdownVM: CountdownVM, image: UIImage?) {
+    func share(countdown: Countdown, image: UIImage?) {
         let shareText = """
-        🎯 Countdown: \(countdownVM.name)
-        ⏱ \(countdownVM.daysLeft) day\(countdownVM.daysLeft == 1 ? "" : "s") left \(countdownVM.emoji)
-        🔔 Priority: \(countdownVM.priority.displayName)
+        🎯 Countdown: \(countdown.name)
+        ⏱ \(countdown.daysLeft) day\(countdown.daysLeft == 1 ? "" : "s") left \(countdown.emoji)
+        🔔 Priority: \(countdown.priority.rawValue.capitalized)
 
-        \(countdownVM.description)
+        \(countdown.descriptionText)
 
         Shared from my Countdown App
         """
         
         var itemsToShare: [Any] = [shareText]
         
-        if let shareImage = image ?? countdownVM.photo {
+        if let shareImage = image ?? countdown.photo {
             itemsToShare.append(shareImage)
         }
         
@@ -126,10 +156,9 @@ extension CountdownViewModel {
 }
 
 // MARK: - Date handling
-
 extension CountdownViewModel {
     
-    func adjustedDate(for countdown: CountdownVM) -> Date {
+    func adjustedDate(for countdown: Countdown) -> Date {
         var nextDate = countdown.date
         let now = Date()
 
@@ -152,7 +181,7 @@ extension CountdownViewModel {
         return nextDate
     }
     
-    func formattedTimeRemaining(for countdown: CountdownVM) -> String {
+    func formattedTimeRemaining(for countdown: Countdown) -> String {
         let now = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: adjustedDate(for: countdown))
         let totalDays = Calendar.current.dateComponents([.day], from: now, to: target).day ?? 0
@@ -186,4 +215,3 @@ extension CountdownViewModel {
         }
     }
 }
-
