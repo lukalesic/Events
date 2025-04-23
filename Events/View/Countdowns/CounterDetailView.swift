@@ -257,6 +257,7 @@ private extension CounterDetailView {
                     .frame(maxWidth: .infinity)
                     .clipped()
                     .cornerRadius(12)
+                    .contentShape(Rectangle())
                     .matchedGeometryEffect(id: "image", in: imageNamespace)
                     .onTapGesture {
                         withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
