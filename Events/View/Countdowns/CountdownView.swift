@@ -15,30 +15,34 @@ struct CountdownView: View {
     private var columns: [GridItem] {
         gridState == .grid ? Array(repeating: GridItem(.flexible()), count: 2) : [GridItem(.flexible())]
     }
-
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 16) {
-                            ForEach(countdowns) { countdown in
-                                NavigationLink {
-                                    CounterDetailView(countdown: countdown)
-                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
-                                } label: {
-                                    CounterBlockView(countdown: countdown, gridState: gridState)
-                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
-                                        .animation(nil, value: countdown.photoData)
-
+                    if countdowns.isEmpty {
+                        contentUnavailableView()
+                    } else {
+                        ScrollView {
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach(countdowns) { countdown in
+                                    NavigationLink {
+                                        CounterDetailView(countdown: countdown)
+                                            .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
+                                    } label: {
+                                        CounterBlockView(countdown: countdown, gridState: gridState)
+                                            .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
+                                            .animation(nil, value: countdown.photoData)
+                                        
+                                    }
                                 }
                             }
+                            .padding()
+                            .animation(.spring(response: 0.4,
+                                               dampingFraction: 0.75,
+                                               blendDuration: 0.2),
+                                       value: gridState)
                         }
-                        .padding()
-                        .animation(.spring(response: 0.4,
-                                         dampingFraction: 0.75,
-                                         blendDuration: 0.2),
-                                 value: gridState)
                     }
                 }
                 .navigationTitle("Countdowns")
@@ -54,8 +58,8 @@ struct CountdownView: View {
                     CountdownFormSheetView()
                 }
             }
+            .accentColor(.primary)
         }
-        .accentColor(.primary)
     }
 }
 
@@ -68,8 +72,27 @@ private extension CountdownView {
             UserDefaults.standard.savedGridState = gridState
         }) {
             Image(systemName: gridState == .grid ? "list.bullet" : "square.grid.2x2")
+                .contentTransition(.symbolEffect(.automatic))
                 .foregroundColor(.accentColor)
         }
+        .disabled(countdowns.isEmpty)
+        .opacity(countdowns.isEmpty ? 0.6 : 1)
+    }
+    
+    @ViewBuilder
+    func initialAddEventButton() -> some View {
+        Button(action: {
+            isShowingAddSheet = true
+        }) {
+            HStack {
+                Image(systemName: "calendar.badge.plus")
+                    .foregroundColor(.accentColor)
+                Text("Add new countdown")
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 4)
+        }
+        .buttonStyle(.bordered)
     }
     
     @ViewBuilder
@@ -77,10 +100,24 @@ private extension CountdownView {
         Button(action: {
             isShowingAddSheet = true
         }) {
-            Image(systemName: "plus.circle")
-                .font(.title2)
+            Image(systemName: "calendar.badge.plus")
                 .foregroundColor(.accentColor)
         }
     }
-
+    
+    @ViewBuilder
+    func contentUnavailableView() -> some View {
+        ContentUnavailableView(
+            label: {
+                Label("No Countdowns", systemImage: "calendar.badge.exclamationmark")
+            },
+            description: {
+                Text("When you add a new countdown, it will appear here.")
+            },
+            actions: {
+                initialAddEventButton()
+            }
+        )
+    }
+    
 }

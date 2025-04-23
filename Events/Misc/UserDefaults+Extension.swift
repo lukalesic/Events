@@ -30,7 +30,7 @@ extension UserDefaults {
         get {
             guard let raw = string(forKey: Keys.gridState),
                   let state = GridState(rawValue: raw) else {
-                return .grid
+                return .rows
             }
             return state
         }
