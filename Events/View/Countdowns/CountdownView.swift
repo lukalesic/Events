@@ -6,28 +6,19 @@ import SwiftData
 
 struct CountdownView: View {
     @Environment(CountdownViewModel.self) private var viewModel
-    @Query private var countdowns: [Countdown]
+    @Query(sort: \Countdown.daysLeft) private var countdowns: [Countdown]
     @Namespace private var countdownsNamespace
+    @State private var showPastEvents: Bool = true
     
     @State private var isShowingAddSheet = false
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
     
+    @State private var isConfirmingDelete = false
+    
     private var columns: [GridItem] {
         gridState == .grid ? Array(repeating: GridItem(.flexible()), count: 2) : [GridItem(.flexible())]
     }
-    
-    var upcomingCountdowns: [Countdown] {
-        countdowns.filter { $0.isUpcoming  }
-    }
-
-    var pastCountdowns: [Countdown] {
-        countdowns.filter { $0.isPast  }
-    }
-    
-    var todaysCountdowns: [Countdown] {
-        countdowns.filter { $0.isToday }
-    }
-    
+        
     var body: some View {
         NavigationStack {
             ZStack {
@@ -81,7 +72,7 @@ struct CountdownView: View {
                                 }
 
                                 // MARK: Past
-                                if !pastCountdowns.isEmpty {
+                                if hasPastEvents && showPastEvents {
                                     VStack(alignment: .leading) {
                                         Text("Past Events")
                                             .font(.headline)
@@ -108,10 +99,26 @@ struct CountdownView: View {
                                            dampingFraction: 0.75,
                                            blendDuration: 0.2),
                                    value: gridState)
+                        .confirmationDialog("Are you sure you want to delete all past events?",
+                                            isPresented: $isConfirmingDelete,
+                                            titleVisibility: .visible) {
+                            Button("Delete All Past Events", role: .destructive) {
+                                withAnimation {
+                                    viewModel.deleteAllPastCountdowns()
+                                }
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        }
                     }
                 }
-                .navigationTitle("Countdowns")
+                .navigationTitle("Events")
                 .toolbar {
+                    if hasPastEvents {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            toolbarMenu()
+                        }
+                    }
+                    
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack {
                             gridButton()
@@ -126,6 +133,27 @@ struct CountdownView: View {
             .accentColor(.primary)
         }
     }
+}
+
+extension CountdownView {
+    //Filtering options specific to the View
+    
+    var upcomingCountdowns: [Countdown] {
+        countdowns.filter { $0.isUpcoming  }
+    }
+
+    var pastCountdowns: [Countdown] {
+        countdowns.filter { $0.isPast  }
+    }
+    
+    var todaysCountdowns: [Countdown] {
+        countdowns.filter { $0.isToday }
+    }
+    
+    var hasPastEvents: Bool {
+        !pastCountdowns.isEmpty
+    }
+
 }
 
 private extension CountdownView {
@@ -185,4 +213,48 @@ private extension CountdownView {
         )
     }
     
+    @ViewBuilder
+    func toolbarMenu() -> some View {
+        Menu {
+            if hasPastEvents {
+                togglePastEventsButton()
+                deletePastEventsButton()
+            }
+        } label: {
+            Label("Options", systemImage: "ellipsis.circle")
+                .labelStyle(.iconOnly)
+        }
+    }
+    
+    @ViewBuilder
+    func menuButton(label: String,
+                    icon: String? = nil,
+                    action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            if let icon = icon {
+                Label(label, systemImage: icon)
+            } else {
+                Text(label)
+            }
+        }
+    }
+    
+    //MARK: Menu buttons
+    
+    @ViewBuilder
+    func togglePastEventsButton() -> some View {
+        menuButton(label: showPastEvents ? "Hide Past Events" : "Show Past Events",
+                   icon: showPastEvents ? "eye.slash" : "eye",
+                   action: { showPastEvents.toggle() })
+
+    }
+    
+    @ViewBuilder
+    func deletePastEventsButton() -> some View {
+        menuButton(label: "Delete All Past Events",
+                   icon: "trash",
+                   action: { isConfirmingDelete = true })
+        .foregroundStyle(.red)
+
+    }
 }

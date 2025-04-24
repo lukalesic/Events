@@ -20,7 +20,6 @@ class CountdownViewModel {
         self.modelContext = modelContext
     }
     
-    // Returns countdowns directly from SwiftData
     func fetchCountdowns() -> [Countdown] {
         let descriptor = FetchDescriptor<Countdown>()
         do {
@@ -90,6 +89,24 @@ extension CountdownViewModel {
             try modelContext.save()
         } catch {
             print("Error saving context: \(error)")
+        }
+    }
+    
+    func deleteAllPastCountdowns() {
+        let today = Calendar.current.startOfDay(for: .now)
+        
+        let descriptor = FetchDescriptor<Countdown>(
+            predicate: #Predicate { $0.date < today }
+        )
+        
+        do {
+            let pastCountdowns = try modelContext.fetch(descriptor)
+            for countdown in pastCountdowns {
+                modelContext.delete(countdown)
+            }
+            saveContext()
+        } catch {
+            print("Failed to delete past countdowns: \(error)")
         }
     }
 }
