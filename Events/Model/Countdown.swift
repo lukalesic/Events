@@ -33,6 +33,14 @@ class Countdown {
         daysLeftUntilNextDate < 0
     }
     
+    var isToday: Bool {
+        daysLeftUntilNextDate == 0
+    }
+    
+    var isUpcoming: Bool {
+        daysLeftUntilNextDate > 0
+    }
+    
     // Computed property for photo
     var photo: UIImage? {
         get {

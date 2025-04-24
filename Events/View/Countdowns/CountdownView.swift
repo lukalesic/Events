@@ -17,11 +17,15 @@ struct CountdownView: View {
     }
     
     var upcomingCountdowns: [Countdown] {
-        countdowns.filter { !$0.isPast  }
+        countdowns.filter { $0.isUpcoming  }
     }
 
     var pastCountdowns: [Countdown] {
         countdowns.filter { $0.isPast  }
+    }
+    
+    var todaysCountdowns: [Countdown] {
+        countdowns.filter { $0.isToday }
     }
     
     var body: some View {
@@ -33,6 +37,27 @@ struct CountdownView: View {
                     } else {
                         ScrollView {
                             LazyVStack(spacing: 32) {
+                                
+                                // MARK: Today's Events
+                                if !todaysCountdowns.isEmpty {
+                                    VStack(alignment: .leading) {
+                                        Text("Today's Events")
+                                            .font(.headline)
+
+                                        LazyVGrid(columns: columns, spacing: 16) {
+                                            ForEach(todaysCountdowns) { countdown in
+                                                NavigationLink {
+                                                    CounterDetailView(countdown: countdown)
+                                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
+                                                } label: {
+                                                    CounterBlockView(countdown: countdown, gridState: gridState)
+                                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
+                                                        .animation(nil, value: countdown.photoData)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                                 
                                 // MARK: Upcoming
                                 if !upcomingCountdowns.isEmpty {
@@ -77,8 +102,8 @@ struct CountdownView: View {
                                 }
 
                             }
+                            .padding()
                         }
-                        .padding()
                         .animation(.spring(response: 0.4,
                                            dampingFraction: 0.75,
                                            blendDuration: 0.2),
