@@ -161,7 +161,7 @@ extension CountdownViewModel {
     func adjustedDate(for countdown: Countdown) -> Date {
         var nextDate = countdown.date
         let now = Date()
-
+        
         while nextDate < now {
             switch countdown.repeatFrequency {
             case .daily:
@@ -177,23 +177,29 @@ extension CountdownViewModel {
             }
             if countdown.repeatFrequency == .none { break }
         }
-
+        
         return nextDate
     }
-    
+        
     func formattedTimeRemaining(for countdown: Countdown) -> String {
         let now = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: adjustedDate(for: countdown))
         let totalDays = Calendar.current.dateComponents([.day], from: now, to: target).day ?? 0
 
+        if totalDays == 0 {
+            return "Today"
+        } else if totalDays < 0 {
+            return formattedPastTime(from: abs(totalDays))
+        }
+
         switch selectedDisplayMode {
         case .days:
-            return "\(totalDays) day\(totalDays == 1 ? "" : "s")"
+            return "\(totalDays) day\(totalDays == 1 ? "" : "s") left"
         case .weeks:
             let weeks = totalDays / 7
             let days = totalDays % 7
             return "\(weeks) week\(weeks == 1 ? "" : "s")" +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "")
+                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") left" : "")
         case .months:
             let months = totalDays / 30
             let remainder = totalDays % 30
@@ -201,7 +207,7 @@ extension CountdownViewModel {
             let days = remainder % 7
             return "\(months) month\(months == 1 ? "" : "s")" +
                    (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "")
+                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") left" : "")
         case .years:
             let years = totalDays / 365
             let remainder = totalDays % 365
@@ -211,7 +217,37 @@ extension CountdownViewModel {
             return "\(years) year\(years == 1 ? "" : "s")" +
                    (months > 0 ? ", \(months) month\(months == 1 ? "" : "s")" : "") +
                    (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "")
+                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") left" : "")
+        }
+    }
+    
+    private func formattedPastTime(from totalDays: Int) -> String {
+        switch selectedDisplayMode {
+        case .days:
+            return "\(totalDays) day\(totalDays == 1 ? "" : "s") ago"
+        case .weeks:
+            let weeks = totalDays / 7
+            let days = totalDays % 7
+            return "\(weeks) week\(weeks == 1 ? "" : "s")" +
+                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "") + " ago"
+        case .months:
+            let months = totalDays / 30
+            let remainder = totalDays % 30
+            let weeks = remainder / 7
+            let days = remainder % 7
+            return "\(months) month\(months == 1 ? "" : "s")" +
+                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
+                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "") + " ago"
+        case .years:
+            let years = totalDays / 365
+            let remainder = totalDays % 365
+            let months = remainder / 30
+            let weeks = (remainder % 30) / 7
+            let days = remainder % 7
+            return "\(years) year\(years == 1 ? "" : "s")" +
+                   (months > 0 ? ", \(months) month\(months == 1 ? "" : "s")" : "") +
+                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
+                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "") + " ago"
         }
     }
 }

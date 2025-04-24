@@ -16,6 +16,14 @@ struct CountdownView: View {
         gridState == .grid ? Array(repeating: GridItem(.flexible()), count: 2) : [GridItem(.flexible())]
     }
     
+    var upcomingCountdowns: [Countdown] {
+        countdowns.filter { !$0.isPast  }
+    }
+
+    var pastCountdowns: [Countdown] {
+        countdowns.filter { $0.isPast  }
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -24,25 +32,57 @@ struct CountdownView: View {
                         contentUnavailableView()
                     } else {
                         ScrollView {
-                            LazyVGrid(columns: columns, spacing: 16) {
-                                ForEach(countdowns) { countdown in
-                                    NavigationLink {
-                                        CounterDetailView(countdown: countdown)
-                                            .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
-                                    } label: {
-                                        CounterBlockView(countdown: countdown, gridState: gridState)
-                                            .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
-                                            .animation(nil, value: countdown.photoData)
-                                        
+                            LazyVStack(spacing: 32) {
+                                
+                                // MARK: Upcoming
+                                if !upcomingCountdowns.isEmpty {
+                                    VStack(alignment: .leading) {
+                                        Text("Upcoming Events")
+                                            .font(.headline)
+
+                                        LazyVGrid(columns: columns, spacing: 16) {
+                                            ForEach(upcomingCountdowns) { countdown in
+                                                NavigationLink {
+                                                    CounterDetailView(countdown: countdown)
+                                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
+                                                } label: {
+                                                    CounterBlockView(countdown: countdown, gridState: gridState)
+                                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
+                                                        .animation(nil, value: countdown.photoData)
+                                                }
+                                            }
+                                        }
                                     }
                                 }
+
+                                // MARK: Past
+                                if !pastCountdowns.isEmpty {
+                                    VStack(alignment: .leading) {
+                                        Text("Past Events")
+                                            .font(.headline)
+
+                                        LazyVGrid(columns: columns, spacing: 16) {
+                                            ForEach(pastCountdowns) { countdown in
+                                                NavigationLink {
+                                                    CounterDetailView(countdown: countdown)
+                                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
+                                                } label: {
+                                                    CounterBlockView(countdown: countdown, gridState: gridState)
+                                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
+                                                        .animation(nil, value: countdown.photoData)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                             }
-                            .padding()
-                            .animation(.spring(response: 0.4,
-                                               dampingFraction: 0.75,
-                                               blendDuration: 0.2),
-                                       value: gridState)
                         }
+                        .padding()
+                        .animation(.spring(response: 0.4,
+                                           dampingFraction: 0.75,
+                                           blendDuration: 0.2),
+                                   value: gridState)
                     }
                 }
                 .navigationTitle("Countdowns")

@@ -134,14 +134,19 @@ private extension CounterDetailView {
     
     @ViewBuilder
     func timeRemainingLabel() -> some View {
-        Text("\(viewModel.formattedTimeRemaining(for: countdown)) left \(countdown.emoji)")
+        let timeString = viewModel.formattedTimeRemaining(for: countdown)
+        let isInPast = Calendar.current.startOfDay(for: countdown.date) < Calendar.current.startOfDay(for: .now)
+
+        Text("\(timeString) \(countdown.emoji)")
             .font(.largeTitle)
             .fontWeight(.bold)
             .foregroundColor(countdown.color)
             .contentTransition(.numericText())
-            .animation(.default, value: viewModel.formattedTimeRemaining(for: countdown))
+            .animation(.default, value: timeString)
+            .onAppear {
+                print("*DEBUG \(countdown.daysLeft)")
+            }
     }
-    
     
     @ViewBuilder
     func timeDisplayModePicker() -> some View {

@@ -64,21 +64,39 @@ private extension CounterBlockView {
             .font(.footnote)
             .foregroundColor(.white.opacity(0.8))
             .padding(.leading, 10)
+            .opacity(countdown.daysLeftUntilNextDate == 0 ? 0 : 1)
     }
     
     @ViewBuilder
     func daysLeftLabel() -> some View {
-        VStack(spacing: 1) {
-            Text("\(countdown.daysLeftUntilNextDate)")
-                .font(.largeTitle)
-                .foregroundColor(.white)
+        let days = countdown.daysLeftUntilNextDate
 
-            Text("Days")
-                .font(.footnote)
-                .foregroundColor(.white.opacity(0.8))
+        VStack(spacing: 1) {
+            if days > 0 {
+                Text("\(days)")
+                    .font(.largeTitle)
+                    .foregroundColor(.white)
+                Text("Days")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.8))
+            } else if days < 0 {
+                Text("\(abs(days))")
+                    .font(.largeTitle)
+                    .foregroundColor(.white)
+                Text("Days ago")
+                    .font(.footnote)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            else if days == 0 {
+                Text("\(abs(days))")
+                    .font(.largeTitle)
+                    .opacity(0)
+                Text("Today")
+                    .foregroundColor(.white)
+            }
         }
     }
-    
+
     @ViewBuilder
     func countdownBackground() -> some View {
         ZStack {

@@ -29,6 +29,10 @@ class Countdown {
         set { colorHex = newValue.toHex() ?? "#808080" }
     }
     
+    var isPast: Bool {
+        daysLeftUntilNextDate < 0
+    }
+    
     // Computed property for photo
     var photo: UIImage? {
         get {
