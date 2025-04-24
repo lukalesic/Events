@@ -76,14 +76,14 @@ private extension CounterBlockView {
                 Text("\(days)")
                     .font(.largeTitle)
                     .foregroundColor(.white)
-                Text("Days")
+                Text("\(days == 1 ? "Day" : "Days" )")
                     .font(.footnote)
                     .foregroundColor(.white.opacity(0.8))
             } else if days < 0 {
                 Text("\(abs(days))")
                     .font(.largeTitle)
                     .foregroundColor(.white)
-                Text("Days ago")
+                Text("\(days == 1 ? "Day ago" : "Days ago")")
                     .font(.footnote)
                     .foregroundColor(.white.opacity(0.8))
             }
