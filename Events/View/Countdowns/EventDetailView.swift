@@ -103,7 +103,7 @@ struct EventDetailView: View {
             }
         }
         .tint(event.color)
-        .fullScreenCover(isPresented: $isPresentingEdit) {
+        .sheet(isPresented: $isPresentingEdit) {
             EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
         }
         .onChange(of: shouldNavigateToRoot) { navigateToRoot in

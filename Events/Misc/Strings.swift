@@ -33,7 +33,7 @@ struct Strings {
         static let pastEvents = "Past Events"
         static let deletePastEventsConfirmationTitle = "Are you sure you want to delete all past events?"
         static let deleteAllPastEventsButton = "Delete All Past Events"
-        static let addNewEvent = "Add new Event"
+        static let addNewEvent = "Add an event"
         static let emptyListHint = "When you add a new event, it will appear here."
         static let noEvents = "No events"
         static let hidePastEvents = "Hide past events"

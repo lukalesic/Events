@@ -126,7 +126,7 @@ struct EventsListView: View {
                         }
                     }
                 }
-                .fullScreenCover(isPresented: $isShowingAddSheet) {
+                .sheet(isPresented: $isShowingAddSheet) {
                     EventFormSheetView()
                 }
             }
