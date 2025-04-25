@@ -1,5 +1,5 @@
 //
-//  Countdown.swift
+//  Event.swift
 //  Events
 //
 //  Created by Luka Lešić on 20.04.25.
@@ -11,7 +11,7 @@ import UIKit
 import SwiftData
 
 @Model
-class Countdown {
+class Event {
     var id: UUID
     var colorHex: String
     var daysLeft: Int
@@ -25,7 +25,7 @@ class Countdown {
     
     // Computed property for color
     var color: Color {
-        get { Color(hex: colorHex) ?? Countdown.randomColor() }
+        get { Color(hex: colorHex) ?? Event.randomColor() }
         set { colorHex = newValue.toHex() ?? "#808080" }
     }
     
@@ -67,7 +67,7 @@ class Countdown {
     }
     
     init(id: UUID = UUID(),
-         color: Color = Countdown.randomColor(),
+         color: Color = Event.randomColor(),
          daysLeft: Int = 0,
          name: String = "",
          descriptionText: String = "",
@@ -100,7 +100,7 @@ class Countdown {
 }
 
 // Extensions for calculated properties
-extension Countdown {
+extension Event {
     var nextDate: Date {
         switch repeatFrequency {
         case .daily:

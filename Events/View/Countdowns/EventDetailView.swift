@@ -8,7 +8,7 @@ struct EventDetailView: View {
     @Environment(\.presentationMode) private var presentationMode
     @Namespace private var imageNamespace
     
-    var event: Countdown
+    var event: Event
     
     @State private var isPresentingEdit = false
     @State private var selectedMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode

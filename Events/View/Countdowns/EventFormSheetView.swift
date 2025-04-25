@@ -13,14 +13,14 @@ struct EventFormSheetView: View {
     @Environment(EventViewModel.self) private var viewModel
     
     @Binding var navigateToRoot: Bool
-    var event: Countdown?
+    var event: Event?
     
     @State private var formData: EventFormData
     @State private var photoItem: PhotosPickerItem?
     @State private var showDeleteConfirmation = false
     @State private var isShowingEmojiPicker = false
 
-    init(event: Countdown? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
+    init(event: Event? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
         self.event = event
         self._navigateToRoot = navigateToRoot
         self._formData = State(initialValue: EventFormData(from: event))
@@ -179,10 +179,10 @@ struct EventFormData {
     var priority: EventPriority = .medium
     var date: Date = Date()
     var photo: UIImage? = nil
-    var color: Color = Countdown.randomColor()
+    var color: Color = Event.randomColor()
     var repeatFrequency: RepeatFrequency = .none
     
-    init(from countdown: Countdown? = nil) {
+    init(from countdown: Event? = nil) {
         if let countdown = countdown {
             name = countdown.name
             description = countdown.descriptionText

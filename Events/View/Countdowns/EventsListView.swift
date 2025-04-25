@@ -6,7 +6,7 @@ import SwiftData
 
 struct EventsListView: View {
     @Environment(EventViewModel.self) private var viewModel
-    @Query(sort: \Countdown.daysLeft) private var events: [Countdown]
+    @Query(sort: \Event.daysLeft) private var events: [Event]
     @Namespace private var eventsNamespace
     @State private var showPastEvents: Bool = true
     
@@ -138,15 +138,15 @@ struct EventsListView: View {
 extension EventsListView {
     //Filtering options specific to the View
     
-    var upcomingEvents: [Countdown] {
+    var upcomingEvents: [Event] {
         events.filter { $0.isUpcoming  }
     }
 
-    var pastCountdowns: [Countdown] {
+    var pastCountdowns: [Event] {
         events.filter { $0.isPast  }
     }
     
-    var todaysEvents: [Countdown] {
+    var todaysEvents: [Event] {
         events.filter { $0.isToday }
     }
     

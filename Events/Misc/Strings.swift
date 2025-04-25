@@ -26,7 +26,7 @@ struct Strings {
 
     }
 
-    //Countdown List View
+    //Event List View
     struct EventListViewStrings {
         static let todaysEvents = "Today's Events"
         static let upcomingEvents = "Upcoming Events"
@@ -34,19 +34,19 @@ struct Strings {
         static let deletePastEventsConfirmationTitle = "Are you sure you want to delete all past events?"
         static let deleteAllPastEventsButton = "Delete All Past Events"
         static let addNewEvent = "Add new Event"
-        static let emptyListHint = "When you add a new countdown, it will appear here."
+        static let emptyListHint = "When you add a new event, it will appear here."
         static let noEvents = "No events"
         static let hidePastEvents = "Hide past events"
         static let showPastEvents = "Show past events"
     }
     
-    // Countdown Form
+    // Event Form
     struct EventFormStrings {
-        static let newTitle = "New Countdown"
-        static let editTitle = "Edit Countdown"
+        static let newTitle = "New Event"
+        static let editTitle = "Edit Event"
         static let cancel = "Cancel"
         static let save = "Save"
-        static let delete = "Delete Countdown"
+        static let delete = "Delete Event"
         static let deleteConfirmTitle = "Are you sure you want to delete this event?"
         static let deleteConfirm = "Delete"
         static let basicsSection = "Basics"
@@ -57,7 +57,7 @@ struct Strings {
         static let priorityColorSection = "Priority & Color"
         static let priority = "Priority"
         static let color = "Color"
-        static let dateSection = "Countdown Date"
+        static let dateSection = "Event Date"
         static let selectDate = "Select date"
         static let repeatSection = "Repeat"
         static let repeatEvery = "Repeat Every"

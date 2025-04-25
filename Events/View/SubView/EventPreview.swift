@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct EventPreview: View {
-    var event: Countdown
+    var event: Event
     var gridState: GridState
 
     var body: some View {

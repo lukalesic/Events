@@ -20,8 +20,8 @@ class EventViewModel {
         self.modelContext = modelContext
     }
     
-    func fetchCountdowns() -> [Countdown] {
-        let descriptor = FetchDescriptor<Countdown>()
+    func fetchCountdowns() -> [Event] {
+        let descriptor = FetchDescriptor<Event>()
         do {
             return try modelContext.fetch(descriptor)
         } catch {
@@ -34,22 +34,22 @@ class EventViewModel {
 // MARK: - CRUD operations
 extension EventViewModel {
     
-    func addCountdown(_ countdown: Countdown) {
+    func addCountdown(_ countdown: Event) {
         modelContext.insert(countdown)
         saveContext()
     }
     
-    func updateCountdown(_ countdown: Countdown) {
+    func updateCountdown(_ countdown: Event) {
         // No need to explicitly update - SwiftData tracks changes to managed objects
         saveContext()
     }
     
-    func delete(_ countdown: Countdown) {
+    func delete(_ countdown: Event) {
         modelContext.delete(countdown)
         saveContext()
     }
     
-    func save(from form: EventFormData, existing: Countdown? = nil) {
+    func save(from form: EventFormData, existing: Event? = nil) {
         let today = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: form.date)
         let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
@@ -68,7 +68,7 @@ extension EventViewModel {
             existingCountdown.repeatFrequency = form.repeatFrequency
         } else {
             // Create new countdown
-            let countdown = Countdown()
+            let countdown = Event()
             countdown.id = UUID()
             countdown.color = form.color
             countdown.daysLeft = newDaysLeft
@@ -95,7 +95,7 @@ extension EventViewModel {
     func deleteAllPastCountdowns() {
         let today = Calendar.current.startOfDay(for: .now)
         
-        let descriptor = FetchDescriptor<Countdown>(
+        let descriptor = FetchDescriptor<Event>(
             predicate: #Predicate { $0.date < today }
         )
         
@@ -114,17 +114,17 @@ extension EventViewModel {
 // MARK: - Property updates
 extension EventViewModel {
     
-    func updatePriority(for countdown: Countdown, to newPriority: EventPriority) {
+    func updatePriority(for countdown: Event, to newPriority: EventPriority) {
         countdown.priority = newPriority
         saveContext()
     }
     
-    func updatePhoto(for countdown: Countdown, image: UIImage) {
+    func updatePhoto(for countdown: Event, image: UIImage) {
         countdown.photo = image
         saveContext()
     }
     
-    func updateDescription(for countdown: Countdown, description: String) {
+    func updateDescription(for countdown: Event, description: String) {
         countdown.descriptionText = description
         saveContext()
     }
@@ -133,7 +133,7 @@ extension EventViewModel {
 // MARK: - Sharing
 extension EventViewModel {
     
-    func share(event: Countdown, image: UIImage?) {
+    func share(event: Event, image: UIImage?) {
         let shareText = """
         🎯 Countdown: \(event.name)
         ⏱ \(event.daysLeft) day\(event.daysLeft == 1 ? "" : "s") left \(event.emoji)
@@ -175,7 +175,7 @@ extension EventViewModel {
 // MARK: - Date handling
 extension EventViewModel {
     
-    func adjustedDate(for countdown: Countdown) -> Date {
+    func adjustedDate(for countdown: Event) -> Date {
         var nextDate = countdown.date
         let now = Date()
         
@@ -198,7 +198,7 @@ extension EventViewModel {
         return nextDate
     }
         
-    func formattedTimeRemaining(for countdown: Countdown) -> String {
+    func formattedTimeRemaining(for countdown: Event) -> String {
         let now = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: adjustedDate(for: countdown))
         let totalDays = Calendar.current.dateComponents([.day], from: now, to: target).day ?? 0

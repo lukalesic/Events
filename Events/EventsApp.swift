@@ -14,6 +14,6 @@ struct EventsApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: Countdown.self)
+        .modelContainer(for: Event.self)
     }
 }
