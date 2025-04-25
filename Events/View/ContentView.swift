@@ -9,25 +9,25 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var countdownViewModel: CountdownViewModel?
+    @State private var countdownViewModel: EventViewModel?
     
     var body: some View {
         TabView {
             if let viewModel = countdownViewModel {
-                CountdownView()
+                EventsListView()
                     .environment(viewModel)
                     .tabItem {
-                        Label(Strings.tabBarCountdown, systemImage: "calendar.badge.clock")
+                        Label(Strings.TabBarStrings.tabBarEvents, systemImage: "calendar.badge.clock")
                     }
                 
                 DaysSinceView()
                     .tabItem {
-                        Label(Strings.tabBarDaysSince, systemImage: "calendar.badge.checkmark")
+                        Label(Strings.TabBarStrings.tabBarDaysSince, systemImage: "calendar.badge.checkmark")
                     }
                 
                 BirthdaysView()
                     .tabItem {
-                        Label(Strings.tabBarBirthdays, systemImage: "calendar.and.person")
+                        Label(Strings.TabBarStrings.tabBarBirthdays, systemImage: "calendar.and.person")
                     }
             } else {
                 ProgressView("Loading...")
@@ -35,7 +35,7 @@ struct ContentView: View {
         }
         .accentColor(.primary)
         .onAppear {
-            countdownViewModel = CountdownViewModel(modelContext: modelContext)
+            countdownViewModel = EventViewModel(modelContext: modelContext)
         }
     }
 }

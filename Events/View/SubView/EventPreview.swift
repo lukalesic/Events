@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct CounterBlockView: View {
-    var countdown: Countdown
+struct EventPreview: View {
+    var event: Countdown
     var gridState: GridState
 
     var body: some View {
@@ -30,7 +30,7 @@ struct CounterBlockView: View {
             .frame(height: blockHeight)
             .padding(.vertical, verticalPadding)
             .background(
-                countdownBackground()
+                backgroundView()
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             )
         }
@@ -38,13 +38,13 @@ struct CounterBlockView: View {
     }
 }
 
-private extension CounterBlockView {
+private extension EventPreview {
     
     @ViewBuilder
     func titleView() -> some View {
         HStack(spacing: 0) {
-            Text(countdown.emoji)
-            Text(countdown.name)
+            Text(event.emoji)
+            Text(event.name)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
                 .padding(.leading, 3)
@@ -60,16 +60,16 @@ private extension CounterBlockView {
     
     @ViewBuilder
     func nextDate() -> some View {
-        Text(countdown.nextDate, style: .date)
+        Text(event.nextDate, style: .date)
             .font(.footnote)
             .foregroundColor(.white.opacity(0.8))
             .padding(.leading, 10)
-            .opacity(countdown.daysLeftUntilNextDate == 0 ? 0 : 1)
+            .opacity(event.daysLeftUntilNextDate == 0 ? 0 : 1)
     }
     
     @ViewBuilder
     func daysLeftLabel() -> some View {
-        let days = countdown.daysLeftUntilNextDate
+        let days = event.daysLeftUntilNextDate
 
         VStack(spacing: 1) {
             if days > 0 {
@@ -98,27 +98,27 @@ private extension CounterBlockView {
     }
 
     @ViewBuilder
-    func countdownBackground() -> some View {
+    func backgroundView() -> some View {
         ZStack {
             if gridState == .rows {
-                if let photo = countdown.previewImage {
+                if let photo = event.previewImage {
                     Image(uiImage: photo)
                         .resizable()
                         .frame(width: 400, height: 150)
                         .blur(radius: 4)
                 } else {
-                    countdown.color
+                    event.color
                 }
             } else
             {
-                if let photo = countdown.previewImage {
+                if let photo = event.previewImage {
                     Image(uiImage: photo)
                         .resizable()
                         .frame(width: 200, height: 150)
                         .blur(radius: 4)
                     
                 } else {
-                    countdown.color
+                    event.color
                     
                 }
             }

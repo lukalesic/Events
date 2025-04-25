@@ -4,10 +4,10 @@ import Observation
 import PhotosUI
 import SwiftData
 
-struct CountdownView: View {
-    @Environment(CountdownViewModel.self) private var viewModel
-    @Query(sort: \Countdown.daysLeft) private var countdowns: [Countdown]
-    @Namespace private var countdownsNamespace
+struct EventsListView: View {
+    @Environment(EventViewModel.self) private var viewModel
+    @Query(sort: \Countdown.daysLeft) private var events: [Countdown]
+    @Namespace private var eventsNamespace
     @State private var showPastEvents: Bool = true
     
     @State private var isShowingAddSheet = false
@@ -23,27 +23,27 @@ struct CountdownView: View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
-                    if countdowns.isEmpty {
+                    if events.isEmpty {
                         contentUnavailableView()
                     } else {
                         ScrollView {
                             LazyVStack(spacing: 32) {
                                 
                                 // MARK: Today's Events
-                                if !todaysCountdowns.isEmpty {
+                                if !todaysEvents.isEmpty {
                                     VStack(alignment: .leading) {
-                                        Text("Today's Events")
+                                        Text(Strings.EventListViewStrings.todaysEvents)
                                             .font(.headline)
 
                                         LazyVGrid(columns: columns, spacing: 16) {
-                                            ForEach(todaysCountdowns) { countdown in
+                                            ForEach(todaysEvents) { event in
                                                 NavigationLink {
-                                                    CounterDetailView(countdown: countdown)
-                                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
+                                                    EventDetailView(event: event)
+                                                        .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
                                                 } label: {
-                                                    CounterBlockView(countdown: countdown, gridState: gridState)
-                                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
-                                                        .animation(nil, value: countdown.photoData)
+                                                    EventPreview(event: event, gridState: gridState)
+                                                        .matchedTransitionSource(id: event.id, in: eventsNamespace)
+                                                        .animation(nil, value: event.photoData)
                                                 }
                                             }
                                         }
@@ -51,20 +51,20 @@ struct CountdownView: View {
                                 }
                                 
                                 // MARK: Upcoming
-                                if !upcomingCountdowns.isEmpty {
+                                if !upcomingEvents.isEmpty {
                                     VStack(alignment: .leading) {
-                                        Text("Upcoming Events")
+                                        Text(Strings.EventListViewStrings.upcomingEvents)
                                             .font(.headline)
 
                                         LazyVGrid(columns: columns, spacing: 16) {
-                                            ForEach(upcomingCountdowns) { countdown in
+                                            ForEach(upcomingEvents) { event in
                                                 NavigationLink {
-                                                    CounterDetailView(countdown: countdown)
-                                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
+                                                    EventDetailView(event: event)
+                                                        .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
                                                 } label: {
-                                                    CounterBlockView(countdown: countdown, gridState: gridState)
-                                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
-                                                        .animation(nil, value: countdown.photoData)
+                                                    EventPreview(event: event, gridState: gridState)
+                                                        .matchedTransitionSource(id: event.id, in: eventsNamespace)
+                                                        .animation(nil, value: event.photoData)
                                                 }
                                             }
                                         }
@@ -74,18 +74,18 @@ struct CountdownView: View {
                                 // MARK: Past
                                 if hasPastEvents && showPastEvents {
                                     VStack(alignment: .leading) {
-                                        Text("Past Events")
+                                        Text(Strings.EventListViewStrings.pastEvents)
                                             .font(.headline)
 
                                         LazyVGrid(columns: columns, spacing: 16) {
-                                            ForEach(pastCountdowns) { countdown in
+                                            ForEach(pastCountdowns) { event in
                                                 NavigationLink {
-                                                    CounterDetailView(countdown: countdown)
-                                                        .navigationTransition(.zoom(sourceID: countdown.id, in: countdownsNamespace))
+                                                    EventDetailView(event: event)
+                                                        .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
                                                 } label: {
-                                                    CounterBlockView(countdown: countdown, gridState: gridState)
-                                                        .matchedTransitionSource(id: countdown.id, in: countdownsNamespace)
-                                                        .animation(nil, value: countdown.photoData)
+                                                    EventPreview(event: event, gridState: gridState)
+                                                        .matchedTransitionSource(id: event.id, in: eventsNamespace)
+                                                        .animation(nil, value: event.photoData)
                                                 }
                                             }
                                         }
@@ -99,19 +99,19 @@ struct CountdownView: View {
                                            dampingFraction: 0.75,
                                            blendDuration: 0.2),
                                    value: gridState)
-                        .confirmationDialog("Are you sure you want to delete all past events?",
+                        .confirmationDialog(Strings.EventListViewStrings.deletePastEventsConfirmationTitle,
                                             isPresented: $isConfirmingDelete,
                                             titleVisibility: .visible) {
-                            Button("Delete All Past Events", role: .destructive) {
+                            Button(Strings.EventListViewStrings.deleteAllPastEventsButton, role: .destructive) {
                                 withAnimation {
                                     viewModel.deleteAllPastCountdowns()
                                 }
                             }
-                            Button("Cancel", role: .cancel) {}
+                            Button(Strings.GeneralStrings.cancel, role: .cancel) {}
                         }
                     }
                 }
-                .navigationTitle("Events")
+                .navigationTitle(Strings.GeneralStrings.events)
                 .toolbar {
                     if hasPastEvents {
                         ToolbarItem(placement: .navigationBarLeading) {
@@ -127,7 +127,7 @@ struct CountdownView: View {
                     }
                 }
                 .fullScreenCover(isPresented: $isShowingAddSheet) {
-                    CountdownFormSheetView()
+                    EventFormSheetView()
                 }
             }
             .accentColor(.primary)
@@ -135,19 +135,19 @@ struct CountdownView: View {
     }
 }
 
-extension CountdownView {
+extension EventsListView {
     //Filtering options specific to the View
     
-    var upcomingCountdowns: [Countdown] {
-        countdowns.filter { $0.isUpcoming  }
+    var upcomingEvents: [Countdown] {
+        events.filter { $0.isUpcoming  }
     }
 
     var pastCountdowns: [Countdown] {
-        countdowns.filter { $0.isPast  }
+        events.filter { $0.isPast  }
     }
     
-    var todaysCountdowns: [Countdown] {
-        countdowns.filter { $0.isToday }
+    var todaysEvents: [Countdown] {
+        events.filter { $0.isToday }
     }
     
     var hasPastEvents: Bool {
@@ -156,7 +156,7 @@ extension CountdownView {
 
 }
 
-private extension CountdownView {
+private extension EventsListView {
     
     @ViewBuilder
     func gridButton() -> some View {
@@ -168,8 +168,8 @@ private extension CountdownView {
                 .contentTransition(.symbolEffect(.automatic))
                 .foregroundColor(.accentColor)
         }
-        .disabled(countdowns.isEmpty)
-        .opacity(countdowns.isEmpty ? 0.6 : 1)
+        .disabled(events.isEmpty)
+        .opacity(events.isEmpty ? 0.6 : 1)
     }
     
     @ViewBuilder
@@ -180,7 +180,7 @@ private extension CountdownView {
             HStack {
                 Image(systemName: "calendar.badge.plus")
                     .foregroundColor(.accentColor)
-                Text("Add new countdown")
+                Text(Strings.EventListViewStrings.addNewEvent)
             }
             .padding(.vertical, 6)
             .padding(.horizontal, 4)
@@ -202,10 +202,10 @@ private extension CountdownView {
     func contentUnavailableView() -> some View {
         ContentUnavailableView(
             label: {
-                Label("No Countdowns", systemImage: "calendar.badge.exclamationmark")
+                Label(Strings.EventListViewStrings.noEvents, systemImage: "calendar.badge.exclamationmark")
             },
             description: {
-                Text("When you add a new countdown, it will appear here.")
+                Text(Strings.EventListViewStrings.emptyListHint)
             },
             actions: {
                 initialAddEventButton()
@@ -221,7 +221,7 @@ private extension CountdownView {
                 deletePastEventsButton()
             }
         } label: {
-            Label("Options", systemImage: "ellipsis.circle")
+            Label(Strings.GeneralStrings.options, systemImage: "ellipsis.circle")
                 .labelStyle(.iconOnly)
         }
     }
@@ -243,7 +243,7 @@ private extension CountdownView {
     
     @ViewBuilder
     func togglePastEventsButton() -> some View {
-        menuButton(label: showPastEvents ? "Hide Past Events" : "Show Past Events",
+        menuButton(label: showPastEvents ? Strings.EventListViewStrings.hidePastEvents : Strings.EventListViewStrings.showPastEvents,
                    icon: showPastEvents ? "eye.slash" : "eye",
                    action: { showPastEvents.toggle() })
 
@@ -251,7 +251,7 @@ private extension CountdownView {
     
     @ViewBuilder
     func deletePastEventsButton() -> some View {
-        menuButton(label: "Delete All Past Events",
+        menuButton(label: Strings.EventListViewStrings.deleteAllPastEventsButton,
                    icon: "trash",
                    action: { isConfirmingDelete = true })
         .foregroundStyle(.red)

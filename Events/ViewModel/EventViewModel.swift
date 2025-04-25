@@ -11,7 +11,7 @@ import Observation
 import SwiftData
 
 @Observable
-class CountdownViewModel {
+class EventViewModel {
     
     var selectedDisplayMode: TimeDisplayMode = .days
     private var modelContext: ModelContext
@@ -32,7 +32,7 @@ class CountdownViewModel {
 }
 
 // MARK: - CRUD operations
-extension CountdownViewModel {
+extension EventViewModel {
     
     func addCountdown(_ countdown: Countdown) {
         modelContext.insert(countdown)
@@ -44,12 +44,12 @@ extension CountdownViewModel {
         saveContext()
     }
     
-    func deleteCountdown(_ countdown: Countdown) {
+    func delete(_ countdown: Countdown) {
         modelContext.delete(countdown)
         saveContext()
     }
     
-    func saveCountdown(from form: CountdownFormData, existing: Countdown? = nil) {
+    func save(from form: EventFormData, existing: Countdown? = nil) {
         let today = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: form.date)
         let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
@@ -112,7 +112,7 @@ extension CountdownViewModel {
 }
 
 // MARK: - Property updates
-extension CountdownViewModel {
+extension EventViewModel {
     
     func updatePriority(for countdown: Countdown, to newPriority: EventPriority) {
         countdown.priority = newPriority
@@ -131,22 +131,22 @@ extension CountdownViewModel {
 }
 
 // MARK: - Sharing
-extension CountdownViewModel {
+extension EventViewModel {
     
-    func share(countdown: Countdown, image: UIImage?) {
+    func share(event: Countdown, image: UIImage?) {
         let shareText = """
-        🎯 Countdown: \(countdown.name)
-        ⏱ \(countdown.daysLeft) day\(countdown.daysLeft == 1 ? "" : "s") left \(countdown.emoji)
-        🔔 Priority: \(countdown.priority.rawValue.capitalized)
+        🎯 Countdown: \(event.name)
+        ⏱ \(event.daysLeft) day\(event.daysLeft == 1 ? "" : "s") left \(event.emoji)
+        🔔 Priority: \(event.priority.rawValue.capitalized)
 
-        \(countdown.descriptionText)
+        \(event.descriptionText)
 
         Shared from my Countdown App
         """
         
         var itemsToShare: [Any] = [shareText]
         
-        if let shareImage = image ?? countdown.photo {
+        if let shareImage = image ?? event.photo {
             itemsToShare.append(shareImage)
         }
         
@@ -173,7 +173,7 @@ extension CountdownViewModel {
 }
 
 // MARK: - Date handling
-extension CountdownViewModel {
+extension EventViewModel {
     
     func adjustedDate(for countdown: Countdown) -> Date {
         var nextDate = countdown.date

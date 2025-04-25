@@ -2,13 +2,13 @@ import SwiftUI
 import PhotosUI
 import UIKit
 
-struct CounterDetailView: View {
-    @Environment(CountdownViewModel.self) private var viewModel
+struct EventDetailView: View {
+    @Environment(EventViewModel.self) private var viewModel
     @Environment(\.modelContext) private var modelContext
     @Environment(\.presentationMode) private var presentationMode
     @Namespace private var imageNamespace
     
-    var countdown: Countdown
+    var event: Countdown
     
     @State private var isPresentingEdit = false
     @State private var selectedMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
@@ -38,9 +38,9 @@ struct CounterDetailView: View {
                         timeDisplayModePicker()
                             .padding(.bottom, 8)
                         
-                        countdownName()
+                        eventName()
                         
-                        if countdown.repeatFrequency != .none {
+                        if event.repeatFrequency != .none {
                             repeatLabel()
                         }
                         
@@ -56,12 +56,12 @@ struct CounterDetailView: View {
                     .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
                     .padding()
                 }
-                .animation(.default, value: viewModel.formattedTimeRemaining(for: countdown))
+                .animation(.default, value: viewModel.formattedTimeRemaining(for: event))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .onAppear {
-                image = countdown.photo
-                editedDescription = countdown.descriptionText
+                image = event.photo
+                editedDescription = event.descriptionText
                 selectedMode = UserDefaults.standard.savedDisplayMode
                 viewModel.selectedDisplayMode = selectedMode
             }
@@ -71,7 +71,7 @@ struct CounterDetailView: View {
                        let uiImage = UIImage(data: data) {
                         image = uiImage
                         // Update directly on the SwiftData model
-                        countdown.photo = uiImage
+                        event.photo = uiImage
                         try? modelContext.save()
                     }
                 }
@@ -86,25 +86,25 @@ struct CounterDetailView: View {
                     isEditingDescription = false
                     isDescriptionFocused = false
                     // Update directly on the SwiftData model
-                    countdown.descriptionText = editedDescription
+                    event.descriptionText = editedDescription
                     try? modelContext.save()
                 }
             }
         }
-        .navigationTitle("Countdown Detail")
+        .navigationTitle(Strings.EventDetailViewStrings.eventDetails)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button("Edit") {
+                Button(Strings.GeneralStrings.edit) {
                     isPresentingEdit = true
                 }
                 
                 shareButton()
             }
         }
-        .tint(countdown.color)
+        .tint(event.color)
         .fullScreenCover(isPresented: $isPresentingEdit) {
-            CountdownFormSheetView(existingCountdown: countdown, navigateToRoot: $shouldNavigateToRoot)
+            EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
         }
         .onChange(of: shouldNavigateToRoot) { navigateToRoot in
             if navigateToRoot {
@@ -121,12 +121,12 @@ struct CounterDetailView: View {
     }
 }
 
-private extension CounterDetailView {
+private extension EventDetailView {
     
     @ViewBuilder
     func linearGradient() -> some View {
         LinearGradient(
-            gradient: Gradient(colors: [countdown.color.opacity(0.25), .clear]),
+            gradient: Gradient(colors: [event.color.opacity(0.25), .clear]),
             startPoint: .top,
             endPoint: .bottom
         )
@@ -134,23 +134,20 @@ private extension CounterDetailView {
     
     @ViewBuilder
     func timeRemainingLabel() -> some View {
-        let timeString = viewModel.formattedTimeRemaining(for: countdown)
-        let isInPast = Calendar.current.startOfDay(for: countdown.date) < Calendar.current.startOfDay(for: .now)
+        let timeString = viewModel.formattedTimeRemaining(for: event)
+        let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
 
-        Text("\(timeString) \(countdown.emoji)")
+        Text("\(timeString) \(event.emoji)")
             .font(.largeTitle)
             .fontWeight(.bold)
-            .foregroundColor(countdown.color)
+            .foregroundColor(event.color)
             .contentTransition(.numericText())
             .animation(.default, value: timeString)
-            .onAppear {
-                print("*DEBUG \(countdown.daysLeft)")
-            }
     }
     
     @ViewBuilder
     func timeDisplayModePicker() -> some View {
-        Picker("Display Mode", selection: $selectedMode) {
+        Picker(Strings.GeneralStrings.pickerDisplayMode, selection: $selectedMode) {
             ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
                 Text(mode.rawValue).tag(mode)
             }
@@ -164,8 +161,8 @@ private extension CounterDetailView {
     
     
     @ViewBuilder
-    func countdownName() -> some View {
-        Text(countdown.name)
+    func eventName() -> some View {
+        Text(event.name)
             .font(.title2)
             .fontWeight(.semibold)
             .lineLimit(3)
@@ -173,7 +170,7 @@ private extension CounterDetailView {
     
     @ViewBuilder
     func repeatLabel() -> some View {
-        Text("Repeats \(countdown.repeatFrequency.rawValue.lowercased())")
+        Text("Repeats \(event.repeatFrequency.rawValue.lowercased())")
             .font(.subheadline)
             .foregroundColor(.secondary)
             .transition(.opacity)
@@ -184,7 +181,7 @@ private extension CounterDetailView {
     func descriptionSection() -> some View {
         VStack(alignment: .leading, spacing: 4) {
             if isEditingDescription {
-                TextField("Description", text: $editedDescription, axis: .vertical)
+                TextField(Strings.GeneralStrings.description, text: $editedDescription, axis: .vertical)
                     .font(.body)
                     .padding(8)
                     .background(Color.gray.opacity(0.1))
@@ -195,23 +192,23 @@ private extension CounterDetailView {
                         isDescriptionFocused = true
                     }
             } else {
-                if countdown.descriptionText.isEmpty {
-                    Text("Tap to add a description...")
+                if event.descriptionText.isEmpty {
+                    Text(Strings.EventDetailViewStrings.addDescription)
                         .font(.body)
                         .foregroundColor(.secondary)
                         .italic()
                         .onTapGesture {
-                            editedDescription = countdown.descriptionText
+                            editedDescription = event.descriptionText
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 isEditingDescription = true
                             }
                         }
                 } else {
-                    Text(countdown.descriptionText)
+                    Text(event.descriptionText)
                         .font(.body)
                         .foregroundColor(.secondary)
                         .onTapGesture {
-                            editedDescription = countdown.descriptionText
+                            editedDescription = event.descriptionText
                             withAnimation(.easeInOut(duration: 0.25)) {
                                 isEditingDescription = true
                             }
@@ -224,22 +221,22 @@ private extension CounterDetailView {
     @ViewBuilder
     func priorityMenu() -> some View {
         HStack(spacing: 8) {
-            Text("Priority:")
+            Text(Strings.EventDetailViewStrings.priority)
                 .fontWeight(.medium)
             
             Menu {
                 ForEach(EventPriority.allCases, id: \.self) { priority in
                     Button(priority.displayName) {
-                        viewModel.updatePriority(for: countdown, to: priority)
+                        viewModel.updatePriority(for: event, to: priority)
                     }
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Text(countdown.priority.displayName)
+                    Text(event.priority.displayName)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
-                        .background(countdown.color.opacity(0.2))
-                        .foregroundColor(countdown.color)
+                        .background(event.color.opacity(0.2))
+                        .foregroundColor(event.color)
                         .cornerRadius(8)
                     Image(systemName: "chevron.down")
                         .font(.caption)
@@ -252,7 +249,7 @@ private extension CounterDetailView {
     
     @ViewBuilder
     func imageView() -> some View {
-        if let image = image ?? countdown.photo {
+        if let image = image ?? event.photo {
             // Only apply matchedGeometryEffect when not showing fullscreen
             if !showFullImage {
                 Image(uiImage: image)
@@ -289,7 +286,7 @@ private extension CounterDetailView {
     
     @ViewBuilder
     func fullscreenImageOverlay() -> some View {
-        if showFullImage, let fullImage = image ?? countdown.photo {
+        if showFullImage, let fullImage = image ?? event.photo {
             ZStack {
                 // 🧊 Frosted glass background
                 VisualEffectBlur()
@@ -334,7 +331,7 @@ private extension CounterDetailView {
     @ViewBuilder
     func shareButton() -> some View {
         Button {
-            viewModel.share(countdown: countdown, image: image)
+            viewModel.share(event: event, image: image)
         } label: {
             Image(systemName: "square.and.arrow.up")
                 .scaleEffect(0.9)
