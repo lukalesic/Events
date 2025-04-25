@@ -100,42 +100,39 @@ private extension EventPreview {
     @ViewBuilder
     func backgroundView() -> some View {
         ZStack {
-            if gridState == .rows {
-                if let photo = event.previewImage {
-                    Image(uiImage: photo)
-                        .resizable()
-                        .frame(width: 400, height: 150)
-                        .blur(radius: 4)
-                } else {
-                    event.color
-                }
-            } else
-            {
-                if let photo = event.previewImage {
-                    Image(uiImage: photo)
-                        .resizable()
-                        .frame(width: 200, height: 150)
-                        .blur(radius: 4)
-                    
-                } else {
-                    event.color
-                    
-                }
-            }
+//            if gridState == .rows {
+//                if let photo = event.previewImage {
+//                    Image(uiImage: photo)
+//                        .resizable()
+//                        .frame(width: 400, height: 150)
+//                        .blur(radius: 4)
+//                } else {
+//                    event.color
+//                }
+//            } else
+//            {
+//                if let photo = event.previewImage {
+//                    Image(uiImage: photo)
+//                        .resizable()
+//                        .frame(width: 200, height: 150)
+//                        .blur(radius: 4)
+//                    
+//                } else {
+//                    event.color
+//                    
+//                }
+//            }
             
-//            if let photo = countdown.photo {
-//                Image(uiImage: photo)
-//                    .resizable()
+            if let photo = event.previewImage, gridState == .grid {
+                Image(uiImage: photo)
+                    .resizable()
 //                    .drawingGroup(opaque: true)
-//                    .scaledToFill()
-//                    .blur(radius: 4)
-//                    .overlay(Color.black.opacity(0.2))
-//            } else {
-        //TODO Performance issues!
-//                countdown.color
+                    .scaledToFill()
+                    .blur(radius: 4)
+                    .overlay(Color.black.opacity(0.2))
+            } else {
+                event.color
             }
-//                            .drawingGroup(opaque: true)
-
-//        }
+        }
     }
 }
