@@ -11,7 +11,13 @@ import Foundation
 class AppSettings {
     static let shared = AppSettings()
     
-    var showEventPreviewBackground: Bool = true
+    var showEventPreviewBackground: Bool {
+        didSet {
+            UserDefaults.standard.savedShowEventPreviewBackground = showEventPreviewBackground
+        }
+    }
     
-    private init() {}
+    private init() {
+        self.showEventPreviewBackground = UserDefaults.standard.savedShowEventPreviewBackground
+    }
 }

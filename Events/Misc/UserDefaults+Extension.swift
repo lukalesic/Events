@@ -11,6 +11,7 @@ extension UserDefaults {
     private enum Keys {
         static let selectedDisplayMode = "selectedDisplayMode"
         static let gridState = "gridState"
+        static let showEventPreviewBackground = "showEventPreviewBackground"
     }
 
     var savedDisplayMode: TimeDisplayMode {
@@ -36,6 +37,15 @@ extension UserDefaults {
         }
         set {
             set(newValue.rawValue, forKey: Keys.gridState)
+        }
+    }
+    
+    var savedShowEventPreviewBackground: Bool {
+        get {
+            object(forKey: Keys.showEventPreviewBackground) as? Bool ?? false
+        }
+        set {
+            set(newValue, forKey: Keys.showEventPreviewBackground)
         }
     }
 }
