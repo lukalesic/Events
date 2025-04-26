@@ -100,7 +100,7 @@ private extension EventPreview {
     @ViewBuilder
     func backgroundView() -> some View {
         ZStack {
-            if let blurredPhoto = event.blurredPreviewImage {
+            if let blurredPhoto = event.blurredPreviewImage, AppSettings.shared.showEventPreviewBackground {
                 Image(uiImage: blurredPhoto)
                     .resizable()
                     .scaledToFill()

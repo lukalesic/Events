@@ -18,7 +18,7 @@ struct EventsListView: View {
     private var columns: [GridItem] {
         gridState == .grid ? Array(repeating: GridItem(.flexible()), count: 2) : [GridItem(.flexible())]
     }
-        
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -34,7 +34,7 @@ struct EventsListView: View {
                                     VStack(alignment: .leading) {
                                         Text(Strings.EventListViewStrings.todaysEvents)
                                             .font(.headline)
-
+                                        
                                         LazyVGrid(columns: columns, spacing: 16) {
                                             ForEach(todaysEvents) { event in
                                                 NavigationLink {
@@ -55,7 +55,7 @@ struct EventsListView: View {
                                     VStack(alignment: .leading) {
                                         Text(Strings.EventListViewStrings.upcomingEvents)
                                             .font(.headline)
-
+                                        
                                         LazyVGrid(columns: columns, spacing: 16) {
                                             ForEach(upcomingEvents) { event in
                                                 NavigationLink {
@@ -70,13 +70,13 @@ struct EventsListView: View {
                                         }
                                     }
                                 }
-
+                                
                                 // MARK: Past
                                 if hasPastEvents && showPastEvents {
                                     VStack(alignment: .leading) {
                                         Text(Strings.EventListViewStrings.pastEvents)
                                             .font(.headline)
-
+                                        
                                         LazyVGrid(columns: columns, spacing: 16) {
                                             ForEach(pastCountdowns) { event in
                                                 NavigationLink {
@@ -91,7 +91,7 @@ struct EventsListView: View {
                                         }
                                     }
                                 }
-
+                                
                             }
                             .padding()
                         }
@@ -113,10 +113,8 @@ struct EventsListView: View {
                 }
                 .navigationTitle(Strings.GeneralStrings.events)
                 .toolbar {
-                    if hasPastEvents {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            toolbarMenu()
-                        }
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        toolbarMenu()
                     }
                     
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -141,7 +139,7 @@ extension EventsListView {
     var upcomingEvents: [Event] {
         events.filter { $0.isUpcoming  }
     }
-
+    
     var pastCountdowns: [Event] {
         events.filter { $0.isPast  }
     }
@@ -153,7 +151,7 @@ extension EventsListView {
     var hasPastEvents: Bool {
         !pastCountdowns.isEmpty
     }
-
+    
 }
 
 private extension EventsListView {
@@ -220,6 +218,8 @@ private extension EventsListView {
                 togglePastEventsButton()
                 deletePastEventsButton()
             }
+            showPreviewImagesButton()
+            
         } label: {
             Label(Strings.GeneralStrings.options, systemImage: "ellipsis.circle")
                 .labelStyle(.iconOnly)
@@ -246,7 +246,7 @@ private extension EventsListView {
         menuButton(label: showPastEvents ? Strings.EventListViewStrings.hidePastEvents : Strings.EventListViewStrings.showPastEvents,
                    icon: showPastEvents ? "eye.slash" : "eye",
                    action: { showPastEvents.toggle() })
-
+        
     }
     
     @ViewBuilder
@@ -255,6 +255,19 @@ private extension EventsListView {
                    icon: "trash",
                    action: { isConfirmingDelete = true })
         .foregroundStyle(.red)
-
+        
+    }
+    
+    @ViewBuilder
+    func showPreviewImagesButton() -> some View {
+        menuButton(
+            label: AppSettings.shared.showEventPreviewBackground ? "Hide Event Previews" : "Show Event Previews",
+            icon: AppSettings.shared.showEventPreviewBackground ? "eye.slash" : "eye",
+            action: {
+                withAnimation {
+                    AppSettings.shared.showEventPreviewBackground.toggle()
+                }
+            }
+        )
     }
 }
