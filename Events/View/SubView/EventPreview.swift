@@ -104,7 +104,6 @@ private extension EventPreview {
                 Image(uiImage: blurredPhoto)
                     .resizable()
                     .scaledToFill()
-//                    .overlay(Color.black.opacity(0.2))
             } else {
                 event.color
             }

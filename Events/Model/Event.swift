@@ -58,12 +58,12 @@ class Event {
         }
     }
     
-    var previewImage: UIImage? {
+    var blurredPreviewImage: UIImage? {
         guard let data = photoData,
               let image = UIImage(data: data) else { return nil }
         
-        let targetSize = CGSize(width: 50, height: 40)
-        return image.resized(to: targetSize)
+        let resized = image.resized(to: CGSize(width: 50, height: 40))
+        return resized.applyBlur(radius: 1.5)
     }
     
     init(id: UUID = UUID(),
@@ -168,13 +168,6 @@ extension UIImage {
         return UIGraphicsImageRenderer(size: targetSize, format: format).image { _ in
             self.draw(in: CGRect(origin: .zero, size: targetSize))
         }
-    }
-}
-
-extension Event {
-    var blurredPreviewImage: UIImage? {
-        guard let photo = previewImage else { return nil }
-        return photo.applyBlur(radius: 1.5)
     }
 }
 

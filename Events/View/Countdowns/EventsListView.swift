@@ -9,6 +9,7 @@ struct EventsListView: View {
     @Query(sort: \Event.daysLeft) private var events: [Event]
     @Namespace private var eventsNamespace
     @State private var showPastEvents: Bool = true
+    @State private var isGridButtonDisabled = false
     
     @State private var isShowingAddSheet = false
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
@@ -91,7 +92,6 @@ struct EventsListView: View {
                                         }
                                     }
                                 }
-                                
                             }
                             .padding()
                         }
@@ -161,13 +161,18 @@ private extension EventsListView {
         Button(action: {
             gridState = gridState == .grid ? .rows : .grid
             UserDefaults.standard.savedGridState = gridState
+            isGridButtonDisabled = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                isGridButtonDisabled = false
+            }
         }) {
             Image(systemName: gridState == .grid ? "list.bullet" : "square.grid.2x2")
                 .contentTransition(.symbolEffect(.automatic))
                 .foregroundColor(.accentColor)
         }
-        .disabled(events.isEmpty)
-        .opacity(events.isEmpty ? 0.6 : 1)
+        .disabled(events.isEmpty || isGridButtonDisabled)
+        .opacity((events.isEmpty || isGridButtonDisabled) ? 0.6 : 1)
+        .animation(.easeInOut(duration: 0.3), value: isGridButtonDisabled)
     }
     
     @ViewBuilder
