@@ -70,7 +70,7 @@ private extension EventPreview {
     @ViewBuilder
     func daysLeftLabel() -> some View {
         let days = event.daysLeftUntilNextDate
-
+        
         VStack(spacing: 1) {
             if days > 0 {
                 Text("\(days)")
@@ -96,40 +96,15 @@ private extension EventPreview {
             }
         }
     }
-
+    
     @ViewBuilder
     func backgroundView() -> some View {
         ZStack {
-//            if gridState == .rows {
-//                if let photo = event.previewImage {
-//                    Image(uiImage: photo)
-//                        .resizable()
-//                        .frame(width: 400, height: 150)
-//                        .blur(radius: 4)
-//                } else {
-//                    event.color
-//                }
-//            } else
-//            {
-//                if let photo = event.previewImage {
-//                    Image(uiImage: photo)
-//                        .resizable()
-//                        .frame(width: 200, height: 150)
-//                        .blur(radius: 4)
-//                    
-//                } else {
-//                    event.color
-//                    
-//                }
-//            }
-            
-            if let photo = event.previewImage, gridState == .grid {
-                Image(uiImage: photo)
+            if let blurredPhoto = event.blurredPreviewImage {
+                Image(uiImage: blurredPhoto)
                     .resizable()
-//                    .drawingGroup(opaque: true)
                     .scaledToFill()
-                    .blur(radius: 4)
-                    .overlay(Color.black.opacity(0.2))
+//                    .overlay(Color.black.opacity(0.2))
             } else {
                 event.color
             }

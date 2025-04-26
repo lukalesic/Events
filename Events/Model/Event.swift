@@ -62,7 +62,7 @@ class Event {
         guard let data = photoData,
               let image = UIImage(data: data) else { return nil }
         
-        let targetSize = CGSize(width: 30, height: 30)
+        let targetSize = CGSize(width: 50, height: 40)
         return image.resized(to: targetSize)
     }
     
@@ -168,5 +168,33 @@ extension UIImage {
         return UIGraphicsImageRenderer(size: targetSize, format: format).image { _ in
             self.draw(in: CGRect(origin: .zero, size: targetSize))
         }
+    }
+}
+
+extension Event {
+    var blurredPreviewImage: UIImage? {
+        guard let photo = previewImage else { return nil }
+        return photo.applyBlur(radius: 1.5)
+    }
+}
+
+import CoreImage
+import CoreImage.CIFilterBuiltins
+
+extension UIImage {
+    func applyBlur(radius: CGFloat) -> UIImage? {
+        let context = CIContext()
+        let inputImage = CIImage(image: self)
+        
+        let filter = CIFilter.gaussianBlur()
+        filter.inputImage = inputImage
+        filter.radius = Float(radius)
+        
+        guard let outputImage = filter.outputImage,
+              let cgimg = context.createCGImage(outputImage, from: inputImage!.extent) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: cgimg)
     }
 }
