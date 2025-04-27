@@ -9,7 +9,5 @@ import Foundation
 
 enum TimeDisplayMode: String, CaseIterable, Codable {
     case days = "Days"
-    case weeks = "Weeks"
-    case months = "Months"
-    case years = "Years"
+    case automatic = "Automatic"
 }

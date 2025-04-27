@@ -206,65 +206,49 @@ extension EventViewModel {
         if totalDays == 0 {
             return "Today"
         } else if totalDays < 0 {
-            return formattedPastTime(from: abs(totalDays))
-        }
-
-        switch selectedDisplayMode {
-        case .days:
-            return "\(totalDays) day\(totalDays == 1 ? "" : "s") left"
-        case .weeks:
-            let weeks = totalDays / 7
-            let days = totalDays % 7
-            return "\(weeks) week\(weeks == 1 ? "" : "s")" +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") left" : "")
-        case .months:
-            let months = totalDays / 30
-            let remainder = totalDays % 30
-            let weeks = remainder / 7
-            let days = remainder % 7
-            return "\(months) month\(months == 1 ? "" : "s")" +
-                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") left" : "")
-        case .years:
-            let years = totalDays / 365
-            let remainder = totalDays % 365
-            let months = remainder / 30
-            let weeks = (remainder % 30) / 7
-            let days = remainder % 7
-            return "\(years) year\(years == 1 ? "" : "s")" +
-                   (months > 0 ? ", \(months) month\(months == 1 ? "" : "s")" : "") +
-                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s") left" : "")
+            // Handle past events
+            let daysAgo = abs(totalDays)
+            switch selectedDisplayMode {
+            case .days:
+                return "\(daysAgo) day\(daysAgo == 1 ? "" : "s") ago"
+            case .automatic:
+                return breakdownTime(totalDays: daysAgo) + " ago"
+            }
+        } else {
+            // Handle future events
+            switch selectedDisplayMode {
+            case .days:
+                return "\(totalDays) day\(totalDays == 1 ? "" : "s") left"
+            case .automatic:
+                return breakdownTime(totalDays: totalDays) + " left"
+            }
         }
     }
     
-    private func formattedPastTime(from totalDays: Int) -> String {
-        switch selectedDisplayMode {
-        case .days:
-            return "\(totalDays) day\(totalDays == 1 ? "" : "s") ago"
-        case .weeks:
-            let weeks = totalDays / 7
-            let days = totalDays % 7
-            return "\(weeks) week\(weeks == 1 ? "" : "s")" +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "") + " ago"
-        case .months:
-            let months = totalDays / 30
-            let remainder = totalDays % 30
-            let weeks = remainder / 7
-            let days = remainder % 7
-            return "\(months) month\(months == 1 ? "" : "s")" +
-                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "") + " ago"
-        case .years:
-            let years = totalDays / 365
-            let remainder = totalDays % 365
-            let months = remainder / 30
-            let weeks = (remainder % 30) / 7
-            let days = remainder % 7
-            return "\(years) year\(years == 1 ? "" : "s")" +
-                   (months > 0 ? ", \(months) month\(months == 1 ? "" : "s")" : "") +
-                   (weeks > 0 ? ", \(weeks) week\(weeks == 1 ? "" : "s")" : "") +
-                   (days > 0 ? ", \(days) day\(days == 1 ? "" : "s")" : "") + " ago"
+    private func breakdownTime(totalDays: Int) -> String {
+        var days = totalDays
+        let years = days / 365
+        days %= 365
+        let months = days / 30
+        days %= 30
+        let weeks = days / 7
+        days %= 7
+
+        var parts: [String] = []
+
+        if years > 0 {
+            parts.append("\(years) year\(years == 1 ? "" : "s")")
         }
+        if months > 0 {
+            parts.append("\(months) month\(months == 1 ? "" : "s")")
+        }
+        if weeks > 0 {
+            parts.append("\(weeks) week\(weeks == 1 ? "" : "s")")
+        }
+        if days > 0 {
+            parts.append("\(days) day\(days == 1 ? "" : "s")")
+        }
+
+        return parts.joined(separator: ", ")
     }
 }

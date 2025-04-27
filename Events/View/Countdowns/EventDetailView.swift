@@ -2,10 +2,6 @@ import SwiftUI
 import PhotosUI
 import UIKit
 
-//TODO:
-//on tap open emoji picker directly
-//NO need for a date picker, make it automatic
-
 struct EventDetailView: View {
     @Environment(EventViewModel.self) private var viewModel
     @Environment(\.modelContext) private var modelContext
@@ -55,7 +51,9 @@ struct EventDetailView: View {
                             eventDescription()
                         }
                         
-                        timeRemainingLabel()
+                            timeRemainingLabel()
+                        
+                            timeDisplayModeMenu()
                         
                         
                         if event.repeatFrequency != .none {
@@ -163,6 +161,7 @@ private extension EventDetailView {
                 .fontWeight(.bold)
                 .foregroundColor(event.color)
                 .contentTransition(.numericText())
+                .multilineTextAlignment(.center)
                 .animation(.default, value: timeString)
             
             Text(event.nextDate, style: .date)
