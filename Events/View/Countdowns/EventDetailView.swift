@@ -4,7 +4,6 @@ import UIKit
 
 //TODO:
 //on tap open emoji picker directly
-//ADD A DATE of the event
 //NO need for a date picker, make it automatic
 
 struct EventDetailView: View {
@@ -49,9 +48,12 @@ struct EventDetailView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(alignment: .leading, spacing: 22) {
                         
-                        eventName()
+                        imageView()
                         
-                        descriptionSection()
+                        VStack(alignment: .leading, spacing: 3) {
+                            eventName()
+                            eventDescription()
+                        }
                         
                         timeRemainingLabel()
                         
@@ -64,10 +66,6 @@ struct EventDetailView: View {
                         
                         colorPickerMenu()
                         
-                        imageView()
-                            .padding(.vertical, 10)
-                        
-//                        photoPickerButton()
                     }
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                     .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
@@ -96,7 +94,8 @@ struct EventDetailView: View {
             
             fullscreenImageOverlay()
         }
-        
+        .accentColor(.primary)
+
         .onTapGesture {
             if isEditingDescription {
                 withAnimation(.easeInOut(duration: 0.25)) {
@@ -121,6 +120,8 @@ struct EventDetailView: View {
             }
         }
         .tint(event.color)
+        .accentColor(.primary)
+
         .sheet(isPresented: $isPresentingEdit) {
             EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
         }
@@ -144,7 +145,7 @@ private extension EventDetailView {
     @ViewBuilder
     func linearGradient() -> some View {
         LinearGradient(
-            gradient: Gradient(colors: [event.color.opacity(0.25), .clear]),
+            gradient: Gradient(colors: [event.color.opacity(0.35), .clear]),
             startPoint: .top,
             endPoint: .bottom
         )
@@ -189,7 +190,6 @@ private extension EventDetailView {
         } label: {
             HStack {
                 Image(systemName: "chevron.down")
-//                Text(viewModel.selectedDisplayMode.rawValue)
             }
             .font(.title3)
             .foregroundColor(.primary)
@@ -208,6 +208,7 @@ private extension EventDetailView {
         Text(event.name)
             .font(.largeTitle)
             .fontWeight(.semibold)
+            .multilineTextAlignment(.leading)
             .lineLimit(3)
     }
     
@@ -221,40 +222,20 @@ private extension EventDetailView {
     }
     
     @ViewBuilder
-    func descriptionSection() -> some View {
+    func eventDescription() -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            if isEditingDescription {
-                TextField(Strings.GeneralStrings.description, text: $editedDescription, axis: .vertical)
-                    .font(.body)
-                    .padding(8)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                    .focused($isDescriptionFocused)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    .onAppear {
-                        isDescriptionFocused = true
+            if !event.descriptionText.isEmpty {
+                Text(event.descriptionText)
+                    .font(.system(size: 18))
+                    .foregroundColor(.secondary)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .onTapGesture {
+                        editedDescription = event.descriptionText
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isEditingDescription = true
+                        }
                     }
-            } else {
-                if event.descriptionText.isEmpty {
-                    Text(Strings.EventDetailViewStrings.addDescription)
-                        .font(.body)
-                        .onTapGesture {
-                            editedDescription = event.descriptionText
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                isEditingDescription = true
-                            }
-                        }
-                } else {
-                    Text(event.descriptionText)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .onTapGesture {
-                            editedDescription = event.descriptionText
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                isEditingDescription = true
-                            }
-                        }
-                }
             }
         }
     }
@@ -331,18 +312,22 @@ private extension EventDetailView {
     
     @ViewBuilder
     func imageView() -> some View {
-        HStack {
+        VStack {
             if let image = image ?? event.photo {
                 if !showFullImage {
-                    Spacer()
                     
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 290)
-                        .frame(width: 290)
+                        .containerRelativeFrame(.horizontal) { size, axis in
+                            size * 0.9
+                        }
+                        .containerRelativeFrame(.vertical) { size, axis in
+                            size * 0.5
+                        }
                         .clipped()
                         .cornerRadius(20)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .contentShape(Rectangle())
                         .matchedGeometryEffect(id: "image", in: imageNamespace)
                         .onTapGesture {
@@ -350,16 +335,12 @@ private extension EventDetailView {
                                 showFullImage = true
                             }
                         }
-                    
-                    Spacer()
                 } else {
                     Color.clear
                         .frame(height: 250)
                         .frame(width: 200)
                 }
             } else {
-                Spacer()
-                
                 PhotosPicker(selection: $selectedItem, matching: .images) {
                     VStack(spacing: 10) {
                         Image(systemName: "photo.on.rectangle.angled")
@@ -379,8 +360,7 @@ private extension EventDetailView {
                     )
                 }
                 .buttonStyle(.plain)
-                
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .center)
             }
         }
     }
