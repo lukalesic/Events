@@ -7,12 +7,13 @@ struct EventDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.presentationMode) private var presentationMode
     @Namespace private var imageNamespace
+    @State private var isColorPickerExpanded = false
     
     private var predefinedColors: [Color] {
         [
             .green,
             .red,
-            .yellow,
+            .orange,
             .blue,
             .purple
         ]
@@ -177,28 +178,36 @@ private extension EventDetailView {
     
     @ViewBuilder
     func timeDisplayModeMenu() -> some View {
-        Menu {
-            ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
-                Button {
-                    viewModel.selectedDisplayMode = mode
-                    UserDefaults.standard.savedDisplayMode = mode
-                } label: {
-                    Text(mode.rawValue)
+        HStack(spacing: 8) {
+            Text("Display time as:")
+                .font(.system(size: 18))
+                .fontWeight(.medium)
+            
+            Spacer()
+            
+            Menu {
+                ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
+                    Button(mode.rawValue) {
+                        viewModel.selectedDisplayMode = mode
+                        UserDefaults.standard.savedDisplayMode = mode
+                    }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(viewModel.selectedDisplayMode.rawValue)
+                        .fixedSize()
+                        .contentTransition(.numericText())
+                        .padding(.horizontal, 15)
+                        .padding(.vertical, 6)
+                        .background(event.color.opacity(0.2))
+                        .foregroundColor(event.color)
+                        .cornerRadius(8)
+                    
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                 }
             }
-        } label: {
-            HStack {
-                Image(systemName: "chevron.down")
-            }
-            .font(.title3)
-            .foregroundColor(.primary)
-            .padding(8)
-            .tint(event.color)
-            .scaleEffect(0.6)
-            .background(
-                Circle()
-                    .tint(event.color.opacity(0.8))
-            )
         }
     }
     
@@ -272,39 +281,63 @@ private extension EventDetailView {
     
     @ViewBuilder
     func colorPickerMenu() -> some View {
-        HStack() {
+        HStack {
             Text("Color:")
                 .font(.system(size: 18))
                 .fontWeight(.medium)
             
             Spacer()
             
-            HStack(spacing: 12) {
-                ForEach(predefinedColors, id: \.self) { color in
-                    ZStack {
-                        Circle()
-                            .fill(color)
-                            .frame(width: 34, height: 34)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.primary.opacity(0.15), lineWidth: 1)
-                            )
-                            .scaleEffect(event.color == color ? 1.1 : 1.0)
-                            .animation(.easeInOut(duration: 0.2), value: event.color)
-                        
-                        if event.color == color {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.white)
-                        }
+            HStack(spacing: isColorPickerExpanded ? 12 : 0) {
+                Button(action: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                        isColorPickerExpanded.toggle()
                     }
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            event.color = color
-                            try? modelContext.save()
-                        }
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.\(isColorPickerExpanded ? "right" : "left")")
+                            .foregroundColor(.primary.opacity(0.6))
+                            .font(.system(size: 16, weight: .bold))
+                            .animation(.default, value: isColorPickerExpanded)
+                        
+                        colorCircle(color: event.color)
                     }
                 }
+                .buttonStyle(.plain)
+                
+                if isColorPickerExpanded {
+                    ForEach(predefinedColors, id: \.self) { color in
+                        colorCircle(color: color)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    event.color = color
+                                    try? modelContext.save()
+                                    isColorPickerExpanded = false // collapse after selecting
+                                }
+                            }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    @ViewBuilder
+    func colorCircle(color: Color) -> some View {
+        ZStack {
+            Circle()
+                .fill(color)
+                .frame(width: 34, height: 34)
+                .overlay(
+                    Circle()
+                        .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                )
+            
+            if event.color == color {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.white)
             }
         }
     }
