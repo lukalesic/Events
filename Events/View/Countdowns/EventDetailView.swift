@@ -195,7 +195,6 @@ private extension EventDetailView {
                 HStack(spacing: 6) {
                     Text(viewModel.selectedDisplayMode.rawValue)
                         .fixedSize()
-                        .contentTransition(.numericText())
                         .padding(.horizontal, 15)
                         .padding(.vertical, 6)
                         .background(event.color.opacity(0.2))
@@ -206,6 +205,8 @@ private extension EventDetailView {
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
+                .contentTransition(.numericText())
+                .animation(.default, value: viewModel.selectedDisplayMode.rawValue)
             }
         }
     }
@@ -274,6 +275,9 @@ private extension EventDetailView {
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
+                .contentTransition(.numericText())
+                .animation(.default, value: event.priority.displayName)
+
             }
         }
     }
