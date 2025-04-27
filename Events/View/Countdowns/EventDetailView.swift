@@ -2,11 +2,26 @@ import SwiftUI
 import PhotosUI
 import UIKit
 
+//TODO:
+//on tap open emoji picker directly
+//ADD A DATE of the event
+//NO need for a date picker, make it automatic
+
 struct EventDetailView: View {
     @Environment(EventViewModel.self) private var viewModel
     @Environment(\.modelContext) private var modelContext
     @Environment(\.presentationMode) private var presentationMode
     @Namespace private var imageNamespace
+    
+    private var predefinedColors: [Color] {
+        [
+            .green,
+            .red,
+            .yellow,
+            .blue,
+            .purple
+        ]
+    }
     
     var event: Event
     
@@ -32,25 +47,27 @@ struct EventDetailView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        timeRemainingLabel()
-                        
-                        timeDisplayModePicker()
-                            .padding(.bottom, 8)
+                    VStack(alignment: .leading, spacing: 22) {
                         
                         eventName()
+                        
+                        descriptionSection()
+                        
+                        timeRemainingLabel()
+                        
                         
                         if event.repeatFrequency != .none {
                             repeatLabel()
                         }
                         
-                        descriptionSection()
-                        
                         priorityMenu()
                         
-                        imageView()
+                        colorPickerMenu()
                         
-                        photoPickerButton()
+                        imageView()
+                            .padding(.vertical, 10)
+                        
+//                        photoPickerButton()
                     }
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                     .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
@@ -91,7 +108,8 @@ struct EventDetailView: View {
                 }
             }
         }
-        .navigationTitle(Strings.EventDetailViewStrings.eventDetails)
+//        .navigationTitle(Strings.EventDetailViewStrings.eventDetails)
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -136,34 +154,59 @@ private extension EventDetailView {
     func timeRemainingLabel() -> some View {
         let timeString = viewModel.formattedTimeRemaining(for: event)
         let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
+        
+        VStack {
+            
+            Text("\(timeString)")
+                .font(.system(size: 28))
+                .fontWeight(.bold)
+                .foregroundColor(event.color)
+                .contentTransition(.numericText())
+                .animation(.default, value: timeString)
+            
+            Text(event.nextDate, style: .date)
 
-        Text("\(timeString) \(event.emoji)")
-            .font(.largeTitle)
-            .fontWeight(.bold)
-            .foregroundColor(event.color)
-            .contentTransition(.numericText())
-            .animation(.default, value: timeString)
+        }
+        .padding(.vertical, 15)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .foregroundStyle(event.color.opacity(0.2))
+        )
     }
     
     @ViewBuilder
-    func timeDisplayModePicker() -> some View {
-        Picker(Strings.GeneralStrings.pickerDisplayMode, selection: $selectedMode) {
+    func timeDisplayModeMenu() -> some View {
+        Menu {
             ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
-                Text(mode.rawValue).tag(mode)
+                Button {
+                    viewModel.selectedDisplayMode = mode
+                    UserDefaults.standard.savedDisplayMode = mode
+                } label: {
+                    Text(mode.rawValue)
+                }
             }
-        }
-        .pickerStyle(.segmented)
-        .onChange(of: selectedMode) {
-            viewModel.selectedDisplayMode = selectedMode
-            UserDefaults.standard.savedDisplayMode = selectedMode
+        } label: {
+            HStack {
+                Image(systemName: "chevron.down")
+//                Text(viewModel.selectedDisplayMode.rawValue)
+            }
+            .font(.title3)
+            .foregroundColor(.primary)
+            .padding(8)
+            .tint(event.color)
+            .scaleEffect(0.6)
+            .background(
+                Circle()
+                    .tint(event.color.opacity(0.8))
+            )
         }
     }
-    
     
     @ViewBuilder
     func eventName() -> some View {
         Text(event.name)
-            .font(.title2)
+            .font(.largeTitle)
             .fontWeight(.semibold)
             .lineLimit(3)
     }
@@ -195,8 +238,6 @@ private extension EventDetailView {
                 if event.descriptionText.isEmpty {
                     Text(Strings.EventDetailViewStrings.addDescription)
                         .font(.body)
-                        .foregroundColor(.secondary)
-                        .italic()
                         .onTapGesture {
                             editedDescription = event.descriptionText
                             withAnimation(.easeInOut(duration: 0.25)) {
@@ -222,7 +263,10 @@ private extension EventDetailView {
     func priorityMenu() -> some View {
         HStack(spacing: 8) {
             Text(Strings.EventDetailViewStrings.priority)
+                .font(.system(size: 18))
                 .fontWeight(.medium)
+            
+            Spacer()
             
             Menu {
                 ForEach(EventPriority.allCases, id: \.self) { priority in
@@ -233,8 +277,8 @@ private extension EventDetailView {
             } label: {
                 HStack(spacing: 6) {
                     Text(event.priority.displayName)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 15)
+                        .padding(.vertical, 6)
                         .background(event.color.opacity(0.2))
                         .foregroundColor(event.color)
                         .cornerRadius(8)
@@ -246,41 +290,99 @@ private extension EventDetailView {
         }
     }
     
-    
     @ViewBuilder
-    func imageView() -> some View {
-        if let image = image ?? event.photo {
-            // Only apply matchedGeometryEffect when not showing fullscreen
-            if !showFullImage {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
-                    .clipped()
-                    .cornerRadius(12)
-                    .contentShape(Rectangle())
-                    .matchedGeometryEffect(id: "image", in: imageNamespace)
-                    .onTapGesture {
-                        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
-                            showFullImage = true
+    func colorPickerMenu() -> some View {
+        HStack() {
+            Text("Color:")
+                .font(.system(size: 18))
+                .fontWeight(.medium)
+            
+            Spacer()
+            
+            HStack(spacing: 12) {
+                ForEach(predefinedColors, id: \.self) { color in
+                    ZStack {
+                        Circle()
+                            .fill(color)
+                            .frame(width: 34, height: 34)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                            )
+                            .scaleEffect(event.color == color ? 1.1 : 1.0)
+                            .animation(.easeInOut(duration: 0.2), value: event.color)
+                        
+                        if event.color == color {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.white)
                         }
                     }
-            } else {
-                // Placeholder with same dimensions but invisible
-                Color.clear
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            event.color = color
+                            try? modelContext.save()
+                        }
+                    }
+                }
             }
         }
     }
     
-    
     @ViewBuilder
-    func photoPickerButton() -> some View {
-        PhotosPicker("Choose a Photo", selection: $selectedItem, matching: .images)
-            .font(.body)
-            .padding(.top, 8)
+    func imageView() -> some View {
+        HStack {
+            if let image = image ?? event.photo {
+                if !showFullImage {
+                    Spacer()
+                    
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 290)
+                        .frame(width: 290)
+                        .clipped()
+                        .cornerRadius(20)
+                        .contentShape(Rectangle())
+                        .matchedGeometryEffect(id: "image", in: imageNamespace)
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                showFullImage = true
+                            }
+                        }
+                    
+                    Spacer()
+                } else {
+                    Color.clear
+                        .frame(height: 250)
+                        .frame(width: 200)
+                }
+            } else {
+                Spacer()
+                
+                PhotosPicker(selection: $selectedItem, matching: .images) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 20))
+                            .foregroundColor(.secondary)
+
+                        Text("Tap to add image..")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                    .padding()
+                    .frame(height: 100)
+                    .frame(width: 200)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(event.color.opacity(0.15))
+                    )
+                }
+                .buttonStyle(.plain)
+                
+                Spacer()
+            }
+        }
     }
     
     
