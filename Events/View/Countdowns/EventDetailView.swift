@@ -13,7 +13,6 @@ struct EventDetailView: View {
         [
             .green,
             .red,
-            .orange,
             .blue,
             .purple
         ]
@@ -290,7 +289,7 @@ private extension EventDetailView {
             
             HStack(spacing: isColorPickerExpanded ? 12 : 0) {
                 Button(action: {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                         isColorPickerExpanded.toggle()
                     }
                 }) {
@@ -308,12 +307,16 @@ private extension EventDetailView {
                 if isColorPickerExpanded {
                     ForEach(predefinedColors, id: \.self) { color in
                         colorCircle(color: color)
-                            .transition(.move(edge: .trailing).combined(with: .opacity))
+                            .transition(.opacity)
                             .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    event.color = color
-                                    try? modelContext.save()
-                                    isColorPickerExpanded = false // collapse after selecting
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    event.color = color // Update color immediately
+                                }
+                                // Add a slight delay before collapsing the picker to prevent lag
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        isColorPickerExpanded = false // Collapse after color change
+                                    }
                                 }
                             }
                     }
