@@ -8,6 +8,7 @@ struct EventDetailView: View {
     @Environment(\.presentationMode) private var presentationMode
     @Namespace private var imageNamespace
     @State private var isColorPickerExpanded = false
+    @State private var isShowingEmojiPicker = false
     
     private var predefinedColors: [Color] {
         [
@@ -55,7 +56,6 @@ struct EventDetailView: View {
                         
                             timeDisplayModeMenu()
                         
-                        
                         if event.repeatFrequency != .none {
                             repeatLabel()
                         }
@@ -63,6 +63,8 @@ struct EventDetailView: View {
                         priorityMenu()
                         
                         colorPickerMenu()
+                        
+                        emojiButton()
                         
                     }
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -92,8 +94,6 @@ struct EventDetailView: View {
             
             fullscreenImageOverlay()
         }
-        .accentColor(.primary)
-
         .onTapGesture {
             if isEditingDescription {
                 withAnimation(.easeInOut(duration: 0.25)) {
@@ -140,6 +140,36 @@ struct EventDetailView: View {
 
 private extension EventDetailView {
     
+    @ViewBuilder
+    func emojiButton() -> some View {
+        HStack {
+            Text("Emoji:")
+                .font(.system(size: 18))
+                .fontWeight(.medium)
+            Spacer()
+            Button {
+                isShowingEmojiPicker = true
+            } label: {
+                HStack {
+                    Text(event.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : event.emoji)
+                        .font(.system(size: 26))
+                }
+                .sheet(isPresented: $isShowingEmojiPicker) {
+                    NavigationStack {
+                        EmojiPickerView(selectedEmoji: Binding(
+                            get: { self.event.emoji },
+                            set: { newValue in
+                                self.event.emoji = newValue
+                                try? modelContext.save()
+                            }
+                        ))
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     @ViewBuilder
     func linearGradient() -> some View {
         LinearGradient(
@@ -217,7 +247,8 @@ private extension EventDetailView {
             .font(.largeTitle)
             .fontWeight(.semibold)
             .multilineTextAlignment(.leading)
-            .lineLimit(3)
+            .lineLimit(2)
+            .minimumScaleFactor(0.9)
     }
     
     @ViewBuilder
@@ -392,7 +423,10 @@ private extension EventDetailView {
                     .foregroundColor(.secondary)
                     .padding()
                     .frame(height: 100)
-                    .frame(width: 200)
+//                    .frame(width: 200)
+                    .containerRelativeFrame(.horizontal) { size, axis in
+                        size * 0.9
+                    }
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(event.color.opacity(0.15))
