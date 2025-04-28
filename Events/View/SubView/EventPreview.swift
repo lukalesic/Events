@@ -15,19 +15,22 @@ struct EventPreview: View {
 
         ZStack {
             VStack(alignment: .leading, spacing: 4) {
-
+                
                 titleView()
                 
                 Spacer()
-                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 50 : 1)
-
+                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 50 : 15)
+                
                 HStack(alignment: .bottom) {
-                    nextDate()
-
+                    VStack(alignment: .leading){
+                eventEmoji()
+                nextDate()
+                    }
+                    
                     Spacer()
                     
                     daysLeftLabel()
-                    .padding(.trailing)
+                        .padding(.trailing)
                 }
                 .padding(.top, gridState == .rows ? -15 : -5)
                 .padding(.leading, 5)
@@ -46,30 +49,37 @@ struct EventPreview: View {
 private extension EventPreview {
     
     @ViewBuilder
+    func eventEmoji() -> some View {
+        Text(event.emoji)
+            .font(.footnote)
+            .padding(.leading, 10)
+    }
+    
+    @ViewBuilder
     func titleView() -> some View {
         HStack(spacing: 0) {
-            Text(event.emoji)
             Text(event.name)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
                 .padding(.leading, 3)
         }
-        .font(.system(size: 20))
+        .font(.system(size: 17))
         .frame(height: gridState == .rows ? 40 : 50)
         .padding(.trailing, 10)
         .foregroundColor(.white)
         .padding(.leading, 10)
-        .padding(.top, -7)
+        .padding(.top, -10)
         .multilineTextAlignment(.leading)
     }
     
     @ViewBuilder
     func nextDate() -> some View {
-        Text(event.nextDate, style: .date)
-            .font(.footnote)
-            .foregroundColor(.white.opacity(0.8))
-            .padding(.leading, 10)
-            .opacity(event.daysLeftUntilNextDate == 0 ? 0 : 1)
+        if !event.isToday {
+            Text(event.nextDate, style: .date)
+                .font(.footnote)
+                .foregroundColor(.white.opacity(0.8))
+                .padding(.leading, 10)
+        }
     }
     
     @ViewBuilder

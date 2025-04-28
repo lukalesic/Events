@@ -9,7 +9,7 @@ struct EventsListView: View {
     @Query(sort: \Event.daysLeft) private var events: [Event]
     @Namespace private var eventsNamespace
     @State private var showPastEvents: Bool = true
-    @State private var isGridButtonDisabled = false    
+    @State private var isGridButtonDisabled = false
     @State private var isShowingAddSheet = false
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
     
