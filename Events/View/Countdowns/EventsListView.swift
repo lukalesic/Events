@@ -162,9 +162,12 @@ private extension EventsListView {
         Button(action: {
             gridState = gridState == .grid ? .rows : .grid
             UserDefaults.standard.savedGridState = gridState
-            isGridButtonDisabled = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                isGridButtonDisabled = false
+            
+            if AppSettings.shared.showEventPreviewBackground {
+                isGridButtonDisabled = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    isGridButtonDisabled = false
+                }
             }
         }) {
             Image(systemName: gridState == .grid ? "list.bullet" : "square.grid.2x2")
