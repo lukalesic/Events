@@ -9,17 +9,18 @@ struct EventsListView: View {
     @Query(sort: \Event.daysLeft) private var events: [Event]
     @Namespace private var eventsNamespace
     @State private var showPastEvents: Bool = true
-    @State private var isGridButtonDisabled = false
-    
+    @State private var isGridButtonDisabled = false    
     @State private var isShowingAddSheet = false
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
     
     @State private var isConfirmingDelete = false
     
     private var columns: [GridItem] {
-        gridState == .grid ? Array(repeating: GridItem(.flexible()), count: 2) : [GridItem(.flexible())]
+        let isIpad = UIDevice.current.userInterfaceIdiom == .pad
+
+        return gridState == .grid ? Array(repeating: GridItem(.flexible()), count: isIpad ? 3 : 2) : [GridItem(.flexible())]
     }
-    
+        
     var body: some View {
         NavigationStack {
             ZStack {

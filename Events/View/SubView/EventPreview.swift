@@ -5,7 +5,12 @@ struct EventPreview: View {
     var gridState: GridState
 
     var body: some View {
-        let blockHeight: CGFloat = gridState == .rows ? 100 : 140
+        
+        var blockHeight: CGFloat {
+            let baseHeight: CGFloat = gridState == .rows ? 100 : 140
+            return UIDevice.current.userInterfaceIdiom == .pad ? baseHeight + 40 : baseHeight
+        }
+
         let verticalPadding: CGFloat = gridState == .rows ? 10 : 0
 
         ZStack {
@@ -14,7 +19,7 @@ struct EventPreview: View {
                 titleView()
                 
                 Spacer()
-                    .frame(maxHeight: 1)
+                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 50 : 1)
 
                 HStack(alignment: .bottom) {
                     nextDate()
