@@ -20,6 +20,7 @@ class Event {
     var emoji: String
     var priority: EventPriority
     var date: Date
+    var includesTime: Bool
     var photoData: Data?
     var repeatFrequency: RepeatFrequency
     
@@ -74,6 +75,7 @@ class Event {
          emoji: String = "",
          priority: EventPriority = .medium,
          date: Date = Date.now,
+         includesTime: Bool = false,
          photo: UIImage? = nil,
          repeatFrequency: RepeatFrequency = .none) {
         self.id = id
@@ -84,6 +86,7 @@ class Event {
         self.emoji = emoji
         self.priority = priority
         self.date = date
+        self.includesTime = includesTime
         self.repeatFrequency = repeatFrequency
         
         if let photo = photo, let data = photo.jpegData(compressionQuality: 0.8) {
@@ -102,6 +105,11 @@ class Event {
 // Extensions for calculated properties
 extension Event {
     var nextDate: Date {
+        
+        if !includesTime {
+            return Calendar.current.startOfDay(for: date)
+        }
+
         switch repeatFrequency {
         case .daily:
             return Calendar.current.nextDate(after: .now, matching: Calendar.current.dateComponents([.hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date

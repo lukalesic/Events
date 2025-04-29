@@ -66,6 +66,8 @@ struct EventDetailView: View {
                         
                         emojiButton()
                         
+                        addToCalendar()
+                        
                     }
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                     .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
@@ -141,6 +143,15 @@ struct EventDetailView: View {
 private extension EventDetailView {
     
     @ViewBuilder
+    func addToCalendar() -> some View {
+        Button {
+            viewModel.addToCalendar(event)
+        } label: {
+            Label("Add to Calendar", systemImage: "calendar.badge.plus")
+        }
+    }
+    
+    @ViewBuilder
     func emojiButton() -> some View {
         HStack {
             Text("Emoji:")
@@ -183,9 +194,8 @@ private extension EventDetailView {
     func timeRemainingLabel() -> some View {
         let timeString = viewModel.formattedTimeRemaining(for: event)
         let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
-        
+
         VStack {
-            
             Text("\(timeString)")
                 .font(.system(size: 28))
                 .fontWeight(.bold)
@@ -194,8 +204,13 @@ private extension EventDetailView {
                 .multilineTextAlignment(.center)
                 .animation(.default, value: timeString)
             
-            Text(event.nextDate, style: .date)
-
+            if event.includesTime {
+                Text(event.nextDate, style: .date)
+                + Text(" at ")
+                + Text(event.nextDate, style: .time)
+            } else {
+                Text(event.nextDate, style: .date)
+            }
         }
         .padding(.vertical, 15)
         .frame(maxWidth: .infinity, alignment: .center)

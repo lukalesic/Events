@@ -41,8 +41,12 @@ struct EventFormSheetView: View {
                 }
 
                 Section(header: Text(Strings.EventFormStrings.dateSection)) {
-                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, in: Date()..., displayedComponents: .date)
+                    
+                    Toggle("Includes Time", isOn: $formData.includesTime)
+
+                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, in: Date()..., displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
                 }
+                
 
                 Section(header: Text(Strings.EventFormStrings.repeatSection)) {
                     repeatFrequencyPicker()
@@ -178,6 +182,7 @@ struct EventFormData {
     var emoji: String = Strings.EventFormStrings.defaultEmoji
     var priority: EventPriority = .medium
     var date: Date = Date()
+    var includesTime: Bool = false
     var photo: UIImage? = nil
     var color: Color = Event.randomColor()
     var repeatFrequency: RepeatFrequency = .none
@@ -189,6 +194,7 @@ struct EventFormData {
             emoji = countdown.emoji
             priority = countdown.priority
             date = countdown.date
+            includesTime = countdown.includesTime
             photo = countdown.photo
             color = countdown.color
             repeatFrequency = countdown.repeatFrequency

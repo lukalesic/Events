@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Observation
 import SwiftData
+import EventKit
 
 @Observable
 class EventViewModel {
@@ -63,6 +64,7 @@ extension EventViewModel {
             existingCountdown.descriptionText = form.description
             existingCountdown.emoji = finalEmoji
             existingCountdown.priority = form.priority
+            existingCountdown.includesTime = form.includesTime
             existingCountdown.date = form.date
             existingCountdown.photo = form.photo
             existingCountdown.repeatFrequency = form.repeatFrequency
@@ -77,6 +79,7 @@ extension EventViewModel {
             countdown.emoji = finalEmoji
             countdown.priority = form.priority
             countdown.date = form.date
+            countdown.includesTime = form.includesTime
             countdown.photo = form.photo
             countdown.repeatFrequency = form.repeatFrequency
             
@@ -195,7 +198,7 @@ extension EventViewModel {
             if countdown.repeatFrequency == .none { break }
         }
         
-        return nextDate
+        return countdown.includesTime ? nextDate : Calendar.current.startOfDay(for: nextDate)
     }
         
     func formattedTimeRemaining(for countdown: Event) -> String {
@@ -214,6 +217,7 @@ extension EventViewModel {
             case .automatic:
                 return breakdownTime(totalDays: daysAgo) + " ago"
             }
+            
         } else {
             // Handle future events
             switch selectedDisplayMode {
@@ -250,5 +254,35 @@ extension EventViewModel {
         }
 
         return parts.joined(separator: ", ")
+    }
+    
+    func addToCalendar(_ event: Event) {
+        let eventStore = EKEventStore()
+
+        eventStore.requestAccess(to: .event) { granted, error in
+            guard granted, error == nil else {
+                print("Calendar access denied or error: \(String(describing: error))")
+                return
+            }
+
+            let ekEvent = EKEvent(eventStore: eventStore)
+            ekEvent.title = event.name
+            ekEvent.notes = event.descriptionText
+            ekEvent.calendar = eventStore.defaultCalendarForNewEvents
+
+            ekEvent.startDate = event.date
+            if event.includesTime {
+                ekEvent.endDate = event.date.addingTimeInterval(3600) // 1 hour duration
+            } else {
+                ekEvent.endDate = Calendar.current.date(byAdding: .day, value: 1, to: event.date)
+            }
+
+            do {
+                try eventStore.save(ekEvent, span: .thisEvent)
+                print("Event saved to calendar")
+            } catch {
+                print("Failed to save event: \(error)")
+            }
+        }
     }
 }
