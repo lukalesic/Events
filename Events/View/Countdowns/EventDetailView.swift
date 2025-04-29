@@ -9,6 +9,8 @@ struct EventDetailView: View {
     @Namespace private var imageNamespace
     @State private var isColorPickerExpanded = false
     @State private var isShowingEmojiPicker = false
+    @State private var animatePulse = false
+    @State private var showCalendarAccessAlert = false
     
     private var predefinedColors: [Color] {
         [
@@ -82,6 +84,16 @@ struct EventDetailView: View {
                 selectedMode = UserDefaults.standard.savedDisplayMode
                 viewModel.selectedDisplayMode = selectedMode
             }
+            .alert("Calendar Access Denied", isPresented: $showCalendarAccessAlert) {
+                Button("Open Settings") {
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(settingsURL)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("To add events to your calendar, please allow access in Settings.")
+            }
             .onChange(of: selectedItem) { newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -145,9 +157,25 @@ private extension EventDetailView {
     @ViewBuilder
     func addToCalendar() -> some View {
         Button {
-            viewModel.addToCalendar(event)
+            viewModel.addToCalendar(event,
+                                    onSuccess: {
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.success)
+                
+                // Pulse animation
+                withAnimation(.easeOut(duration: 0.3)) {
+                    animatePulse = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    animatePulse = false
+                }
+                                    },
+                                    onFailure: {
+                                        showCalendarAccessAlert = true
+                                    })
         } label: {
             Label("Add to Calendar", systemImage: "calendar.badge.plus")
+                .scaleEffect(animatePulse ? 1.1 : 1.0)
         }
     }
     

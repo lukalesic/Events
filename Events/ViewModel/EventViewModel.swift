@@ -256,32 +256,48 @@ extension EventViewModel {
         return parts.joined(separator: ", ")
     }
     
-    func addToCalendar(_ event: Event) {
-        let eventStore = EKEventStore()
+    func addToCalendar(_ event: Event, onSuccess: @escaping () -> Void, onFailure: @escaping () -> Void) {
+        EventKitManager.shared.add(event: event) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    onSuccess()
+                case .failure(let error):
+                    print("Failed to add event to calendar:", error.localizedDescription)
+                    onFailure()
+                }
+            }
+        }
+    }
+}
 
+class EventKitManager {
+    static let shared = EventKitManager()
+    private let eventStore = EKEventStore()
+
+    enum CalendarError: Error {
+        case accessDenied
+        case saveFailed
+    }
+
+    func add(event: Event, completion: @escaping (Result<Void, Error>) -> Void) {
         eventStore.requestAccess(to: .event) { granted, error in
-            guard granted, error == nil else {
-                print("Calendar access denied or error: \(String(describing: error))")
-                return
-            }
+            if granted {
+                let ekEvent = EKEvent(eventStore: self.eventStore)
+                ekEvent.title = event.name
+                ekEvent.notes = event.descriptionText
+                ekEvent.startDate = event.date
+                ekEvent.endDate = event.date.addingTimeInterval(60 * 60)
+                ekEvent.calendar = self.eventStore.defaultCalendarForNewEvents
 
-            let ekEvent = EKEvent(eventStore: eventStore)
-            ekEvent.title = event.name
-            ekEvent.notes = event.descriptionText
-            ekEvent.calendar = eventStore.defaultCalendarForNewEvents
-
-            ekEvent.startDate = event.date
-            if event.includesTime {
-                ekEvent.endDate = event.date.addingTimeInterval(3600) // 1 hour duration
+                do {
+                    try self.eventStore.save(ekEvent, span: .thisEvent)
+                    completion(.success(()))
+                } catch {
+                    completion(.failure(CalendarError.saveFailed))
+                }
             } else {
-                ekEvent.endDate = Calendar.current.date(byAdding: .day, value: 1, to: event.date)
-            }
-
-            do {
-                try eventStore.save(ekEvent, span: .thisEvent)
-                print("Event saved to calendar")
-            } catch {
-                print("Failed to save event: \(error)")
+                completion(.failure(CalendarError.accessDenied))
             }
         }
     }
