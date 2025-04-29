@@ -100,7 +100,7 @@ class Event {
     }
     
     static func randomColor() -> Color {
-        let colors: [Color] = [.red, .blue, .green, .yellow, .purple, .orange, .pink]
+        let colors: [Color] = [.red, .blue, .green, .yellow, .purple, .orange, .pink, .gray, .cyan, .mint, .indigo, .teal]
         return colors.randomElement() ?? .gray
     }
 }
