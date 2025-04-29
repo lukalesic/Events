@@ -13,7 +13,7 @@ struct EventDetailView: View {
     @State private var showCalendarAccessAlert = false
     @State private var isInCalendar = false
     @State private var showReAddAlert = false
-
+    
     
     private var predefinedColors: [Color] {
         [
@@ -57,9 +57,9 @@ struct EventDetailView: View {
                             eventDescription()
                         }
                         
-                            timeRemainingLabel()
+                        timeRemainingLabel()
                         
-                            timeDisplayModeMenu()
+                        timeDisplayModeMenu()
                         
                         if event.repeatFrequency != .none {
                             repeatLabel()
@@ -101,22 +101,22 @@ struct EventDetailView: View {
                 Button("Yes", role: .destructive) {
                     viewModel.addToCalendar(event,
                                             onSuccess: {
-                                                let generator = UINotificationFeedbackGenerator()
-                                                generator.notificationOccurred(.success)
-                                                withAnimation(.easeOut(duration: 0.3)) {
-                                                    animatePulse = true
-                                                }
-                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                                    animatePulse = false
-                                                }
-                                            },
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            animatePulse = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            animatePulse = false
+                        }
+                    },
                                             onFailure: {
-                                                showCalendarAccessAlert = true
-                                            })
+                        showCalendarAccessAlert = true
+                    })
                 }
                 Button("No", role: .cancel) {}
             }
-
+            
             .onChange(of: selectedItem) { newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -142,7 +142,7 @@ struct EventDetailView: View {
                 }
             }
         }
-//        .navigationTitle(Strings.EventDetailViewStrings.eventDetails)
+        //        .navigationTitle(Strings.EventDetailViewStrings.eventDetails)
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -156,7 +156,7 @@ struct EventDetailView: View {
         }
         .tint(event.color)
         .accentColor(.primary)
-
+        
         .sheet(isPresented: $isPresentingEdit) {
             EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
         }
@@ -179,32 +179,40 @@ private extension EventDetailView {
     
     @ViewBuilder
     func addToCalendar() -> some View {
-        Button {
-            if isInCalendar {
-                showReAddAlert = true
-            } else {
-                viewModel.addToCalendar(event,
-                                        onSuccess: {
-                                            let generator = UINotificationFeedbackGenerator()
-                                            generator.notificationOccurred(.success)
-                                            
-                                            withAnimation(.easeOut(duration: 0.3)) {
-                                                animatePulse = true
-                                                isInCalendar = true
-                                            }
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                                animatePulse = false
-                                            }
-                                        },
-                                        onFailure: {
-                                            showCalendarAccessAlert = true
-                                        })
-            }
-        } label: {
-            Label(isInCalendar ? "Added to Calendar" : "Add to Calendar",
-                  systemImage: isInCalendar ? "checkmark.circle" : "calendar.badge.plus")
+        VStack {
+            Button {
+                if event.isAddedToCalendar {
+                    showReAddAlert = true
+                } else {
+                    viewModel.addToCalendar(event,
+                                            onSuccess: {
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                        
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            animatePulse = true
+                            isInCalendar = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            withAnimation {
+                                animatePulse = false
+                            }
+                        }
+                        event.isAddedToCalendar = true
+                    },
+                                            onFailure: {
+                        showCalendarAccessAlert = true
+                    })
+                }
+            } label: {
+                Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
+                      systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
+                .padding(5)
                 .scaleEffect(animatePulse ? 1.1 : 1.0)
+            }
+            .buttonStyle(.bordered)
         }
+        .frame(maxWidth: .infinity, alignment: .center)
     }
     
     @ViewBuilder
@@ -236,7 +244,7 @@ private extension EventDetailView {
             .buttonStyle(.plain)
         }
     }
-
+    
     @ViewBuilder
     func linearGradient() -> some View {
         LinearGradient(
@@ -250,7 +258,7 @@ private extension EventDetailView {
     func timeRemainingLabel() -> some View {
         let timeString = viewModel.formattedTimeRemaining(for: event)
         let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
-
+        
         VStack {
             Text("\(timeString)")
                 .font(.system(size: 28))
@@ -379,7 +387,7 @@ private extension EventDetailView {
                 }
                 .contentTransition(.numericText())
                 .animation(.default, value: event.priority.displayName)
-
+                
             }
         }
     }
@@ -431,7 +439,7 @@ private extension EventDetailView {
             .padding(.vertical, 4)
         }
     }
-
+    
     @ViewBuilder
     func colorCircle(color: Color) -> some View {
         ZStack {
@@ -487,14 +495,14 @@ private extension EventDetailView {
                         Image(systemName: "photo.on.rectangle.angled")
                             .font(.system(size: 20))
                             .foregroundColor(.secondary)
-
+                        
                         Text("Tap to add image..")
                     }
                     .font(.headline)
                     .foregroundColor(.secondary)
                     .padding()
                     .frame(height: 100)
-//                    .frame(width: 200)
+                    //                    .frame(width: 200)
                     .containerRelativeFrame(.horizontal) { size, axis in
                         size * 0.9
                     }

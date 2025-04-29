@@ -56,35 +56,47 @@ extension EventViewModel {
         let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
         let finalEmoji = form.emoji.isEmpty ? "📅" : form.emoji
         
-        if let existingCountdown = existing {
+        if let existingEvent = existing {
             // Update existing countdown
-            existingCountdown.color = form.color
-            existingCountdown.daysLeft = newDaysLeft
-            existingCountdown.name = form.name
-            existingCountdown.descriptionText = form.description
-            existingCountdown.emoji = finalEmoji
-            existingCountdown.priority = form.priority
-            existingCountdown.includesTime = form.includesTime
-            existingCountdown.date = form.date
-            existingCountdown.photo = form.photo
-            existingCountdown.repeatFrequency = form.repeatFrequency
+            
+            let nameChanged = existingEvent.name != form.name
+            let dateChanged = existingEvent.date != form.date
+
+            if nameChanged || dateChanged {
+                resetCalendarState(for: existingEvent)
+            }
+            
+            existingEvent.color = form.color
+            existingEvent.daysLeft = newDaysLeft
+            existingEvent.name = form.name
+            existingEvent.descriptionText = form.description
+            existingEvent.emoji = finalEmoji
+            existingEvent.priority = form.priority
+            existingEvent.includesTime = form.includesTime
+            existingEvent.date = form.date
+            existingEvent.photo = form.photo
+            existingEvent.repeatFrequency = form.repeatFrequency
         } else {
             // Create new countdown
-            let countdown = Event()
-            countdown.id = UUID()
-            countdown.color = form.color
-            countdown.daysLeft = newDaysLeft
-            countdown.name = form.name
-            countdown.descriptionText = form.description
-            countdown.emoji = finalEmoji
-            countdown.priority = form.priority
-            countdown.date = form.date
-            countdown.includesTime = form.includesTime
-            countdown.photo = form.photo
-            countdown.repeatFrequency = form.repeatFrequency
-            
-            addCountdown(countdown)
+            let event = Event()
+            event.id = UUID()
+            event.color = form.color
+            event.daysLeft = newDaysLeft
+            event.name = form.name
+            event.descriptionText = form.description
+            event.emoji = finalEmoji
+            event.priority = form.priority
+            event.date = form.date
+            event.includesTime = form.includesTime
+            event.photo = form.photo
+            event.repeatFrequency = form.repeatFrequency
+
+            addCountdown(event)
         }
+    }
+    
+    private func resetCalendarState(for event: Event) {
+        event.isAddedToCalendar = false
     }
     
     private func saveContext() {

@@ -21,6 +21,7 @@ class Event {
     var priority: EventPriority
     var date: Date
     var includesTime: Bool
+    var isAddedToCalendar: Bool
     var photoData: Data?
     var repeatFrequency: RepeatFrequency
     
@@ -76,6 +77,7 @@ class Event {
          priority: EventPriority = .medium,
          date: Date = Date.now,
          includesTime: Bool = false,
+         isAddedToCalendar: Bool = false,
          photo: UIImage? = nil,
          repeatFrequency: RepeatFrequency = .none) {
         self.id = id
@@ -86,6 +88,7 @@ class Event {
         self.emoji = emoji
         self.priority = priority
         self.date = date
+        self.isAddedToCalendar = isAddedToCalendar
         self.includesTime = includesTime
         self.repeatFrequency = repeatFrequency
         
