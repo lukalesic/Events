@@ -12,7 +12,7 @@ struct EventPreview: View {
             return isIpad ? baseHeight + 30 : baseHeight
         }
 
-        let verticalPadding: CGFloat = gridState == .rows ? 14 : 0
+        let verticalPadding: CGFloat = gridState == .rows ? 10 : 4
 
         ZStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -56,22 +56,21 @@ private extension EventPreview {
             .font(.footnote)
             .padding(.leading, 10)
             .padding(.bottom, event.isToday ? 3 : 0)
-//            .shadow(radius: 3)
+            .shadow(radius: 4)
     }
     
     @ViewBuilder
     func titleView() -> some View {
         HStack(spacing: 0) {
             Text(event.name)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
+                .lineLimit(gridState == .grid ? 2 : 1)
+                .fixedSize(horizontal: false, vertical: true)
+                .minimumScaleFactor(0.9)
         }
-        .font(.system(size: isIpad ? 22 : 17))
-        .frame(height: gridState == .rows ? 40 : 50)
+        .font(.system(size: isIpad ? 22 : 19))
         .padding(.trailing, 10)
         .foregroundColor(.white)
         .padding(.leading, isIpad ? 10 : 13)
-        .padding(.top, -13)
         .multilineTextAlignment(.leading)
     }
     
