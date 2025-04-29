@@ -11,6 +11,9 @@ struct EventDetailView: View {
     @State private var isShowingEmojiPicker = false
     @State private var animatePulse = false
     @State private var showCalendarAccessAlert = false
+    @State private var isInCalendar = false
+    @State private var showReAddAlert = false
+
     
     private var predefinedColors: [Color] {
         [
@@ -94,6 +97,26 @@ struct EventDetailView: View {
             } message: {
                 Text("To add events to your calendar, please allow access in Settings.")
             }
+            .alert("This event is already in your calendar. Do you want to re-add it?", isPresented: $showReAddAlert) {
+                Button("Yes", role: .destructive) {
+                    viewModel.addToCalendar(event,
+                                            onSuccess: {
+                                                let generator = UINotificationFeedbackGenerator()
+                                                generator.notificationOccurred(.success)
+                                                withAnimation(.easeOut(duration: 0.3)) {
+                                                    animatePulse = true
+                                                }
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                    animatePulse = false
+                                                }
+                                            },
+                                            onFailure: {
+                                                showCalendarAccessAlert = true
+                                            })
+                }
+                Button("No", role: .cancel) {}
+            }
+
             .onChange(of: selectedItem) { newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -157,24 +180,29 @@ private extension EventDetailView {
     @ViewBuilder
     func addToCalendar() -> some View {
         Button {
-            viewModel.addToCalendar(event,
-                                    onSuccess: {
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.success)
-                
-                // Pulse animation
-                withAnimation(.easeOut(duration: 0.3)) {
-                    animatePulse = true
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    animatePulse = false
-                }
-                                    },
-                                    onFailure: {
-                                        showCalendarAccessAlert = true
-                                    })
+            if isInCalendar {
+                showReAddAlert = true
+            } else {
+                viewModel.addToCalendar(event,
+                                        onSuccess: {
+                                            let generator = UINotificationFeedbackGenerator()
+                                            generator.notificationOccurred(.success)
+                                            
+                                            withAnimation(.easeOut(duration: 0.3)) {
+                                                animatePulse = true
+                                                isInCalendar = true
+                                            }
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                animatePulse = false
+                                            }
+                                        },
+                                        onFailure: {
+                                            showCalendarAccessAlert = true
+                                        })
+            }
         } label: {
-            Label("Add to Calendar", systemImage: "calendar.badge.plus")
+            Label(isInCalendar ? "Added to Calendar" : "Add to Calendar",
+                  systemImage: isInCalendar ? "checkmark.circle" : "calendar.badge.plus")
                 .scaleEffect(animatePulse ? 1.1 : 1.0)
         }
     }
