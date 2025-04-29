@@ -3,28 +3,29 @@ import SwiftUI
 struct EventPreview: View {
     var event: Event
     var gridState: GridState
+    var isIpad = UIDevice.current.userInterfaceIdiom == .pad
 
     var body: some View {
         
         var blockHeight: CGFloat {
             let baseHeight: CGFloat = gridState == .rows ? 100 : 140
-            return UIDevice.current.userInterfaceIdiom == .pad ? baseHeight + 40 : baseHeight
+            return isIpad ? baseHeight + 30 : baseHeight
         }
 
-        let verticalPadding: CGFloat = gridState == .rows ? 10 : 0
+        let verticalPadding: CGFloat = gridState == .rows ? 14 : 0
 
         ZStack {
             VStack(alignment: .leading, spacing: 4) {
                 
                 titleView()
-                
+                    .padding(.top, 10)
+
                 Spacer()
-                    .frame(maxHeight: UIDevice.current.userInterfaceIdiom == .pad ? 50 : 15)
                 
                 HStack(alignment: .bottom) {
-                    VStack(alignment: .leading){
-                eventEmoji()
-                nextDate()
+                    VStack(alignment: .leading) {
+                        eventEmoji()
+                        nextDate()
                     }
                     
                     Spacer()
@@ -32,17 +33,18 @@ struct EventPreview: View {
                     daysLeftLabel()
                         .padding(.trailing)
                 }
-                .padding(.top, gridState == .rows ? -15 : -5)
+                .padding(.top, gridState == .rows ? -5 : 0) // Slight adjustment
                 .padding(.leading, 5)
+                .padding(.bottom, 10) // Add bottom padding to balance top
             }
             .frame(height: blockHeight)
             .padding(.vertical, verticalPadding)
             .background(
                 backgroundView()
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: 13))
             )
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
@@ -53,6 +55,8 @@ private extension EventPreview {
         Text(event.emoji)
             .font(.footnote)
             .padding(.leading, 10)
+            .padding(.bottom, event.isToday ? 3 : 0)
+//            .shadow(radius: 3)
     }
     
     @ViewBuilder
@@ -61,14 +65,13 @@ private extension EventPreview {
             Text(event.name)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
-                .padding(.leading, 3)
         }
-        .font(.system(size: 17))
+        .font(.system(size: isIpad ? 22 : 17))
         .frame(height: gridState == .rows ? 40 : 50)
         .padding(.trailing, 10)
         .foregroundColor(.white)
-        .padding(.leading, 10)
-        .padding(.top, -10)
+        .padding(.leading, isIpad ? 10 : 13)
+        .padding(.top, -13)
         .multilineTextAlignment(.leading)
     }
     
@@ -91,16 +94,21 @@ private extension EventPreview {
                 Text("\(days)")
                     .font(.largeTitle)
                     .foregroundColor(.white)
+                    .shadow(color: .black, radius: 6)
                 Text("\(days == 1 ? "Day" : "Days" )")
                     .font(.footnote)
                     .foregroundColor(.white.opacity(0.8))
+
             } else if days < 0 {
                 Text("\(abs(days))")
                     .font(.largeTitle)
                     .foregroundColor(.white)
+                    .shadow(color: .black, radius: 6)
+
                 Text("\(days == 1 ? "Day ago" : "Days ago")")
                     .font(.footnote)
                     .foregroundColor(.white.opacity(0.8))
+
             }
             else if days == 0 {
                 Text("\(abs(days))")
@@ -108,6 +116,7 @@ private extension EventPreview {
                     .opacity(0)
                 Text("Today")
                     .foregroundColor(.white)
+
             }
         }
     }

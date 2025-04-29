@@ -20,6 +20,10 @@ struct EventsListView: View {
 
         return gridState == .grid ? Array(repeating: GridItem(.flexible()), count: isIpad ? 3 : 2) : [GridItem(.flexible())]
     }
+    
+    private var blockSpacing: CGFloat {
+        gridState == .grid ? 10 : 16
+    }
         
     var body: some View {
         NavigationStack {
@@ -37,7 +41,7 @@ struct EventsListView: View {
                                         Text(Strings.EventListViewStrings.todaysEvents)
                                             .font(.headline)
                                         
-                                        LazyVGrid(columns: columns, spacing: 16) {
+                                        LazyVGrid(columns: columns, spacing: blockSpacing) {
                                             ForEach(todaysEvents) { event in
                                                 NavigationLink {
                                                     EventDetailView(event: event)
@@ -58,7 +62,7 @@ struct EventsListView: View {
                                         Text(Strings.EventListViewStrings.upcomingEvents)
                                             .font(.headline)
                                         
-                                        LazyVGrid(columns: columns, spacing: 16) {
+                                        LazyVGrid(columns: columns, spacing: blockSpacing) {
                                             ForEach(upcomingEvents) { event in
                                                 NavigationLink {
                                                     EventDetailView(event: event)
@@ -79,7 +83,7 @@ struct EventsListView: View {
                                         Text(Strings.EventListViewStrings.pastEvents)
                                             .font(.headline)
                                         
-                                        LazyVGrid(columns: columns, spacing: 16) {
+                                        LazyVGrid(columns: columns, spacing: blockSpacing) {
                                             ForEach(pastCountdowns) { event in
                                                 NavigationLink {
                                                     EventDetailView(event: event)

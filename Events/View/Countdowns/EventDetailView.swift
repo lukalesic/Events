@@ -436,7 +436,7 @@ private extension EventDetailView {
                     }
                 }
             }
-            .padding(.vertical, 4)
+//            .padding(.vertical, 4)
         }
     }
     
@@ -479,6 +479,8 @@ private extension EventDetailView {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .contentShape(Rectangle())
                         .matchedGeometryEffect(id: "image", in: imageNamespace)
+                        .shadow(radius: 7)
+
                         .onTapGesture {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
                                 showFullImage = true
@@ -502,10 +504,10 @@ private extension EventDetailView {
                     .foregroundColor(.secondary)
                     .padding()
                     .frame(height: 100)
-                    //                    .frame(width: 200)
                     .containerRelativeFrame(.horizontal) { size, axis in
                         size * 0.9
                     }
+                    .shadow(radius: 7)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(event.color.opacity(0.15))
