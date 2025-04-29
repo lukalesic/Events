@@ -56,22 +56,21 @@ private extension EventPreview {
             .font(.footnote)
             .padding(.leading, 10)
             .padding(.bottom, event.isToday ? 3 : 0)
-            .shadow(radius: 4)
+            .shadow(color: .black.opacity(0.3), radius: 4)
     }
     
     @ViewBuilder
     func titleView() -> some View {
-        HStack(spacing: 0) {
-            Text(event.name)
-                .lineLimit(gridState == .grid ? 2 : 1)
-                .fixedSize(horizontal: false, vertical: true)
-                .minimumScaleFactor(0.9)
-        }
-        .font(.system(size: isIpad ? 22 : 19))
-        .padding(.trailing, 10)
-        .foregroundColor(.white)
-        .padding(.leading, isIpad ? 10 : 13)
-        .multilineTextAlignment(.leading)
+        Text(event.name)
+            .lineLimit(gridState == .grid ? 2 : 1)
+            .fixedSize(horizontal: false, vertical: true)
+            .minimumScaleFactor(0.9)
+            .font(.system(size: isIpad ? 22 : 19))
+            .padding(.trailing, 10)
+            .foregroundColor(.white)
+            .padding(.leading, isIpad ? 10 : 13)
+            .multilineTextAlignment(.leading)
+            .shadow(color: Color.black.opacity(0.4), radius: 6)
     }
     
     @ViewBuilder
@@ -79,7 +78,7 @@ private extension EventPreview {
         if !event.isToday {
             Text(event.nextDate, style: .date)
                 .font(.footnote)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundStyle(event.color).brightness(0.7)
                 .padding(.leading, 10)
         }
     }
@@ -88,25 +87,30 @@ private extension EventPreview {
     func daysLeftLabel() -> some View {
         let days = event.daysLeftUntilNextDate
         
-        VStack(spacing: 1) {
+        VStack(alignment: .trailing, spacing: 0) {
             if days > 0 {
                 Text("\(days)")
                     .font(.largeTitle)
-                    .foregroundColor(.white)
-                    .shadow(color: .black, radius: 6)
+                    .fontWeight(.bold)
+                    .foregroundColor(event.color).brightness(0.7)
+                    .shadow(color: .black.opacity(0.3), radius: 6)
                 Text("\(days == 1 ? "Day" : "Days" )")
                     .font(.footnote)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(event.color).brightness(0.7)
+                    .fontWeight(.medium)
+
 
             } else if days < 0 {
                 Text("\(abs(days))")
                     .font(.largeTitle)
-                    .foregroundColor(.white)
-                    .shadow(color: .black, radius: 6)
+                    .fontWeight(.bold)
+                    .foregroundColor(event.color).brightness(0.7)
+                    .shadow(color: .black.opacity(0.3), radius: 6)
 
                 Text("\(days == 1 ? "Day ago" : "Days ago")")
                     .font(.footnote)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(event.color).brightness(0.7)
+                    .fontWeight(.medium)
 
             }
             else if days == 0 {
@@ -114,8 +118,10 @@ private extension EventPreview {
                     .font(.largeTitle)
                     .opacity(0)
                 Text("Today")
-                    .foregroundColor(.white)
-
+                    .foregroundColor(event.color).brightness(0.7)
+                    .fontWeight(.semibold)
+                    .shadow(color: .black.opacity(0.3), radius: 6)
+                
             }
         }
     }
