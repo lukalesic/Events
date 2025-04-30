@@ -50,7 +50,7 @@ struct EventsListView: View {
                                                     EventPreview(event: event, gridState: gridState)
                                                         .matchedTransitionSource(id: event.id, in: eventsNamespace)
                                                         .animation(nil, value: event.photoData)
-                                                        .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 0)
+                                                        .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
                                                 }
                                             }
                                         }
@@ -72,6 +72,8 @@ struct EventsListView: View {
                                                     EventPreview(event: event, gridState: gridState)
                                                         .matchedTransitionSource(id: event.id, in: eventsNamespace)
                                                         .animation(nil, value: event.photoData)
+                                                        .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
+
                                                 }
                                             }
                                         }
@@ -93,6 +95,8 @@ struct EventsListView: View {
                                                     EventPreview(event: event, gridState: gridState)
                                                         .matchedTransitionSource(id: event.id, in: eventsNamespace)
                                                         .animation(nil, value: event.photoData)
+                                                        .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
+
                                                 }
                                             }
                                         }
