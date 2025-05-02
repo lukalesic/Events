@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import SwiftData
 
 struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
@@ -27,12 +28,12 @@ struct Provider: AppIntentTimelineProvider {
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let configuration: ConfigurationAppIntent
-    let event: WidgetEvent
+    let event: Event
 }
 
 struct EventsWidgetEntryView: View {
     var entry: Provider.Entry
-    var event: WidgetEvent { entry.event }
+    var event: Event { entry.event }
 
     var body: some View {
         ZStack {
@@ -46,11 +47,19 @@ struct EventsWidgetEntryView: View {
 
                 Spacer()
                 
-                HStack {
-                    Text(event.emoji)
-                        .font(.title2)
-                        .shadow(color: .black.opacity(0.5), radius: 4)
+                HStack(alignment: .bottom) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(event.emoji)
+                            .font(.title2)
+                            .shadow(color: .black.opacity(0.5), radius: 4)
+                        
+                        Text(event.date, style: .date)
+                            .font(.caption)
+                            .foregroundColor(event.color).brightness(0.7)
+                            .shadow(color: .black.opacity(0.5), radius: 4)
 
+                    }
+                    
                     Spacer()
 
                     VStack {
@@ -79,9 +88,14 @@ struct EventsWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
             EventsWidgetEntryView(entry: entry)
+                .modelContainer(for: Event.self)
         }
         .contentMarginsDisabled()
     }
+}
+
+extension Event {
+    static let sample = Event(id: UUID(), color: .green, daysLeft: 35, name: "Test", descriptionText: "", emoji: "😀", priority: .medium, date: .now, includesTime: true, isAddedToCalendar: false, photo: nil, repeatFrequency: .none)
 }
 
 extension ConfigurationAppIntent {
