@@ -6,7 +6,7 @@ import SwiftData
 
 struct EventsListView: View {
     @Environment(EventViewModel.self) private var viewModel
-    @Query(sort: \Event.daysLeft) private var events: [Event]
+    @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
     @Namespace private var eventsNamespace
     @State private var showPastEvents: Bool = true
     @State private var isGridButtonDisabled = false

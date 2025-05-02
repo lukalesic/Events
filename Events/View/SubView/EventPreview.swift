@@ -40,8 +40,9 @@ struct EventPreview: View {
             .frame(height: blockHeight)
             .padding(.vertical, verticalPadding)
             .background(
-                backgroundView()
-                .clipShape(RoundedRectangle(cornerRadius: 13))
+//                backgroundView()
+                event.color.gradient
+//                .clipShape(RoundedRectangle(cornerRadius: 13))
             )
         }
         .clipShape(RoundedRectangle(cornerRadius: 10))

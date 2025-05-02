@@ -36,7 +36,7 @@ struct EventsWidgetEntryView: View {
 
     var body: some View {
         ZStack {
-            ContainerRelativeShape().fill(event.color)
+            ContainerRelativeShape().fill(event.color.gradient)
             VStack(alignment: .leading, spacing: 6) {
                 Text(event.name)
                     .font(.headline)
@@ -96,11 +96,4 @@ extension ConfigurationAppIntent {
         intent.favoriteEmoji = "🤩"
         return intent
     }
-}
-
-#Preview(as: .systemSmall) {
-    EventsWidget()
-} timeline: {
-    SimpleEntry(date: .now, configuration: .smiley, event: .sample)
-    SimpleEntry(date: .now, configuration: .starEyes, event: .sample)
 }
