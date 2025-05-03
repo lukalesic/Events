@@ -9,6 +9,8 @@ import WidgetKit
 import SwiftUI
 import SwiftData
 
+//widgetcenter.shared.reloadtimeline()
+
 struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(), event: .sample)
@@ -21,7 +23,7 @@ struct Provider: AppIntentTimelineProvider {
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         let currentDate = Date()
         let entry = SimpleEntry(date: currentDate, configuration: configuration, event: .sample)
-        return Timeline(entries: [entry], policy: .never)
+        return Timeline(entries: [entry], policy: .never) //TODO change never to time
     }
 }
 
@@ -32,12 +34,20 @@ struct SimpleEntry: TimelineEntry {
 }
 
 struct EventsWidgetEntryView: View {
+    
+//    @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
+    
     var entry: Provider.Entry
     var event: Event { entry.event }
 
     var body: some View {
         ZStack {
             ContainerRelativeShape().fill(event.color.gradient)
+//            
+//            ForEach(events) { event in
+//                Text(event.name)
+//            }
+            
             VStack(alignment: .leading, spacing: 6) {
                 Text(event.name)
                     .font(.headline)
@@ -90,6 +100,9 @@ struct EventsWidget: Widget {
             EventsWidgetEntryView(entry: entry)
                 .modelContainer(for: Event.self)
         }
+        .configurationDisplayName("Test")
+        .description("Test description")
+        .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
     }
 }

@@ -184,6 +184,7 @@ extension UIImage {
 
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import AppIntents
 
 extension UIImage {
     func applyBlur(radius: CGFloat) -> UIImage? {
