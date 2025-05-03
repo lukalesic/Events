@@ -51,6 +51,15 @@
 			);
 			target = DF178BDB2D9046CE00F23DAE /* Events */;
 		};
+		DF0432962DC6A334009A2865 /* Exceptions for "Events" folder in "EventsWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Misc/Enum/EventPriority.swift,
+				Misc/Enum/RepeatFrequency.swift,
+				Model/Event.swift,
+			);
+			target = DFF580612DC5581B00FB8932 /* EventsWidgetExtension */;
+		};
 		DFF5807B2DC5581C00FB8932 /* Exceptions for "EventsWidget" folder in "EventsWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -65,6 +74,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				9F14CE1E2DC0FF490023082D /* Exceptions for "Events" folder in "Events" target */,
+				DF0432962DC6A334009A2865 /* Exceptions for "Events" folder in "EventsWidgetExtension" target */,
 			);
 			path = Events;
 			sourceTree = "<group>";
