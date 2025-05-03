@@ -31,9 +31,13 @@ struct Provider: AppIntentTimelineProvider {
         let currentDate = Date.now
 
         let selectedEvent = try? await getEvent(name: configuration.event?.name)
+        
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: currentDate)
+        let nextMidnight = calendar.date(byAdding: .day, value: 1, to: startOfToday)!
 
         let entry = SimpleEntry(date: currentDate, configuration: configuration, event: selectedEvent)
-        return Timeline(entries: [entry], policy: .atEnd)
+        return Timeline(entries: [entry], policy: .after(nextMidnight))
     }
     
     @MainActor
