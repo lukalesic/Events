@@ -12,84 +12,47 @@ import SwiftData
 //widgetcenter.shared.reloadtimeline()
 
 struct Provider: AppIntentTimelineProvider {
+    
+    var container: ModelContainer = {
+        try! ModelContainer(for: Event.self)
+    }()
+    
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(), event: .sample)
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: configuration, event: .sample)
+        let selectedEvent = try? await getEvent(name: configuration.event?.name)
+        
+        return SimpleEntry(date: Date(), configuration: configuration, event: selectedEvent)
     }
 
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
-        let currentDate = Date()
-        let entry = SimpleEntry(date: currentDate, configuration: configuration, event: .sample)
-        return Timeline(entries: [entry], policy: .never) //TODO change never to time
+        let currentDate = Date.now
+
+        let selectedEvent = try? await getEvent(name: configuration.event?.name)
+
+        let entry = SimpleEntry(date: currentDate, configuration: configuration, event: selectedEvent)
+        return Timeline(entries: [entry], policy: .atEnd)
+    }
+    
+    @MainActor
+    func getEvent(name: String?) throws -> Event? {
+        guard let name else {
+            return nil
+        }
+        
+        let predicate = #Predicate<Event> { $0.name == name }
+        let descriptor = FetchDescriptor<Event>(predicate: predicate)
+        let foundEvents = try? container.mainContext.fetch(descriptor)
+        return foundEvents?.first
     }
 }
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let configuration: ConfigurationAppIntent
-    let event: Event
-}
-
-struct EventsWidgetEntryView: View {
-    
-//    @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
-    
-    var entry: Provider.Entry
-    var event: Event { entry.event }
-
-    var body: some View {
-        ZStack {
-            ContainerRelativeShape().fill(event.color.gradient)
-//            
-//            ForEach(events) { event in
-//                Text(event.name)
-//            }
-            
-            VStack(alignment: .leading, spacing: 6) {
-                Text(event.name)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(event.color).brightness(0.7)
-                    .shadow(color: .black.opacity(0.5), radius: 4)
-
-                Spacer()
-                
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(event.emoji)
-                            .font(.title2)
-                            .shadow(color: .black.opacity(0.5), radius: 4)
-                        
-                        Text(event.date, style: .date)
-                            .font(.caption)
-                            .foregroundColor(event.color).brightness(0.7)
-                            .shadow(color: .black.opacity(0.5), radius: 4)
-
-                    }
-                    
-                    Spacer()
-
-                    VStack {
-                        Text("\(event.daysLeftUntilNextDate)")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(event.color).brightness(0.7)
-                            .shadow(color: .black.opacity(0.5), radius: 4)
-
-                        Text(event.daysLeftUntilNextDate == 1 ? "Day" : "Days")
-                            .font(.caption)
-                            .foregroundColor(event.color).brightness(0.7)
-                            .shadow(color: .black.opacity(0.5), radius: 4)
-
-                    }
-                }
-            }
-            .padding()
-        }
-    }
+    let event: Event?
 }
 
 struct EventsWidget: Widget {
@@ -100,10 +63,67 @@ struct EventsWidget: Widget {
             EventsWidgetEntryView(entry: entry)
                 .modelContainer(for: Event.self)
         }
-        .configurationDisplayName("Test")
-        .description("Test description")
+        .configurationDisplayName("Events")
+//        .description("Test description")
         .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
+    }
+}
+
+struct EventsWidgetEntryView: View {
+        
+    var entry: Provider.Entry
+
+    var body: some View {
+        if let event = entry.event {
+            ZStack {
+                ContainerRelativeShape().fill(event.color.gradient)
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(event.name)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(event.color).brightness(0.7)
+                        .shadow(color: .black.opacity(0.5), radius: 4)
+                    
+                    Spacer()
+                    
+                    HStack(alignment: .bottom) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(event.emoji)
+                                .font(.title2)
+                                .shadow(color: .black.opacity(0.5), radius: 4)
+                            
+                            Text(event.date, style: .date)
+                                .font(.caption)
+                                .foregroundColor(event.color).brightness(0.7)
+                                .shadow(color: .black.opacity(0.5), radius: 4)
+                            
+                        }
+                        
+                        Spacer()
+                        
+                        VStack {
+                            Text("\(event.daysLeftUntilNextDate)")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(event.color).brightness(0.7)
+                                .shadow(color: .black.opacity(0.5), radius: 4)
+                            
+                            Text(event.daysLeftUntilNextDate == 1 ? "Day" : "Days")
+                                .font(.caption)
+                                .foregroundColor(event.color).brightness(0.7)
+                                .shadow(color: .black.opacity(0.5), radius: 4)
+                            
+                        }
+                    }
+                }
+                .padding()
+            }
+        }
+        else {
+            ContentUnavailableView("No event chosen", image: "")
+        }
     }
 }
 

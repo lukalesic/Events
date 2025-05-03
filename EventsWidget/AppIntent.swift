@@ -11,7 +11,6 @@ import SwiftData
 
 struct ConfigurationAppIntent: WidgetConfigurationIntent {
     
-    
     static var title: LocalizedStringResource { "Choose an event" }
     static var description: IntentDescription { "Choose your favorite event." }
     
