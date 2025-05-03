@@ -66,9 +66,10 @@ struct EventsWidget: Widget {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
             EventsWidgetEntryView(entry: entry)
                 .modelContainer(for: Event.self)
+                .containerBackground(.tertiary, for: .widget)
         }
         .configurationDisplayName("Events")
-//        .description("Test description")
+        .description("Test description")
         .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
     }
