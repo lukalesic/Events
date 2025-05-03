@@ -97,17 +97,3 @@ struct EventsWidget: Widget {
 extension Event {
     static let sample = Event(id: UUID(), color: .green, daysLeft: 35, name: "Test", descriptionText: "", emoji: "😀", priority: .medium, date: .now, includesTime: true, isAddedToCalendar: false, photo: nil, repeatFrequency: .none)
 }
-
-extension ConfigurationAppIntent {
-    fileprivate static var smiley: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "😀"
-        return intent
-    }
-    
-    fileprivate static var starEyes: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "🤩"
-        return intent
-    }
-}
