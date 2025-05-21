@@ -86,6 +86,8 @@ struct EventsWidgetEntryView: View {
                 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(event.name)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(event.color).brightness(0.7)
@@ -99,27 +101,47 @@ struct EventsWidgetEntryView: View {
                                 .font(.title2)
                                 .shadow(color: .black.opacity(0.5), radius: 4)
                             
-                            Text(event.date, style: .date)
-                                .font(.caption)
-                                .foregroundColor(event.color).brightness(0.7)
-                                .shadow(color: .black.opacity(0.5), radius: 4)
-                            
+                            if event.daysLeftUntilNextDate != 0 {
+                                Text(event.date, style: .date)
+                                    .font(.caption)
+                                    .foregroundColor(event.color).brightness(0.7)
+                                    .shadow(color: .black.opacity(0.5), radius: 4)
+                            }
                         }
                         
                         Spacer()
                         
                         VStack {
-                            Text("\(event.daysLeftUntilNextDate)")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(event.color).brightness(0.7)
-                                .shadow(color: .black.opacity(0.5), radius: 4)
+                            let daysLeft = event.daysLeftUntilNextDate
                             
-                            Text(event.daysLeftUntilNextDate == 1 ? "Day" : "Days")
-                                .font(.caption)
-                                .foregroundColor(event.color).brightness(0.7)
-                                .shadow(color: .black.opacity(0.5), radius: 4)
-                            
+                            if daysLeft != 0 {
+                                VStack {
+                                    Text(abs(daysLeft).formatted()) // Always show positive number
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(event.color).brightness(0.7)
+                                        .shadow(color: .black.opacity(0.5), radius: 4)
+                                    
+                                    Text(
+                                        daysLeft == 0
+                                        ? "Today"
+                                        : daysLeft > 0
+                                        ? (daysLeft == 1 ? "Day" : "Days")
+                                        : (abs(daysLeft) == 1 ? "Day Ago" : "Days Ago")
+                                    )
+                                    .font(.caption)
+                                    .foregroundColor(event.color).brightness(0.7)
+                                    .shadow(color: .black.opacity(0.5), radius: 4)
+                                }
+                            }
+                            else {
+                                Text("Today")
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(event.color).brightness(0.7)
+                                    .shadow(color: .black.opacity(0.5), radius: 4)
+
+                            }
                         }
                     }
                 }
