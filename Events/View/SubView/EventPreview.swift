@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct EventPreview: View {
+    @Environment(\.colorScheme) private var colorScheme
     var event: Event
     var gridState: GridState
     var isIpad = UIDevice.current.userInterfaceIdiom == .pad
@@ -135,7 +136,12 @@ private extension EventPreview {
                     .resizable()
                     .scaledToFill()
             } else {
-                event.color
+                let baseColor = event.color
+                if colorScheme == .dark {
+                    baseColor.brightness(-0.32)
+                } else {
+                    baseColor
+                }
             }
         }
     }
