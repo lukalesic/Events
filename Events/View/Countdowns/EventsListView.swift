@@ -43,15 +43,7 @@ struct EventsListView: View {
                                         
                                         LazyVGrid(columns: columns, spacing: blockSpacing) {
                                             ForEach(todaysEvents) { event in
-                                                NavigationLink {
-                                                    EventDetailView(event: event)
-                                                        .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
-                                                } label: {
-                                                    EventPreview(event: event, gridState: gridState)
-                                                        .matchedTransitionSource(id: event.id, in: eventsNamespace)
-                                                        .animation(nil, value: event.photoData)
-                                                        .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
-                                                }
+                                                eventPreviewLink(for: event)
                                             }
                                         }
                                     }
@@ -65,16 +57,7 @@ struct EventsListView: View {
                                         
                                         LazyVGrid(columns: columns, spacing: blockSpacing) {
                                             ForEach(upcomingEvents) { event in
-                                                NavigationLink {
-                                                    EventDetailView(event: event)
-                                                        .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
-                                                } label: {
-                                                    EventPreview(event: event, gridState: gridState)
-                                                        .matchedTransitionSource(id: event.id, in: eventsNamespace)
-                                                        .animation(nil, value: event.photoData)
-                                                        .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
-
-                                                }
+                                                eventPreviewLink(for: event)
                                             }
                                         }
                                     }
@@ -88,16 +71,7 @@ struct EventsListView: View {
                                         
                                         LazyVGrid(columns: columns, spacing: blockSpacing) {
                                             ForEach(pastCountdowns) { event in
-                                                NavigationLink {
-                                                    EventDetailView(event: event)
-                                                        .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
-                                                } label: {
-                                                    EventPreview(event: event, gridState: gridState)
-                                                        .matchedTransitionSource(id: event.id, in: eventsNamespace)
-                                                        .animation(nil, value: event.photoData)
-                                                        .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
-
-                                                }
+                                                eventPreviewLink(for: event)
                                             }
                                         }
                                     }
@@ -165,6 +139,30 @@ extension EventsListView {
 }
 
 private extension EventsListView {
+    
+    @ViewBuilder
+    func eventPreviewLink(for event: Event) -> some View {
+        NavigationLink {
+            EventDetailView(event: event)
+                .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
+        } label: {
+            EventPreview(event: event, gridState: gridState)
+                .matchedTransitionSource(id: event.id, in: eventsNamespace)
+                .animation(nil, value: event.photoData)
+                .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
+        }
+        .contextMenu {
+            Button(role: .destructive) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    withAnimation {
+                        viewModel.delete(event)
+                    }
+                }
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
     
     @ViewBuilder
     func gridButton() -> some View {
