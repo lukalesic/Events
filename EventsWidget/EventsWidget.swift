@@ -149,7 +149,13 @@ struct EventsWidgetEntryView: View {
             }
         }
         else {
-            ContentUnavailableView("No event chosen", image: "")
+            ZStack {
+                ContainerRelativeShape().fill(.thinMaterial)
+
+                ContentUnavailableView("No Event",
+                                       systemImage: "calendar",
+                                       description: Text("Edit this widget to select an event"))
+            }
         }
     }
 }
