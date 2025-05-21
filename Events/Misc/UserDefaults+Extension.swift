@@ -18,7 +18,7 @@ extension UserDefaults {
         get {
             guard let raw = string(forKey: Keys.selectedDisplayMode),
                   let mode = TimeDisplayMode(rawValue: raw) else {
-                return .days // fallback
+                return .automatic // fallback
             }
             return mode
         }

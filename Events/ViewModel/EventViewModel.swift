@@ -298,8 +298,16 @@ class EventKitManager {
                 let ekEvent = EKEvent(eventStore: self.eventStore)
                 ekEvent.title = event.name
                 ekEvent.notes = event.descriptionText
-                ekEvent.startDate = event.date
-                ekEvent.endDate = event.date.addingTimeInterval(60 * 60)
+
+                let calendar = Calendar.current
+
+                if event.includesTime {
+                    ekEvent.startDate = event.date
+                } else {
+                    ekEvent.startDate = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: event.date) ?? event.date
+                }
+
+                ekEvent.endDate = ekEvent.startDate.addingTimeInterval(60 * 60)
                 ekEvent.calendar = self.eventStore.defaultCalendarForNewEvents
 
                 do {
