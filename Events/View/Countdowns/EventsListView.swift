@@ -5,6 +5,7 @@ import PhotosUI
 import SwiftData
 
 struct EventsListView: View {
+    @State private var animateBlocks = false
     @Environment(EventViewModel.self) private var viewModel
     @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
     @Namespace private var eventsNamespace
@@ -42,8 +43,8 @@ struct EventsListView: View {
                                             .font(.headline)
                                         
                                         LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                            ForEach(todaysEvents) { event in
-                                                eventPreviewLink(for: event)
+                                            ForEach(Array(todaysEvents.enumerated()), id: \.element.id) { index, event in
+                                                eventPreviewLink(for: event, index: index)
                                             }
                                         }
                                     }
@@ -56,8 +57,8 @@ struct EventsListView: View {
                                             .font(.headline)
                                         
                                         LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                            ForEach(upcomingEvents) { event in
-                                                eventPreviewLink(for: event)
+                                            ForEach(Array(upcomingEvents.enumerated()), id: \.element.id) { index, event in
+                                                eventPreviewLink(for: event, index: index)
                                             }
                                         }
                                     }
@@ -70,8 +71,8 @@ struct EventsListView: View {
                                             .font(.headline)
                                         
                                         LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                            ForEach(pastCountdowns) { event in
-                                                eventPreviewLink(for: event)
+                                            ForEach(Array(pastCountdowns.enumerated()), id: \.element.id) { index, event in
+                                                eventPreviewLink(for: event, index: index)
                                             }
                                         }
                                     }
@@ -112,6 +113,12 @@ struct EventsListView: View {
                     EventFormSheetView()
                 }
             }
+            .task {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.3)) {
+                    animateBlocks = true
+                }
+            }
+
             .accentColor(.primary)
         }
     }
@@ -141,7 +148,7 @@ extension EventsListView {
 private extension EventsListView {
     
     @ViewBuilder
-    func eventPreviewLink(for event: Event) -> some View {
+    func eventPreviewLink(for event: Event, index: Int) -> some View {
         NavigationLink {
             EventDetailView(event: event)
                 .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
@@ -150,6 +157,12 @@ private extension EventsListView {
                 .matchedTransitionSource(id: event.id, in: eventsNamespace)
                 .animation(nil, value: event.photoData)
                 .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
+                .scaleEffect(animateBlocks ? 1 : 0.8)
+                .opacity(animateBlocks ? 1 : 0)
+                .blur(radius: animateBlocks ? 0 : 4)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8)
+                            .delay(Double(index) * 0.05),
+                           value: animateBlocks)
         }
         .contextMenu {
             Button(role: .destructive) {
