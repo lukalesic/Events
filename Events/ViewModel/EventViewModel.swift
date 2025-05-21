@@ -10,6 +10,7 @@ import SwiftUI
 import Observation
 import SwiftData
 import EventKit
+import WidgetKit
 
 @Observable
 class EventViewModel {
@@ -41,8 +42,8 @@ extension EventViewModel {
     }
     
     func updateCountdown(_ countdown: Event) {
-        // No need to explicitly update - SwiftData tracks changes to managed objects
         saveContext()
+        reloadWidget()
     }
     
     func delete(_ countdown: Event) {
@@ -76,6 +77,7 @@ extension EventViewModel {
             existingEvent.date = form.date
             existingEvent.photo = form.photo
             existingEvent.repeatFrequency = form.repeatFrequency
+            reloadWidget()
         } else {
             // Create new countdown
             let event = Event()
@@ -102,6 +104,7 @@ extension EventViewModel {
     private func saveContext() {
         do {
             try modelContext.save()
+            reloadWidget()
         } catch {
             print("Error saving context: \(error)")
         }
@@ -123,6 +126,10 @@ extension EventViewModel {
         } catch {
             print("Failed to delete past countdowns: \(error)")
         }
+    }
+    
+    private func reloadWidget() {
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 
