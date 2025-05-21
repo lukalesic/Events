@@ -5,6 +5,7 @@ import PhotosUI
 import SwiftData
 
 struct EventsListView: View {
+    @State private var refreshOnAppResume = false
     @State private var animateBlocks = false
     @Environment(EventViewModel.self) private var viewModel
     @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
@@ -118,7 +119,9 @@ struct EventsListView: View {
                     animateBlocks = true
                 }
             }
-
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                refreshOnAppResume.toggle()
+            }
             .accentColor(.primary)
         }
     }
