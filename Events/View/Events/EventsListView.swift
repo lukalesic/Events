@@ -104,10 +104,11 @@ struct EventsListView: View {
                     }
                     
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        HStack {
+                        HStack(spacing: 5) {
                             gridButton()
                             addNewButton()
                         }
+                        .padding(.horizontal, 4)
                     }
                 }
                 .sheet(isPresented: $isShowingAddSheet) {
