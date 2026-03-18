@@ -154,8 +154,8 @@ private extension EventsListView {
     func eventPreviewLink(for event: Event, index: Int) -> some View {
         NavigationLink {
             EventDetailView(event: event)
-                .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
-//                .navigationTransition(.automatic)
+//                .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
+                .navigationTransition(.automatic)
         } label: {
             EventPreview(event: event, gridState: gridState)
                 .matchedTransitionSource(id: event.id, in: eventsNamespace)
