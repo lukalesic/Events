@@ -155,6 +155,7 @@ private extension EventsListView {
         NavigationLink {
             EventDetailView(event: event)
                 .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
+//                .navigationTransition(.automatic)
         } label: {
             EventPreview(event: event, gridState: gridState)
                 .matchedTransitionSource(id: event.id, in: eventsNamespace)
