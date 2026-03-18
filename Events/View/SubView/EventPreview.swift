@@ -24,14 +24,16 @@ struct EventPreview: View {
                 Spacer()
                 
                 HStack(alignment: .bottom) {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .listRowSeparatorLeading, spacing: 5) {
                         eventEmoji()
                         nextDate()
                     }
+                    .fixedSize(horizontal: true, vertical: false)
                     
                     Spacer()
                     
                     daysLeftLabel()
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(.trailing)
                 }
                 .padding(.top, gridState == .rows ? -5 : 0) // Slight adjustment
@@ -79,9 +81,10 @@ private extension EventPreview {
     func nextDate() -> some View {
         if !event.isToday {
             Text(event.nextDate.formatted(.dateTime.day().month(.abbreviated).year()))
-                .font(.footnote)
+//                .font(.footnote)
                 .foregroundStyle(event.color).brightness(0.7)
                 .padding(.leading, 10)
+                .font(.system(size: 12))
         }
     }
     
