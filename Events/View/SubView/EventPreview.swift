@@ -78,7 +78,7 @@ private extension EventPreview {
     @ViewBuilder
     func nextDate() -> some View {
         if !event.isToday {
-            Text(event.nextDate, style: .date)
+            Text(event.nextDate.formatted(.dateTime.day().month(.abbreviated).year()))
                 .font(.footnote)
                 .foregroundStyle(event.color).brightness(0.7)
                 .padding(.leading, 10)
