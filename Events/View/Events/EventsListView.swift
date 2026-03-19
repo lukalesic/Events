@@ -106,14 +106,23 @@ struct EventsListView: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack(spacing: 5) {
                             gridButton()
-                            addNewButton()
                         }
                         .padding(.horizontal, 4)
                     }
+                    
+//                    ToolbarItem(placement: .bottomBar) {
+//                    }
                 }
                 .sheet(isPresented: $isShowingAddSheet) {
                     EventFormSheetView()
                 }
+                // Add floating glass button
+                .overlay(
+                    floatingAddEventButton()
+                        .padding(.trailing),
+                    alignment: .bottomTrailing
+                )
+
             }
             .task {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.3)) {
@@ -221,16 +230,6 @@ private extension EventsListView {
     }
     
     @ViewBuilder
-    func addNewButton() -> some View {
-        Button(action: {
-            isShowingAddSheet = true
-        }) {
-            Image(systemName: "calendar.badge.plus")
-                .foregroundColor(.accentColor)
-        }
-    }
-    
-    @ViewBuilder
     func contentUnavailableView() -> some View {
         ContentUnavailableView(
             label: {
@@ -303,5 +302,44 @@ private extension EventsListView {
                 }
             }
         )
+    }
+    
+    @ViewBuilder
+    func floatingAddEventButton() -> some View {
+                    
+            Button(action: {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                    isShowingAddSheet = true
+                }
+            }) {
+                if #available(iOS 26.0, *) {
+                    ZStack {
+                        Circle()
+                            .fill(.blue)
+                        
+                        Image(systemName: "plus")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.accentColor)
+                        
+                    }
+                    .frame(width: 64, height: 64)
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                } else {
+                    ZStack {
+                        Circle()
+                            .fill(.blue)
+                        
+                        Image(systemName: "plus")
+                            .font(.system(size: 28, weight: .light))
+                            .foregroundColor(.accentColor)
+                    }
+                    .frame(width: 64, height: 64)
+                    .buttonBorderShape(.circle)
+                    .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
+                    .accessibilityLabel("Add New Event")
+                }
+            }
+        .allowsHitTesting(!isShowingAddSheet)
     }
 }
