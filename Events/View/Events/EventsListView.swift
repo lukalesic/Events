@@ -267,7 +267,7 @@ private extension EventsListView {
             showPreviewImagesButton()
             
         } label: {
-            Label(Strings.GeneralStrings.options, systemImage: "ellipsis.circle")
+            Label(Strings.GeneralStrings.options, systemImage: "gear")
                 .labelStyle(.iconOnly)
         }
     }
