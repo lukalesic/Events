@@ -30,113 +30,111 @@ struct EventsListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                VStack(spacing: 0) {
-                    if events.isEmpty {
-                        contentUnavailableView()
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 32) {
-                                
-                                // MARK: Today's Events
-                                if !todaysEvents.isEmpty {
-                                    VStack(alignment: .leading) {
-                                        Text(Strings.EventListViewStrings.todaysEvents)
-                                            .font(.headline)
-                                        
-                                        LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                            ForEach(Array(todaysEvents.enumerated()), id: \.element.id) { index, event in
-                                                eventPreviewLink(for: event, index: index)
+                if #available(iOS 26.0, *) {
+                    VStack(spacing: 0) {
+                        if events.isEmpty {
+                            contentUnavailableView()
+                        } else {
+                            ScrollView {
+                                LazyVStack(spacing: 32) {
+                                    
+                                    // MARK: Today's Events
+                                    if !todaysEvents.isEmpty {
+                                        VStack(alignment: .leading) {
+                                            Text(Strings.EventListViewStrings.todaysEvents)
+                                                .font(.headline)
+                                            
+                                            LazyVGrid(columns: columns, spacing: blockSpacing) {
+                                                ForEach(Array(todaysEvents.enumerated()), id: \.element.id) { index, event in
+                                                    eventPreviewLink(for: event, index: index)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // MARK: Upcoming
+                                    if !upcomingEvents.isEmpty {
+                                        VStack(alignment: .leading) {
+                                            Text(Strings.EventListViewStrings.upcomingEvents)
+                                                .font(.headline)
+                                            
+                                            LazyVGrid(columns: columns, spacing: blockSpacing) {
+                                                ForEach(Array(upcomingEvents.enumerated()), id: \.element.id) { index, event in
+                                                    eventPreviewLink(for: event, index: index)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // MARK: Past
+                                    if hasPastEvents && showPastEvents {
+                                        VStack(alignment: .leading) {
+                                            Text(Strings.EventListViewStrings.pastEvents)
+                                                .font(.headline)
+                                            
+                                            LazyVGrid(columns: columns, spacing: blockSpacing) {
+                                                ForEach(Array(pastCountdowns.enumerated()), id: \.element.id) { index, event in
+                                                    eventPreviewLink(for: event, index: index)
+                                                }
                                             }
                                         }
                                     }
                                 }
-                                
-                                // MARK: Upcoming
-                                if !upcomingEvents.isEmpty {
-                                    VStack(alignment: .leading) {
-                                        Text(Strings.EventListViewStrings.upcomingEvents)
-                                            .font(.headline)
-                                        
-                                        LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                            ForEach(Array(upcomingEvents.enumerated()), id: \.element.id) { index, event in
-                                                eventPreviewLink(for: event, index: index)
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                // MARK: Past
-                                if hasPastEvents && showPastEvents {
-                                    VStack(alignment: .leading) {
-                                        Text(Strings.EventListViewStrings.pastEvents)
-                                            .font(.headline)
-                                        
-                                        LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                            ForEach(Array(pastCountdowns.enumerated()), id: \.element.id) { index, event in
-                                                eventPreviewLink(for: event, index: index)
-                                            }
-                                        }
-                                    }
-                                }
+                                .padding()
                             }
-                            .padding()
-                        }
-                        .animation(.spring(response: 0.4,
-                                           dampingFraction: 0.75,
-                                           blendDuration: 0.2),
-                                   value: gridState)
-                        .confirmationDialog(Strings.EventListViewStrings.deletePastEventsConfirmationTitle,
-                                            isPresented: $isConfirmingDelete,
-                                            titleVisibility: .visible) {
-                            Button(Strings.EventListViewStrings.deleteAllPastEventsButton, role: .destructive) {
-                                withAnimation {
-                                    viewModel.deleteAllPastCountdowns()
+                            
+                            .animation(.spring(response: 0.4,
+                                               dampingFraction: 0.75,
+                                               blendDuration: 0.2),
+                                       value: gridState)
+                            .confirmationDialog(Strings.EventListViewStrings.deletePastEventsConfirmationTitle,
+                                                isPresented: $isConfirmingDelete,
+                                                titleVisibility: .visible) {
+                                Button(Strings.EventListViewStrings.deleteAllPastEventsButton, role: .destructive) {
+                                    withAnimation {
+                                        viewModel.deleteAllPastCountdowns()
+                                    }
                                 }
+                                Button(Strings.GeneralStrings.cancel, role: .cancel) {}
                             }
-                            Button(Strings.GeneralStrings.cancel, role: .cancel) {}
                         }
                     }
-                }
-                .navigationTitle(Strings.GeneralStrings.events)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        toolbarMenu()
+                    .navigationTitle(Strings.GeneralStrings.events)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            toolbarMenu()
+                        }
+                        
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            HStack(spacing: 5) {
+                                gridButton()
+                            }
+                            .padding(.horizontal, 4)
+                        }
+                        
+                    }
+                    .sheet(isPresented: $isShowingAddSheet) {
+                        EventFormSheetView()
+                            .navigationTransition(.zoom(sourceID: "addEventButton", in: eventsNamespace))
                     }
                     
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        HStack(spacing: 5) {
-                            gridButton()
-                        }
-                        .padding(.horizontal, 4)
-                    }
+                    .overlay(
+                        floatingAddEventButton()
+                        //                        .shadow(radius: isShowingAddSheet ? 0 : 8)
+                            .padding([.trailing])
+                            .offset(y: 10),
+                        alignment: .bottomTrailing
+                    )
                     
-//                    if #available(iOS 26.0, *) {
-//                        ToolbarItem(placement: .bottomBar) {
-//                            //                        ToolbarSpacer(.flexible)
-//                            HStack {
-////                                Spacer()
-//                                
-//                                floatingAddEventButton()
-////                                    .padding(.leading)
-////                                    .padding(.trailing)
-//                                    .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
-//                            }
+//                    .safeAreaBar(edge: .bottom) {
+//                        HStack {
+//                            Spacer()
+//                            floatingAddEventButton()
+//                                .padding(.trailing)
 //                        }
-//                        .sharedBackgroundVisibility(.hidden)
 //                    }
-            }
-                .sheet(isPresented: $isShowingAddSheet) {
-                    EventFormSheetView()
-                        .navigationTransition(.zoom(sourceID: "addEventButton", in: eventsNamespace))
                 }
 
-                .overlay(
-                    floatingAddEventButton()
-                        .padding(.trailing),
-                    alignment: .bottomTrailing
-                )
-
-                
                 
             }
             .task {
@@ -330,15 +328,15 @@ private extension EventsListView {
                         HStack {
                             Image(systemName: "plus")
                                 .font(.system(size: 25, weight: .semibold))
-                                .foregroundStyle(.white)
                                 .shadow(radius: 5)
                             }
                     }
                     .frame(width: 64, height: 64)
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
-                    .glassEffect(.regular.tint(.cyan).interactive())
+                    .glassEffect(.clear.interactive())
                     .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
+                    .padding(.top)
 
                 } else {
                     ZStack {
