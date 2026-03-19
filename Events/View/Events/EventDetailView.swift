@@ -45,38 +45,28 @@ struct EventDetailView: View {
         ZStack {
             linearGradient()
                 .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    VStack(alignment: .leading, spacing: 22) {
-                        
-
+                ZStack(alignment: .top) {
+                    // 1. Image as background header
+                    imageHeaderView()
+                    ScrollView {
+                    // 2. Content overlays image, starts below header
+                    VStack(alignment: .leading, spacing: 10) {
+                        Spacer().frame(height: 220) // Height of image header
                         VStack(alignment: .center, spacing: 3) {
                             eventName()
                             eventDescription()
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
-                        
                         timeRemainingLabel()
-                        
-                        imageView()
-                        
                         timeDisplayModeMenu()
-                                                
                         priorityMenu()
-                        
                         colorPickerMenu()
-                        
                         emojiButton()
-                        
                         addToCalendar()
-                        
                     }
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    .animation(.easeInOut(duration: 0.25), value: isEditingDescription)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top, 12)
                 }
-                .animation(.default, value: viewModel.formattedTimeRemaining(for: event))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .onAppear {
@@ -532,6 +522,45 @@ private extension EventDetailView {
                     .foregroundColor(.white)
             }
         }
+    }
+    
+    @ViewBuilder
+    func imageHeaderView() -> some View {
+        ZStack(alignment: .bottom) {
+            if let image = image ?? event.photo {
+                if #available(iOS 26.0, *) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .backgroundExtensionEffect(isEnabled: true)
+                        .scaledToFill()
+                    //                    .frame(height: 300)
+                        .frame(maxWidth: .infinity)
+                        .ignoresSafeArea(.all)
+                        .containerRelativeFrame(.horizontal) { size, axis in
+                            size * 0.9
+                        }
+                        .containerRelativeFrame(.vertical) { size, axis in
+                            size * 0.7
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .clipped()
+//                        .overlay(
+//                            LinearGradient(
+//                                gradient: Gradient(colors: [Color.black.opacity(0.25), Color.clear, Color.black.opacity(0.35)]),
+//                                startPoint: .top, endPoint: .bottom
+//                            )
+//                        )
+                } else {
+                    // Fallback on earlier versions
+                }
+            } else {
+                Rectangle()
+                    .fill(event.color.opacity(0.18))
+                    .frame(height: 220)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .ignoresSafeArea(edges: .top)
     }
     
     @ViewBuilder
