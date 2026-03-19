@@ -30,7 +30,6 @@ struct EventsListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                if #available(iOS 26.0, *) {
                     VStack(spacing: 0) {
                         if events.isEmpty {
                             contentUnavailableView()
@@ -120,23 +119,12 @@ struct EventsListView: View {
                     
                     .overlay(
                         floatingAddEventButton()
-                        //                        .shadow(radius: isShowingAddSheet ? 0 : 8)
                             .padding([.trailing])
                             .offset(y: 10),
                         alignment: .bottomTrailing
                     )
                     
-//                    .safeAreaBar(edge: .bottom) {
-//                        HStack {
-//                            Spacer()
-//                            floatingAddEventButton()
-//                                .padding(.trailing)
-//                        }
-//                    }
                 }
-
-                
-            }
             .task {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.3)) {
                     animateBlocks = true
@@ -326,7 +314,7 @@ private extension EventsListView {
                 if #available(iOS 26.0, *) {
                     ZStack {
                         HStack {
-                            Image(systemName: "plus")
+                            Image(systemName: "calendar.badge.plus")
                                 .font(.system(size: 25, weight: .semibold))
                                 .shadow(radius: 5)
                             }
@@ -334,7 +322,7 @@ private extension EventsListView {
                     .frame(width: 64, height: 64)
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
-                    .glassEffect(.clear.interactive())
+                    .glassEffect(.regular.interactive())
                     .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
                     .padding(.top)
 
@@ -342,7 +330,7 @@ private extension EventsListView {
                     ZStack {
                         Circle()
                         
-                        Image(systemName: "plus")
+                        Image(systemName: "calendar.badge.plus")
                             .font(.system(size: 28, weight: .light))
                             .foregroundColor(.accentColor)
                     }
