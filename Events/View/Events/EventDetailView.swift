@@ -256,9 +256,26 @@ private extension EventDetailView {
     
     @ViewBuilder
     func timeRemainingLabel() -> some View {
+        if #available(iOS 26.0, *) {
+            timeRemainingLabelContentView()
+            .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+
+        } else {
+            timeRemainingLabelContentView()
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .foregroundStyle(event.color.opacity(0.2))
+                )
+            // Fallback on earlier versions
+        }
+    }
+    
+    @ViewBuilder
+    func timeRemainingLabelContentView() -> some View {
+        
         let timeString = viewModel.formattedTimeRemaining(for: event)
         let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
-        
+
         VStack {
             Text("\(timeString)")
                 .font(.system(size: 28))
@@ -278,10 +295,6 @@ private extension EventDetailView {
         }
         .padding(.vertical, 15)
         .frame(maxWidth: .infinity, alignment: .center)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .foregroundStyle(event.color.opacity(0.2))
-        )
     }
     
     @ViewBuilder
