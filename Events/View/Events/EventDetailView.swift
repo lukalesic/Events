@@ -145,25 +145,17 @@ struct EventDetailView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button(Strings.GeneralStrings.edit) {
-                    isPresentingEdit = true
-                }
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 shareButton()
-                Menu {
-                    Button(role: .destructive) {
-                        viewModel.delete(event)
-                        withAnimation {
-                            presentationMode.wrappedValue.dismiss()
-                        }
-                    } label: {
-                        Label("Confirm Event Delete", systemImage: "trash")
-                            .tint(.red)
-                    }
-                } label: {
-                    Image(systemName: "trash")
-                        .tint(.red)
-                }
+            }
+            
+            if #available(iOS 26.0, *) {
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            }
+            
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                deleteButton()
+                editButton()
             }
         }
         .tint(event.color)
@@ -235,6 +227,34 @@ private extension EventDetailView {
             .scaleEffect(animatePulse ? 1.25 : 1.0)
         }
 
+    }
+    
+    @ViewBuilder
+    func editButton() -> some View {
+        
+        Button {
+            isPresentingEdit = true
+        } label: {
+            Image(systemName: "pencil")
+        }
+    }
+    
+    @ViewBuilder
+    func deleteButton() -> some View {
+        Menu {
+            Button(role: .destructive) {
+                viewModel.delete(event)
+                withAnimation {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            } label: {
+                Label("Delete This Event", systemImage: "trash")
+                    .tint(.red)
+            }
+        } label: {
+            Image(systemName: "trash")
+                .tint(.red)
+        }
     }
     
     @ViewBuilder
