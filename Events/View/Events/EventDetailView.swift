@@ -288,7 +288,7 @@ private extension EventDetailView {
         let timeString = viewModel.formattedTimeRemaining(for: event)
         let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
 
-        VStack {
+        VStack(spacing: 7) {
             Text("\(timeString)")
                 .font(.system(size: 28))
                 .fontWeight(.bold)
@@ -305,7 +305,7 @@ private extension EventDetailView {
                 Text(event.nextDate, style: .date)
             }
         }
-        .padding(.vertical, 15)
+        .padding(.vertical, 20)
         .frame(maxWidth: .infinity, alignment: .center)
     }
     
@@ -327,14 +327,24 @@ private extension EventDetailView {
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Text(viewModel.selectedDisplayMode.rawValue)
-                        .fixedSize()
-                        .padding(.horizontal, 15)
-                        .padding(.vertical, 6)
-                        .background(event.color.opacity(0.2))
-                        .foregroundColor(event.color)
-                        .cornerRadius(8)
-                    
+                    if #available(iOS 26.0, *) {
+                        Text(viewModel.selectedDisplayMode.rawValue)
+                            .fixedSize()
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 6)
+                            .foregroundColor(event.color)
+                            .cornerRadius(8)
+                            .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+                        
+                    } else {
+                        Text(viewModel.selectedDisplayMode.rawValue)
+                            .fixedSize()
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 6)
+                            .foregroundColor(event.color)
+                            .cornerRadius(8)
+                            .background(event.color.opacity(0.2))
+                    }
                     Image(systemName: "chevron.down")
                         .font(.caption)
                         .foregroundColor(.gray)
@@ -400,12 +410,21 @@ private extension EventDetailView {
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Text(event.priority.displayName)
-                        .padding(.horizontal, 15)
-                        .padding(.vertical, 6)
-                        .background(event.color.opacity(0.2))
-                        .foregroundColor(event.color)
-                        .cornerRadius(8)
+                    if #available(iOS 26.0, *) {
+                        Text(event.priority.displayName)
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 6)
+                            .foregroundColor(event.color)
+                            .cornerRadius(8)
+                            .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+                    } else {
+                        Text(event.priority.displayName)
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 6)
+                            .foregroundColor(event.color)
+                            .cornerRadius(8)
+                            .background(event.color.opacity(0.2))
+                    }
                     Image(systemName: "chevron.down")
                         .font(.caption)
                         .foregroundColor(.gray)
