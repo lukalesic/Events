@@ -517,25 +517,46 @@ private extension EventDetailView {
                 }
             } else {
                 PhotosPicker(selection: $selectedItem, matching: .images) {
-                    VStack(spacing: 10) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.system(size: 20))
+                    if #available(iOS 26.0, *) {
+                        VStack(spacing: 10) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: 20))
+                                .foregroundColor(.secondary)
+                            
+                            Text("Tap to add image..")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .padding()
+                        .frame(height: 100)
+                        .containerRelativeFrame(.horizontal) { size, axis in
+                            size * 0.9
+                        }
+                        .shadow(radius: 7)
+                        .glassEffect(.regular.tint(event.color.opacity(0.15)).interactive())
+                    } else {
+                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                            VStack(spacing: 10) {
+                                Image(systemName: "photo.on.rectangle.angled")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.secondary)
+                                
+                                Text("Tap to add image..")
+                            }
+                            .font(.headline)
                             .foregroundColor(.secondary)
-                        
-                        Text("Tap to add image..")
+                            .padding()
+                            .frame(height: 100)
+                            .containerRelativeFrame(.horizontal) { size, axis in
+                                size * 0.9
+                            }
+                            .shadow(radius: 7)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(event.color.opacity(0.15))
+                            )
+                        }
                     }
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .frame(height: 100)
-                    .containerRelativeFrame(.horizontal) { size, axis in
-                        size * 0.9
-                    }
-                    .shadow(radius: 7)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(event.color.opacity(0.15))
-                    )
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: .infinity, alignment: .center)
