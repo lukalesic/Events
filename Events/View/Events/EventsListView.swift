@@ -179,11 +179,9 @@ private extension EventsListView {
     func eventPreviewLink(for event: Event, index: Int) -> some View {
         NavigationLink {
             EventDetailView(event: event)
-//                .navigationTransition(.zoom(sourceID: event.id, in: eventsNamespace))
                 .navigationTransition(.automatic)
         } label: {
             EventPreview(event: event, gridState: gridState)
-                .matchedTransitionSource(id: event.id, in: eventsNamespace)
                 .animation(nil, value: event.photoData)
                 .shadow(color: Color.black.opacity(0.22), radius: 5, x: 0, y: 0)
                 .scaleEffect(animateBlocks ? 1 : 0.8)
@@ -340,6 +338,7 @@ private extension EventsListView {
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
                     .glassEffect(.regular.tint(.cyan).interactive())
+                    .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
 
                 } else {
                     ZStack {
