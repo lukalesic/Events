@@ -181,43 +181,49 @@ private extension EventDetailView {
     func addToCalendar() -> some View {
         VStack {
             if #available(iOS 26.0, *) {
-                Button {
-                    if event.isAddedToCalendar {
-                        showReAddAlert = true
-                    } else {
-                        viewModel.addToCalendar(event,
-                                                onSuccess: {
-                            let generator = UINotificationFeedbackGenerator()
-                            generator.notificationOccurred(.success)
-                            
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                animatePulse = true
-                                isInCalendar = true
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                withAnimation {
-                                    animatePulse = false
-                                }
-                            }
-                            event.isAddedToCalendar = true
-                        },
-                                                onFailure: {
-                            showCalendarAccessAlert = true
-                        })
-                    }
-                } label: {
-                    Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
-                          systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
-                    .padding(13)
-                    .scaleEffect(animatePulse ? 1.25 : 1.0)
-                }
-                //            .buttonStyle(.bordered)
+                addToCalendarViewContent()
                 .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
             } else {
-                // Fallback on earlier versions
+                addToCalendarViewContent()
+                    .buttonStyle(.bordered)
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    @ViewBuilder
+    func addToCalendarViewContent() -> some View {
+        Button {
+            if event.isAddedToCalendar {
+                showReAddAlert = true
+            } else {
+                viewModel.addToCalendar(event,
+                                        onSuccess: {
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                    
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        animatePulse = true
+                        isInCalendar = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation {
+                            animatePulse = false
+                        }
+                    }
+                    event.isAddedToCalendar = true
+                },
+                                        onFailure: {
+                    showCalendarAccessAlert = true
+                })
+            }
+        } label: {
+            Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
+                  systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
+            .padding(13)
+            .scaleEffect(animatePulse ? 1.25 : 1.0)
+        }
+
     }
     
     @ViewBuilder
