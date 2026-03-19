@@ -305,41 +305,53 @@ private extension EventsListView {
     
     @ViewBuilder
     func floatingAddEventButton() -> some View {
-                    
-            Button(action: {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                    isShowingAddSheet = true
-                }
-            }) {
-                if #available(iOS 26.0, *) {
-                    ZStack {
-                        HStack {
-                            Image(systemName: "calendar.badge.plus")
-                                .font(.system(size: 25, weight: .semibold))
-                                .shadow(radius: 5)
-                            }
+        let isIpad = UIDevice.current.userInterfaceIdiom == .pad
+        Button(action: {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                isShowingAddSheet = true
+            }
+        }) {
+            if #available(iOS 26.0, *) {
+                ZStack {
+                    HStack(spacing: isIpad ? 12 : 0) {
+                        Image(systemName: "calendar.badge.plus")
+                            .font(.system(size: 25, weight: .semibold))
+                        if isIpad {
+                            Text("Add new event")
+                                .font(.system(size: 20, weight: .semibold))
+                        }
                     }
-                    .frame(width: 64, height: 64)
-                    .buttonStyle(.glass)
-                    .buttonBorderShape(.circle)
-                    .glassEffect(.regular.interactive())
-                    .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
-                    .padding(.top)
-
-                } else {
-                    ZStack {
-                        Circle()
-                        
+                }
+                .frame(width: isIpad ? 220 : 64, height: isIpad ? 80 : 64)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.capsule)
+                .glassEffect(.regular.interactive())
+                .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
+                .padding(.top)
+            } else {
+                ZStack {
+                    Capsule()
+                        .fill(Color.blue.opacity(0.4))
+                    HStack(spacing: isIpad ? 12 : 0) {
                         Image(systemName: "calendar.badge.plus")
                             .font(.system(size: 28, weight: .light))
                             .foregroundColor(.accentColor)
+                        if isIpad {
+                            Text("Add new event")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.accentColor)
+                        }
                     }
-                    .frame(width: 64, height: 64)
-                    .buttonBorderShape(.circle)
-                    .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
-                    .accessibilityLabel("Add New Event")
                 }
+                .frame(width: isIpad ? 220 : 64, height: 64)
+                .buttonBorderShape(.capsule)
+                .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
+                .accessibilityLabel("Add New Event")
             }
+        }
         .allowsHitTesting(!isShowingAddSheet)
+        .padding(.bottom, 18)
+        .padding(.horizontal, isIpad ? 0 : 18)
+        .frame(maxWidth: .infinity, alignment: isIpad ? .center : .trailing)
     }
 }
