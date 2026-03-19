@@ -52,10 +52,11 @@ struct EventDetailView: View {
                         
                         imageView()
                         
-                        VStack(alignment: .leading, spacing: 3) {
+                        VStack(alignment: .center, spacing: 3) {
                             eventName()
                             eventDescription()
                         }
+                        .frame(maxWidth: .infinity, alignment: .center)
                         
                         timeRemainingLabel()
                         
@@ -349,7 +350,7 @@ private extension EventDetailView {
         Text(event.name)
             .font(.largeTitle)
             .fontWeight(.semibold)
-            .multilineTextAlignment(.leading)
+            .multilineTextAlignment(.center)
             .lineLimit(2)
             .minimumScaleFactor(0.9)
     }
