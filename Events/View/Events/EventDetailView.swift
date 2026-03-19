@@ -180,37 +180,42 @@ private extension EventDetailView {
     @ViewBuilder
     func addToCalendar() -> some View {
         VStack {
-            Button {
-                if event.isAddedToCalendar {
-                    showReAddAlert = true
-                } else {
-                    viewModel.addToCalendar(event,
-                                            onSuccess: {
-                        let generator = UINotificationFeedbackGenerator()
-                        generator.notificationOccurred(.success)
-                        
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            animatePulse = true
-                            isInCalendar = true
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            withAnimation {
-                                animatePulse = false
+            if #available(iOS 26.0, *) {
+                Button {
+                    if event.isAddedToCalendar {
+                        showReAddAlert = true
+                    } else {
+                        viewModel.addToCalendar(event,
+                                                onSuccess: {
+                            let generator = UINotificationFeedbackGenerator()
+                            generator.notificationOccurred(.success)
+                            
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                animatePulse = true
+                                isInCalendar = true
                             }
-                        }
-                        event.isAddedToCalendar = true
-                    },
-                                            onFailure: {
-                        showCalendarAccessAlert = true
-                    })
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                withAnimation {
+                                    animatePulse = false
+                                }
+                            }
+                            event.isAddedToCalendar = true
+                        },
+                                                onFailure: {
+                            showCalendarAccessAlert = true
+                        })
+                    }
+                } label: {
+                    Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
+                          systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
+                    .padding(13)
+                    .scaleEffect(animatePulse ? 1.25 : 1.0)
                 }
-            } label: {
-                Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
-                      systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
-                .padding(5)
-                .scaleEffect(animatePulse ? 1.1 : 1.0)
+                //            .buttonStyle(.bordered)
+                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+            } else {
+                // Fallback on earlier versions
             }
-            .buttonStyle(.bordered)
         }
         .frame(maxWidth: .infinity, alignment: .center)
     }
