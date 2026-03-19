@@ -60,12 +60,6 @@ struct EventFormSheetView: View {
                     deleteSection()
                 }
             }
-            .confirmationDialog(Strings.EventFormStrings.deleteConfirmTitle,
-                                isPresented: $showDeleteConfirmation,
-                                titleVisibility: .visible) {
-                deleteButton()
-                Button(Strings.EventFormStrings.cancel, role: .cancel) {}
-            }
             .navigationTitle(event == nil ? Strings.EventFormStrings.newTitle : Strings.EventFormStrings.editTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -152,26 +146,38 @@ private extension EventFormSheetView {
     @ViewBuilder
     func deleteSection() -> some View {
         Section {
-            Button(role: .destructive) {
-                showDeleteConfirmation = true
-            } label: {
-                Label(Strings.EventFormStrings.delete, systemImage: "trash")
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-            .listRowBackground(Color.red.opacity(0.1))
+            DeleteButtonWithDialog(event: event, showDeleteConfirmation: $showDeleteConfirmation, navigateToRoot: $navigateToRoot)
+                .listRowBackground(Color.red.opacity(0.1))
         }
     }
+}
 
-    @ViewBuilder
-    func deleteButton() -> some View {
-        Button(Strings.EventFormStrings.deleteConfirm, role: .destructive) {
-            if let eventToDelete = event {
-                viewModel.delete(eventToDelete)
-                dismiss()
-                withAnimation {
-                    navigateToRoot = true
+struct DeleteButtonWithDialog: View {
+    var event: Event?
+    @Binding var showDeleteConfirmation: Bool
+    @Binding var navigateToRoot: Bool
+    @Environment(EventViewModel.self) private var viewModel
+    @Environment(\.dismiss) private var dismiss
+    var body: some View {
+        Button(role: .destructive) {
+            showDeleteConfirmation = true
+        } label: {
+            Label(Strings.EventFormStrings.delete, systemImage: "trash")
+                .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .confirmationDialog(Strings.EventFormStrings.deleteConfirmTitle,
+                            isPresented: $showDeleteConfirmation,
+                            titleVisibility: .visible) {
+            Button(Strings.EventFormStrings.deleteConfirm, role: .destructive) {
+                if let eventToDelete = event {
+                    viewModel.delete(eventToDelete)
+                    dismiss()
+                    withAnimation {
+                        navigateToRoot = true
+                    }
                 }
             }
+            Button(Strings.EventFormStrings.cancel, role: .cancel) {}
         }
     }
 }
