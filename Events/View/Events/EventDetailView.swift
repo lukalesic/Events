@@ -50,8 +50,7 @@ struct EventDetailView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(alignment: .leading, spacing: 22) {
                         
-                        imageView()
-                        
+
                         VStack(alignment: .center, spacing: 3) {
                             eventName()
                             eventDescription()
@@ -60,12 +59,10 @@ struct EventDetailView: View {
                         
                         timeRemainingLabel()
                         
+                        imageView()
+                        
                         timeDisplayModeMenu()
-                        
-                        if event.repeatFrequency != .none {
-                            repeatLabel()
-                        }
-                        
+                                                
                         priorityMenu()
                         
                         colorPickerMenu()
@@ -333,6 +330,10 @@ private extension EventDetailView {
                 + Text(event.nextDate, style: .time)
             } else {
                 Text(event.nextDate, style: .date)
+            }
+            
+            if event.repeatFrequency != .none {
+                repeatLabel()
             }
         }
         .padding(.vertical, 20)
