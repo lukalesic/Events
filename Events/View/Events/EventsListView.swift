@@ -327,11 +327,11 @@ private extension EventsListView {
                 .buttonBorderShape(.capsule)
                 .glassEffect(.regular.interactive())
                 .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
-                .padding(.top)
+                .offset(x: isIpad ? 0 : 13, y: isIpad ? 0 : 15)
             } else {
                 ZStack {
                     Capsule()
-                        .fill(Color.blue.opacity(0.4))
+                        .fill(Color.blue.opacity(0.2))
                     HStack(spacing: isIpad ? 12 : 0) {
                         Image(systemName: "calendar.badge.plus")
                             .font(.system(size: 28, weight: .light))
@@ -347,6 +347,7 @@ private extension EventsListView {
                 .buttonBorderShape(.capsule)
                 .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
                 .accessibilityLabel("Add New Event")
+                .offset(x: isIpad ? 0 : 13, y: isIpad ? 0 : 15)
             }
         }
         .allowsHitTesting(!isShowingAddSheet)

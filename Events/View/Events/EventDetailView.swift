@@ -258,7 +258,7 @@ private extension EventDetailView {
     func timeRemainingLabel() -> some View {
         if #available(iOS 26.0, *) {
             timeRemainingLabelContentView()
-            .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+            .glassEffect(.regular.tint(event.color.opacity(0.2)))
 
         } else {
             timeRemainingLabelContentView()
