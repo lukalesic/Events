@@ -13,7 +13,7 @@ struct EventDetailView: View {
     @State private var showCalendarAccessAlert = false
     @State private var isInCalendar = false
     @State private var showReAddAlert = false
-    
+    @State private var showDeleteConfirmation = false
     
     private var predefinedColors: [Color] {
         [
@@ -137,13 +137,11 @@ struct EventDetailView: View {
                 withAnimation(.easeInOut(duration: 0.25)) {
                     isEditingDescription = false
                     isDescriptionFocused = false
-                    // Update directly on the SwiftData model
                     event.descriptionText = editedDescription
                     try? modelContext.save()
                 }
             }
         }
-        //        .navigationTitle(Strings.EventDetailViewStrings.eventDetails)
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -151,13 +149,25 @@ struct EventDetailView: View {
                 Button(Strings.GeneralStrings.edit) {
                     isPresentingEdit = true
                 }
-                
                 shareButton()
+                Menu {
+                    Button(role: .destructive) {
+                        viewModel.delete(event)
+                        withAnimation {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    } label: {
+                        Label("Confirm Event Delete", systemImage: "trash")
+                            .tint(.red)
+                    }
+                } label: {
+                    Image(systemName: "trash")
+                        .tint(.red)
+                }
             }
         }
         .tint(event.color)
         .accentColor(.primary)
-        
         .sheet(isPresented: $isPresentingEdit) {
             EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
         }
