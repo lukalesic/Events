@@ -147,7 +147,7 @@ private extension EventFormSheetView {
     func deleteSection() -> some View {
         Section {
             DeleteButtonWithDialog(event: event, showDeleteConfirmation: $showDeleteConfirmation, navigateToRoot: $navigateToRoot)
-                .listRowBackground(Color.red.opacity(0.1))
+                .listRowBackground(Color.clear)
         }
     }
 }
@@ -162,8 +162,20 @@ struct DeleteButtonWithDialog: View {
         Button(role: .destructive) {
             showDeleteConfirmation = true
         } label: {
-            Label(Strings.EventFormStrings.delete, systemImage: "trash")
-                .frame(maxWidth: .infinity, alignment: .center)
+            if #available(iOS 26.0, *) {
+                Label(Strings.EventFormStrings.delete, systemImage: "trash")
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical)
+                    .glassEffect(.clear.tint(.red).interactive())
+            } else {
+                Label(Strings.EventFormStrings.delete, systemImage: "trash")
+                    .padding()
+                    .background(Color.red.opacity(0.2))
+                    .cornerRadius(15)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                
+            }
         }
         .confirmationDialog(Strings.EventFormStrings.deleteConfirmTitle,
                             isPresented: $showDeleteConfirmation,
