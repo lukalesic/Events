@@ -110,19 +110,34 @@ struct EventsListView: View {
                         .padding(.horizontal, 4)
                     }
                     
-//                    ToolbarItem(placement: .bottomBar) {
+//                    if #available(iOS 26.0, *) {
+//                        ToolbarItem(placement: .bottomBar) {
+//                            //                        ToolbarSpacer(.flexible)
+//                            HStack {
+////                                Spacer()
+//                                
+//                                floatingAddEventButton()
+////                                    .padding(.leading)
+////                                    .padding(.trailing)
+//                                    .toolbarBackgroundVisibility(.hidden, for: .bottomBar)
+//                            }
+//                        }
+//                        .sharedBackgroundVisibility(.hidden)
 //                    }
-                }
+            }
                 .sheet(isPresented: $isShowingAddSheet) {
                     EventFormSheetView()
+                        .navigationTransition(.zoom(sourceID: "addEventButton", in: eventsNamespace))
                 }
-                // Add floating glass button
+
                 .overlay(
                     floatingAddEventButton()
                         .padding(.trailing),
                     alignment: .bottomTrailing
                 )
 
+                
+                
             }
             .task {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.3)) {
@@ -314,21 +329,21 @@ private extension EventsListView {
             }) {
                 if #available(iOS 26.0, *) {
                     ZStack {
-                        Circle()
-                            .fill(.blue)
-                        
-                        Image(systemName: "plus")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.accentColor)
-                        
+                        HStack {
+                            Image(systemName: "plus")
+                                .font(.system(size: 25, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .shadow(radius: 5)
+                            }
                     }
                     .frame(width: 64, height: 64)
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
+                    .glassEffect(.regular.tint(.cyan).interactive())
+
                 } else {
                     ZStack {
                         Circle()
-                            .fill(.blue)
                         
                         Image(systemName: "plus")
                             .font(.system(size: 28, weight: .light))
