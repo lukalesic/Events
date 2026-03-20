@@ -41,6 +41,10 @@ struct EventDetailView: View {
     @State private var editedDescription: String = ""
     @FocusState private var isDescriptionFocused: Bool
     
+    private var textColor: Color {
+        (image ?? event.photo) != nil ? .white : .black
+    }
+    
     var body: some View {
         ZStack {
             // Full-screen blurred image background
