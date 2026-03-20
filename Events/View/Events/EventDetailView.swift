@@ -202,7 +202,8 @@ struct EventDetailView: View {
             VStack {
                 if #available(iOS 26.0, *) {
                     addToCalendarViewContent()
-                        .glassEffect(.clear.tint(event.color.opacity(0.2)).interactive())
+//                        .glassEffect(.clear.tint(event.color.opacity(0.2)).interactive())
+                        .glassEffect(.clear)
                 } else {
                     addToCalendarViewContent()
                         .buttonStyle(.bordered)
@@ -309,7 +310,7 @@ struct EventDetailView: View {
             if #available(iOS 26.0, *) {
                 timeRemainingLabelContentView()
 //                    .glassEffect(.clear.tint(event.color.opacity(0.65)))
-                    .glassEffect(.regular)
+                    .glassEffect(.clear)
                 
             } else {
                 timeRemainingLabelContentView()
@@ -377,7 +378,8 @@ struct EventDetailView: View {
                                 .padding(.vertical, 6)
                                 .foregroundColor(event.color)
                                 .cornerRadius(8)
-                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+//                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+                                .glassEffect(.regular)
                             
                         } else {
                             Text(viewModel.selectedDisplayMode.rawValue)
@@ -460,7 +462,9 @@ struct EventDetailView: View {
                                 .padding(.vertical, 6)
                                 .foregroundColor(event.color)
                                 .cornerRadius(8)
-                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+//                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+                                .glassEffect(.regular)
+
                         } else {
                             Text(event.priority.displayName)
                                 .padding(.horizontal, 15)
