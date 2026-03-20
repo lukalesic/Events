@@ -45,18 +45,18 @@ struct EventDetailView: View {
         ZStack {
             // Full-screen blurred image background
             if let bgImage = image ?? event.photo {
-                Image(uiImage: bgImage)
-                    .resizable()
-                    .scaledToFill()
-                    .blur(radius: 30)
-                    .scaleEffect(1.3) // prevent blur edges from showing
-                    .brightness(0.75)
-//                    .brightness(-0.08)
-//                    .saturation(1.2)
-                    .ignoresSafeArea()
-                    .containerRelativeFrame(.horizontal) { size, axis in
-                        size * 0.9
-                    }
+                GeometryReader { geo in
+                    Image(uiImage: bgImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipped()
+                        .blur(radius: 55)
+                        .scaleEffect(1.3)
+                        .brightness(0.6)
+                        .saturation(1.1)
+                }
+                .ignoresSafeArea()
 //                    .overlay(
 //                        Color.black.opacity(0.3)
 //                            .ignoresSafeArea()
@@ -68,38 +68,29 @@ struct EventDetailView: View {
             ZStack(alignment: .top) {
                 // 1. Image as background header
                 imageHeaderView()
-//                    .containerRelativeFrame(.horizontal) { size, axis in
-//                        size * 0.9
-//                    }
 
                 ScrollView {
                     // 2. Content overlays image, starts below header
-                    VStack(alignment: .leading, spacing: 10) {
-                        Spacer().frame(height: 300) // Height of image header
+                    VStack(alignment: .leading, spacing: 20) {
+                        Spacer().frame(height: 160) // Height of image header
                         if #available(iOS 26.0, *) {
                             VStack(alignment: .center, spacing: 3) {
                                 eventName()
                                 eventDescription()
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .glassEffect(.clear.tint(.black.opacity(0.34)))
+                            .padding(.vertical)
+                            .glassEffect(.clear.tint(.black.opacity(0.0)))
                         } else {
                             // Fallback on earlier versions
                         }
                         
-                        if #available(iOS 26.0, *) {
-                            VStack {
                                 timeRemainingLabel()
                                 timeDisplayModeMenu()
                                 priorityMenu()
                                 colorPickerMenu()
                                 emojiButton()
                                 addToCalendar()
-                            }
-                            //                            .glassEffect(.clear.tint(.black.opacity(0.34)).)
-                        } else {
-                            // Fallback on earlier versions
-                        }
                         
                     }
                     .padding(.horizontal)
@@ -317,7 +308,8 @@ struct EventDetailView: View {
         func timeRemainingLabel() -> some View {
             if #available(iOS 26.0, *) {
                 timeRemainingLabelContentView()
-                    .glassEffect(.clear.tint(event.color.opacity(0.65)))
+//                    .glassEffect(.clear.tint(event.color.opacity(0.65)))
+                    .glassEffect(.regular)
                 
             } else {
                 timeRemainingLabelContentView()
@@ -409,13 +401,12 @@ struct EventDetailView: View {
         @ViewBuilder
         func eventName() -> some View {
             Text(event.name)
-                .padding(.vertical)
                 .font(.largeTitle)
                 .fontWeight(.semibold)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.9)
-                .foregroundStyle(.white)
+                .foregroundStyle(.black)
         }
         
         @ViewBuilder
@@ -562,37 +553,34 @@ struct EventDetailView: View {
                 if let image = image ?? event.photo {
                     if #available(iOS 26.0, *) {
                         // Main header image pinned to the top
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .containerRelativeFrame(.horizontal) { size, axis in
-                                size * 0.9
-                            }
-                            .containerRelativeFrame(.vertical) { size, axis in
-                                size * 0.5
-                            }
-
-                            .frame(maxWidth: .infinity, alignment: .top)
-                            .clipped()
-                            .ignoresSafeArea(edges: .top)
+                        GeometryReader { geo in
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: geo.size.width, height: geo.size.height)
+                                .clipped()
+                        }
+                        .containerRelativeFrame(.vertical) { size, axis in
+                            size * 0.55
+                        }
+                        .ignoresSafeArea(edges: .top)
                         // Gradient mask: sharp at top, fades to transparent at bottom
                         // so the blurred full-screen background shows through
-                            .mask(
-                                VStack(spacing: 0) {
-                                    Color.white
-                                        .frame(height: 180)
-                                    LinearGradient(
-                                        gradient: Gradient(stops: [
-                                            .init(color: .white, location: 0.0),
-                                            .init(color: .white.opacity(0.5), location: 0.4),
-                                            .init(color: .clear, location: 1.0)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                    .frame(height: 140)
-                                }
-                            )
+                        .mask(
+                            VStack(spacing: 0) {
+                                Color.white
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: .white, location: 0.0),
+                                        .init(color: .white.opacity(0.4), location: 0.35),
+                                        .init(color: .clear, location: 1.0)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .frame(height: 160)
+                            }
+                        )
                     } else {
                         // Fallback on earlier versions
                     }
