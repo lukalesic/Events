@@ -43,30 +43,69 @@ struct EventDetailView: View {
     
     var body: some View {
         ZStack {
-            linearGradient()
-                .ignoresSafeArea()
-                ZStack(alignment: .top) {
-                    // 1. Image as background header
-                    imageHeaderView()
-                    ScrollView {
+            // Full-screen blurred image background
+            if let bgImage = image ?? event.photo {
+                Image(uiImage: bgImage)
+                    .resizable()
+                    .scaledToFill()
+                    .blur(radius: 30)
+                    .scaleEffect(1.3) // prevent blur edges from showing
+                    .brightness(0.75)
+//                    .brightness(-0.08)
+//                    .saturation(1.2)
+                    .ignoresSafeArea()
+                    .containerRelativeFrame(.horizontal) { size, axis in
+                        size * 0.9
+                    }
+//                    .overlay(
+//                        Color.black.opacity(0.3)
+//                            .ignoresSafeArea()
+//                    )
+            } else {
+                Color(event.color).opacity(0.18)
+                    .ignoresSafeArea()
+            }
+            ZStack(alignment: .top) {
+                // 1. Image as background header
+                imageHeaderView()
+//                    .containerRelativeFrame(.horizontal) { size, axis in
+//                        size * 0.9
+//                    }
+
+                ScrollView {
                     // 2. Content overlays image, starts below header
                     VStack(alignment: .leading, spacing: 10) {
-                        Spacer().frame(height: 220) // Height of image header
-                        VStack(alignment: .center, spacing: 3) {
-                            eventName()
-                            eventDescription()
+                        Spacer().frame(height: 300) // Height of image header
+                        if #available(iOS 26.0, *) {
+                            VStack(alignment: .center, spacing: 3) {
+                                eventName()
+                                eventDescription()
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .glassEffect(.clear.tint(.black.opacity(0.34)))
+                        } else {
+                            // Fallback on earlier versions
                         }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        timeRemainingLabel()
-                        timeDisplayModeMenu()
-                        priorityMenu()
-                        colorPickerMenu()
-                        emojiButton()
-                        addToCalendar()
+                        
+                        if #available(iOS 26.0, *) {
+                            VStack {
+                                timeRemainingLabel()
+                                timeDisplayModeMenu()
+                                priorityMenu()
+                                colorPickerMenu()
+                                emojiButton()
+                                addToCalendar()
+                            }
+                            //                            .glassEffect(.clear.tint(.black.opacity(0.34)).)
+                        } else {
+                            // Fallback on earlier versions
+                        }
+                        
                     }
                     .padding(.horizontal)
                     .padding(.top, 12)
                 }
+                
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .onAppear {
@@ -165,457 +204,443 @@ struct EventDetailView: View {
     }
 }
 
-private extension EventDetailView {
-    
-    @ViewBuilder
-    func addToCalendar() -> some View {
-        VStack {
-            if #available(iOS 26.0, *) {
-                addToCalendarViewContent()
-                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
-            } else {
-                addToCalendarViewContent()
-                    .buttonStyle(.bordered)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .center)
-    }
-    
-    @ViewBuilder
-    func addToCalendarViewContent() -> some View {
-        Button {
-            if event.isAddedToCalendar {
-                showReAddAlert = true
-            } else {
-                viewModel.addToCalendar(event,
-                                        onSuccess: {
-                    let generator = UINotificationFeedbackGenerator()
-                    generator.notificationOccurred(.success)
-                    
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        animatePulse = true
-                        isInCalendar = true
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        withAnimation {
-                            animatePulse = false
-                        }
-                    }
-                    event.isAddedToCalendar = true
-                },
-                                        onFailure: {
-                    showCalendarAccessAlert = true
-                })
-            }
-        } label: {
-            Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
-                  systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
-            .padding(13)
-            .scaleEffect(animatePulse ? 1.25 : 1.0)
-        }
-
-    }
-    
-    @ViewBuilder
-    func editButton() -> some View {
+    private extension EventDetailView {
         
-        Button {
-            isPresentingEdit = true
-        } label: {
-            Image(systemName: "pencil")
+        @ViewBuilder
+        func addToCalendar() -> some View {
+            VStack {
+                if #available(iOS 26.0, *) {
+                    addToCalendarViewContent()
+                        .glassEffect(.clear.tint(event.color.opacity(0.2)).interactive())
+                } else {
+                    addToCalendarViewContent()
+                        .buttonStyle(.bordered)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
-    }
-    
-    @ViewBuilder
-    func deleteButton() -> some View {
-        Menu {
-            Button(role: .destructive) {
-                viewModel.delete(event)
-                withAnimation {
-                    presentationMode.wrappedValue.dismiss()
+        
+        @ViewBuilder
+        func addToCalendarViewContent() -> some View {
+            Button {
+                if event.isAddedToCalendar {
+                    showReAddAlert = true
+                } else {
+                    viewModel.addToCalendar(event,
+                                            onSuccess: {
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                        
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            animatePulse = true
+                            isInCalendar = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            withAnimation {
+                                animatePulse = false
+                            }
+                        }
+                        event.isAddedToCalendar = true
+                    },
+                                            onFailure: {
+                        showCalendarAccessAlert = true
+                    })
                 }
             } label: {
-                Label("Delete This Event", systemImage: "trash")
+                Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
+                      systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
+                .padding(13)
+                .scaleEffect(animatePulse ? 1.25 : 1.0)
+            }
+            
+        }
+        
+        @ViewBuilder
+        func editButton() -> some View {
+            
+            Button {
+                isPresentingEdit = true
+            } label: {
+                Image(systemName: "pencil")
+            }
+        }
+        
+        @ViewBuilder
+        func deleteButton() -> some View {
+            Menu {
+                Button(role: .destructive) {
+                    viewModel.delete(event)
+                    withAnimation {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                } label: {
+                    Label("Delete This Event", systemImage: "trash")
+                        .tint(.red)
+                }
+            } label: {
+                Image(systemName: "trash")
                     .tint(.red)
             }
-        } label: {
-            Image(systemName: "trash")
-                .tint(.red)
         }
-    }
-    
-    @ViewBuilder
-    func emojiButton() -> some View {
-        HStack {
-            Text("Emoji:")
-                .font(.system(size: 18))
-                .fontWeight(.medium)
-            Spacer()
-            Button {
-                isShowingEmojiPicker = true
-            } label: {
-                HStack {
-                    Text(event.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : event.emoji)
-                        .font(.system(size: 26))
-                }
-                .sheet(isPresented: $isShowingEmojiPicker) {
-                    NavigationStack {
-                        EmojiPickerView(selectedEmoji: Binding(
-                            get: { self.event.emoji },
-                            set: { newValue in
-                                self.event.emoji = newValue
-                                try? modelContext.save()
-                            }
-                        ))
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-        }
-    }
-    
-    @ViewBuilder
-    func linearGradient() -> some View {
-        LinearGradient(
-            gradient: Gradient(colors: [event.color.opacity(0.35), .clear]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    }
-    
-    @ViewBuilder
-    func timeRemainingLabel() -> some View {
-        if #available(iOS 26.0, *) {
-            timeRemainingLabelContentView()
-            .glassEffect(.regular.tint(event.color.opacity(0.2)))
-
-        } else {
-            timeRemainingLabelContentView()
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .foregroundStyle(event.color.opacity(0.2))
-                )
-            // Fallback on earlier versions
-        }
-    }
-    
-    @ViewBuilder
-    func timeRemainingLabelContentView() -> some View {
         
-        let timeString = viewModel.formattedTimeRemaining(for: event)
-        let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
-
-        VStack(spacing: 7) {
-            Text("\(timeString)")
-                .font(.system(size: 28))
-                .fontWeight(.bold)
-                .foregroundColor(event.color)
-                .contentTransition(.numericText())
-                .multilineTextAlignment(.center)
-                .animation(.default, value: timeString)
-            
-            if event.includesTime {
-                Text(event.nextDate, style: .date)
-                + Text(" at ")
-                + Text(event.nextDate, style: .time)
-            } else {
-                Text(event.nextDate, style: .date)
-            }
-            
-            if event.repeatFrequency != .none {
-                repeatLabel()
-            }
-        }
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity, alignment: .center)
-    }
-    
-    @ViewBuilder
-    func timeDisplayModeMenu() -> some View {
-        HStack(spacing: 8) {
-            Text("Display time as:")
-                .font(.system(size: 18))
-                .fontWeight(.medium)
-            
-            Spacer()
-            
-            Menu {
-                ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
-                    Button(mode.rawValue) {
-                        viewModel.selectedDisplayMode = mode
-                        UserDefaults.standard.savedDisplayMode = mode
-                    }
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    if #available(iOS 26.0, *) {
-                        Text(viewModel.selectedDisplayMode.rawValue)
-                            .fixedSize()
-                            .padding(.horizontal, 15)
-                            .padding(.vertical, 6)
-                            .foregroundColor(event.color)
-                            .cornerRadius(8)
-                            .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
-                        
-                    } else {
-                        Text(viewModel.selectedDisplayMode.rawValue)
-                            .fixedSize()
-                            .padding(.horizontal, 15)
-                            .padding(.vertical, 6)
-                            .foregroundColor(event.color)
-                            .cornerRadius(8)
-                            .background(event.color.opacity(0.2))
-                    }
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-                .contentTransition(.numericText())
-                .animation(.default, value: viewModel.selectedDisplayMode.rawValue)
-            }
-        }
-    }
-    
-    @ViewBuilder
-    func eventName() -> some View {
-        Text(event.name)
-            .font(.largeTitle)
-            .fontWeight(.semibold)
-            .multilineTextAlignment(.center)
-            .lineLimit(2)
-            .minimumScaleFactor(0.9)
-    }
-    
-    @ViewBuilder
-    func repeatLabel() -> some View {
-        Text("Repeats \(event.repeatFrequency.rawValue.lowercased())")
-            .font(.subheadline)
-            .foregroundColor(.secondary)
-            .transition(.opacity)
-        
-    }
-    
-    @ViewBuilder
-    func eventDescription() -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if !event.descriptionText.isEmpty {
-                Text(event.descriptionText)
+        @ViewBuilder
+        func emojiButton() -> some View {
+            HStack {
+                Text("Emoji:")
                     .font(.system(size: 18))
-                    .foregroundColor(.secondary)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.leading)
-                    .onTapGesture {
-                        editedDescription = event.descriptionText
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            isEditingDescription = true
+                    .fontWeight(.medium)
+                Spacer()
+                Button {
+                    isShowingEmojiPicker = true
+                } label: {
+                    HStack {
+                        Text(event.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : event.emoji)
+                            .font(.system(size: 26))
+                    }
+                    .sheet(isPresented: $isShowingEmojiPicker) {
+                        NavigationStack {
+                            EmojiPickerView(selectedEmoji: Binding(
+                                get: { self.event.emoji },
+                                set: { newValue in
+                                    self.event.emoji = newValue
+                                    try? modelContext.save()
+                                }
+                            ))
                         }
-                    }
-            }
-        }
-    }
-    
-    @ViewBuilder
-    func priorityMenu() -> some View {
-        HStack(spacing: 8) {
-            Text(Strings.EventDetailViewStrings.priority)
-                .font(.system(size: 18))
-                .fontWeight(.medium)
-            
-            Spacer()
-            
-            Menu {
-                ForEach(EventPriority.allCases, id: \.self) { priority in
-                    Button(priority.displayName) {
-                        viewModel.updatePriority(for: event, to: priority)
-                    }
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    if #available(iOS 26.0, *) {
-                        Text(event.priority.displayName)
-                            .padding(.horizontal, 15)
-                            .padding(.vertical, 6)
-                            .foregroundColor(event.color)
-                            .cornerRadius(8)
-                            .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
-                    } else {
-                        Text(event.priority.displayName)
-                            .padding(.horizontal, 15)
-                            .padding(.vertical, 6)
-                            .foregroundColor(event.color)
-                            .cornerRadius(8)
-                            .background(event.color.opacity(0.2))
-                    }
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-                .contentTransition(.numericText())
-                .animation(.default, value: event.priority.displayName)
-                
-            }
-        }
-    }
-    
-    @ViewBuilder
-    func colorPickerMenu() -> some View {
-        HStack {
-            Text("Color:")
-                .font(.system(size: 18))
-                .fontWeight(.medium)
-            
-            Spacer()
-            
-            HStack(spacing: isColorPickerExpanded ? 12 : 0) {
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                        isColorPickerExpanded.toggle()
-                    }
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "chevron.\(isColorPickerExpanded ? "right" : "left")")
-                            .foregroundColor(.primary.opacity(0.6))
-                            .font(.system(size: 16, weight: .bold))
-                            .animation(.default, value: isColorPickerExpanded)
-                        
-                        colorCircle(color: event.color)
                     }
                 }
                 .buttonStyle(.plain)
+            }
+        }
+        
+        @ViewBuilder
+        func timeRemainingLabel() -> some View {
+            if #available(iOS 26.0, *) {
+                timeRemainingLabelContentView()
+                    .glassEffect(.clear.tint(event.color.opacity(0.65)))
                 
-                if isColorPickerExpanded {
-                    ForEach(predefinedColors, id: \.self) { color in
-                        colorCircle(color: color)
-                            .transition(.opacity)
-                            .onTapGesture {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    event.color = color // Update color immediately
-                                }
-                                // Add a slight delay before collapsing the picker to prevent lag
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    withAnimation(.easeInOut(duration: 0.25)) {
-                                        isColorPickerExpanded = false // Collapse after color change
+            } else {
+                timeRemainingLabelContentView()
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .foregroundStyle(event.color.opacity(0.2))
+                    )
+                // Fallback on earlier versions
+            }
+        }
+        
+        @ViewBuilder
+        func timeRemainingLabelContentView() -> some View {
+            
+            let timeString = viewModel.formattedTimeRemaining(for: event)
+            let isInPast = Calendar.current.startOfDay(for: event.date) < Calendar.current.startOfDay(for: .now)
+            
+            VStack(spacing: 7) {
+                Text("\(timeString)")
+                    .font(.system(size: 28))
+                    .fontWeight(.bold)
+                    .foregroundColor(event.color)
+                    .contentTransition(.numericText())
+                    .multilineTextAlignment(.center)
+                    .animation(.default, value: timeString)
+                
+                if event.includesTime {
+                    Text(event.nextDate, style: .date)
+                    + Text(" at ")
+                    + Text(event.nextDate, style: .time)
+                } else {
+                    Text(event.nextDate, style: .date)
+                }
+                
+                if event.repeatFrequency != .none {
+                    repeatLabel()
+                }
+            }
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, alignment: .center)
+        }
+        
+        @ViewBuilder
+        func timeDisplayModeMenu() -> some View {
+            HStack(spacing: 8) {
+                Text("Display time as:")
+                    .font(.system(size: 18))
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                Menu {
+                    ForEach(TimeDisplayMode.allCases, id: \.self) { mode in
+                        Button(mode.rawValue) {
+                            viewModel.selectedDisplayMode = mode
+                            UserDefaults.standard.savedDisplayMode = mode
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        if #available(iOS 26.0, *) {
+                            Text(viewModel.selectedDisplayMode.rawValue)
+                                .fixedSize()
+                                .padding(.horizontal, 15)
+                                .padding(.vertical, 6)
+                                .foregroundColor(event.color)
+                                .cornerRadius(8)
+                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+                            
+                        } else {
+                            Text(viewModel.selectedDisplayMode.rawValue)
+                                .fixedSize()
+                                .padding(.horizontal, 15)
+                                .padding(.vertical, 6)
+                                .foregroundColor(event.color)
+                                .cornerRadius(8)
+                                .background(event.color.opacity(0.2))
+                        }
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    .contentTransition(.numericText())
+                    .animation(.default, value: viewModel.selectedDisplayMode.rawValue)
+                }
+            }
+        }
+        
+        @ViewBuilder
+        func eventName() -> some View {
+            Text(event.name)
+                .padding(.vertical)
+                .font(.largeTitle)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.9)
+                .foregroundStyle(.white)
+        }
+        
+        @ViewBuilder
+        func repeatLabel() -> some View {
+            Text("Repeats \(event.repeatFrequency.rawValue.lowercased())")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .transition(.opacity)
+            
+        }
+        
+        @ViewBuilder
+        func eventDescription() -> some View {
+            VStack(alignment: .leading, spacing: 4) {
+                if !event.descriptionText.isEmpty {
+                    Text(event.descriptionText)
+                        .font(.system(size: 18))
+                        .foregroundColor(.secondary)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
+                        .onTapGesture {
+                            editedDescription = event.descriptionText
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                isEditingDescription = true
+                            }
+                        }
+                }
+            }
+        }
+        
+        @ViewBuilder
+        func priorityMenu() -> some View {
+            HStack(spacing: 8) {
+                Text(Strings.EventDetailViewStrings.priority)
+                    .font(.system(size: 18))
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                Menu {
+                    ForEach(EventPriority.allCases, id: \.self) { priority in
+                        Button(priority.displayName) {
+                            viewModel.updatePriority(for: event, to: priority)
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        if #available(iOS 26.0, *) {
+                            Text(event.priority.displayName)
+                                .padding(.horizontal, 15)
+                                .padding(.vertical, 6)
+                                .foregroundColor(event.color)
+                                .cornerRadius(8)
+                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
+                        } else {
+                            Text(event.priority.displayName)
+                                .padding(.horizontal, 15)
+                                .padding(.vertical, 6)
+                                .foregroundColor(event.color)
+                                .cornerRadius(8)
+                                .background(event.color.opacity(0.2))
+                        }
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    .contentTransition(.numericText())
+                    .animation(.default, value: event.priority.displayName)
+                    
+                }
+            }
+        }
+        
+        @ViewBuilder
+        func colorPickerMenu() -> some View {
+            HStack {
+                Text("Color:")
+                    .font(.system(size: 18))
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                HStack(spacing: isColorPickerExpanded ? 12 : 0) {
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            isColorPickerExpanded.toggle()
+                        }
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "chevron.\(isColorPickerExpanded ? "right" : "left")")
+                                .foregroundColor(.primary.opacity(0.6))
+                                .font(.system(size: 16, weight: .bold))
+                                .animation(.default, value: isColorPickerExpanded)
+                            
+                            colorCircle(color: event.color)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if isColorPickerExpanded {
+                        ForEach(predefinedColors, id: \.self) { color in
+                            colorCircle(color: color)
+                                .transition(.opacity)
+                                .onTapGesture {
+                                    withAnimation(.easeOut(duration: 0.2)) {
+                                        event.color = color // Update color immediately
+                                    }
+                                    // Add a slight delay before collapsing the picker to prevent lag
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                            isColorPickerExpanded = false // Collapse after color change
+                                        }
                                     }
                                 }
-                            }
+                        }
                     }
                 }
-            }
-//            .padding(.vertical, 4)
-        }
-    }
-    
-    @ViewBuilder
-    func colorCircle(color: Color) -> some View {
-        ZStack {
-            Circle()
-                .fill(color)
-                .frame(width: 34, height: 34)
-                .overlay(
-                    Circle()
-                        .stroke(Color.primary.opacity(0.15), lineWidth: 1)
-                )
-            
-            if event.color == color {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.white)
+                //            .padding(.vertical, 4)
             }
         }
-    }
-    
-    @ViewBuilder
-    func imageHeaderView() -> some View {
-        ZStack(alignment: .bottom) {
-            if let image = image ?? event.photo {
-                if #available(iOS 26.0, *) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .backgroundExtensionEffect(isEnabled: true)
-                        .scaledToFill()
-                    //                    .frame(height: 300)
-                        .frame(maxWidth: .infinity)
-                        .ignoresSafeArea(.all)
-                        .containerRelativeFrame(.horizontal) { size, axis in
-                            size * 0.9
-                        }
-                        .containerRelativeFrame(.vertical) { size, axis in
-                            size * 0.7
-                        }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .clipped()
-//                        .overlay(
-//                            LinearGradient(
-//                                gradient: Gradient(colors: [Color.black.opacity(0.25), Color.clear, Color.black.opacity(0.35)]),
-//                                startPoint: .top, endPoint: .bottom
-//                            )
-//                        )
-                } else {
-                    // Fallback on earlier versions
+        
+        @ViewBuilder
+        func colorCircle(color: Color) -> some View {
+            ZStack {
+                Circle()
+                    .fill(color)
+                    .frame(width: 34, height: 34)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                    )
+                
+                if event.color == color {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
                 }
-            } else {
-                Rectangle()
-                    .fill(event.color.opacity(0.18))
-                    .frame(height: 220)
-                    .frame(maxWidth: .infinity)
             }
         }
-        .ignoresSafeArea(edges: .top)
-    }
-    
-    @ViewBuilder
-    func imageView() -> some View {
-        VStack {
-            if let image = image ?? event.photo {
-                if !showFullImage {
-                    
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .containerRelativeFrame(.horizontal) { size, axis in
-                            size * 0.9
-                        }
-                        .containerRelativeFrame(.vertical) { size, axis in
-                            size * 0.5
-                        }
-                        .clipped()
-                        .cornerRadius(20)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .contentShape(Rectangle())
-                        .matchedGeometryEffect(id: "image", in: imageNamespace)
-                        .shadow(radius: 7)
-
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                                showFullImage = true
-                            }
-                        }
-                } else {
-                    Color.clear
-                        .frame(height: 250)
-                        .frame(width: 200)
-                }
-            } else {
-                PhotosPicker(selection: $selectedItem, matching: .images) {
+        
+        @ViewBuilder
+        func imageHeaderView() -> some View {
+            ZStack(alignment: .bottom) {
+                if let image = image ?? event.photo {
                     if #available(iOS 26.0, *) {
-                        VStack(spacing: 10) {
-                            Image(systemName: "photo.on.rectangle.angled")
-                                .font(.system(size: 20))
-                                .foregroundColor(.secondary)
-                            
-                            Text("Tap to add image..")
-                        }
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                        .padding()
-                        .frame(height: 100)
-                        .containerRelativeFrame(.horizontal) { size, axis in
-                            size * 0.9
-                        }
-                        .shadow(radius: 7)
-                        .glassEffect(.regular.tint(event.color.opacity(0.15)).interactive())
+                        // Main header image pinned to the top
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .containerRelativeFrame(.horizontal) { size, axis in
+                                size * 0.9
+                            }
+                            .containerRelativeFrame(.vertical) { size, axis in
+                                size * 0.5
+                            }
+
+                            .frame(maxWidth: .infinity, alignment: .top)
+                            .clipped()
+                            .ignoresSafeArea(edges: .top)
+                        // Gradient mask: sharp at top, fades to transparent at bottom
+                        // so the blurred full-screen background shows through
+                            .mask(
+                                VStack(spacing: 0) {
+                                    Color.white
+                                        .frame(height: 180)
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: .white, location: 0.0),
+                                            .init(color: .white.opacity(0.5), location: 0.4),
+                                            .init(color: .clear, location: 1.0)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                    .frame(height: 140)
+                                }
+                            )
                     } else {
-                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                        // Fallback on earlier versions
+                    }
+                } else {
+                    Rectangle()
+                        .fill(event.color.opacity(0.18))
+                        .frame(height: 220)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .ignoresSafeArea(edges: .top)
+        }
+        
+        @ViewBuilder
+        func imageView() -> some View {
+            VStack {
+                if let image = image ?? event.photo {
+                    if !showFullImage {
+                        
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .containerRelativeFrame(.horizontal) { size, axis in
+                                size * 0.9
+                            }
+                            .containerRelativeFrame(.vertical) { size, axis in
+                                size * 0.5
+                            }
+                            .clipped()
+                            .cornerRadius(20)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .contentShape(Rectangle())
+                            .matchedGeometryEffect(id: "image", in: imageNamespace)
+                            .shadow(radius: 7)
+                        
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                    showFullImage = true
+                                }
+                            }
+                    } else {
+                        Color.clear
+                            .frame(height: 250)
+                            .frame(width: 200)
+                    }
+                } else {
+                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                        if #available(iOS 26.0, *) {
                             VStack(spacing: 10) {
                                 Image(systemName: "photo.on.rectangle.angled")
                                     .font(.system(size: 20))
@@ -631,73 +656,92 @@ private extension EventDetailView {
                                 size * 0.9
                             }
                             .shadow(radius: 7)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(event.color.opacity(0.15))
-                            )
+                            .glassEffect(.regular.tint(event.color.opacity(0.15)).interactive())
+                        } else {
+                            PhotosPicker(selection: $selectedItem, matching: .images) {
+                                VStack(spacing: 10) {
+                                    Image(systemName: "photo.on.rectangle.angled")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text("Tap to add image..")
+                                }
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                                .padding()
+                                .frame(height: 100)
+                                .containerRelativeFrame(.horizontal) { size, axis in
+                                    size * 0.9
+                                }
+                                .shadow(radius: 7)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .fill(event.color.opacity(0.15))
+                                )
+                            }
                         }
                     }
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .buttonStyle(.plain)
-                .frame(maxWidth: .infinity, alignment: .center)
             }
         }
-    }
-    
-    
-    @ViewBuilder
-    func fullscreenImageOverlay() -> some View {
-        if showFullImage, let fullImage = image ?? event.photo {
-            ZStack {
-                // 🧊 Frosted glass background
-                VisualEffectBlur()
-                    .ignoresSafeArea()
-                    .transition(.opacity)
-                    .zIndex(1)
-                
-                // Apply matchedGeometryEffect only when showing fullscreen
-                Image(uiImage: fullImage)
-                    .resizable()
-                    .scaledToFit()
-                    .matchedGeometryEffect(id: "image", in: imageNamespace)
-                    .background(Color.black.opacity(0.001)) // tap area
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .offset(dragOffset)
-                    .gesture(
-                        DragGesture()
-                            .onChanged { gesture in dragOffset = gesture.translation }
-                            .onEnded { gesture in
-                                if abs(gesture.translation.height) > 100 {
-                                    withAnimation(.spring(bounce: 0.25)) {
-                                        showFullImage = false
-                                        dragOffset = .zero
-                                    }
-                                } else {
-                                    withAnimation(.spring(bounce: 0.25)) {
-                                        dragOffset = .zero
+        
+        
+        @ViewBuilder
+        func fullscreenImageOverlay() -> some View {
+            if showFullImage, let fullImage = image ?? event.photo {
+                ZStack {
+                    // 🧊 Frosted glass background
+                    VisualEffectBlur()
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                        .zIndex(1)
+                    
+                    // Apply matchedGeometryEffect only when showing fullscreen
+                    Image(uiImage: fullImage)
+                        .resizable()
+                        .scaledToFit()
+                        .matchedGeometryEffect(id: "image", in: imageNamespace)
+                        .background(Color.black.opacity(0.001)) // tap area
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .offset(dragOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { gesture in dragOffset = gesture.translation }
+                                .onEnded { gesture in
+                                    if abs(gesture.translation.height) > 100 {
+                                        withAnimation(.spring(bounce: 0.25)) {
+                                            showFullImage = false
+                                            dragOffset = .zero
+                                        }
+                                    } else {
+                                        withAnimation(.spring(bounce: 0.25)) {
+                                            dragOffset = .zero
+                                        }
                                     }
                                 }
+                        )
+                        .onTapGesture {
+                            withAnimation(.spring(bounce: 0.25)) {
+                                showFullImage = false
                             }
-                    )
-                    .onTapGesture {
-                        withAnimation(.spring(bounce: 0.25)) {
-                            showFullImage = false
                         }
-                    }
-                    .zIndex(2)
+                        .zIndex(2)
+                }
             }
         }
-    }
-    
-    @ViewBuilder
-    func shareButton() -> some View {
-        Button {
-            viewModel.share(event: event, image: image)
-        } label: {
-            Image(systemName: "square.and.arrow.up")
-                .scaleEffect(0.9)
-                .offset(y: -2.5)
+        
+        @ViewBuilder
+        func shareButton() -> some View {
+            Button {
+                viewModel.share(event: event, image: image)
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .scaleEffect(0.9)
+                    .offset(y: -2.5)
+            }
+            .accessibilityLabel("Share Countdown")
         }
-        .accessibilityLabel("Share Countdown")
     }
-}
+
