@@ -53,7 +53,7 @@ struct EventDetailView: View {
                         .clipped()
                         .blur(radius: 55)
                         .scaleEffect(1.3)
-                        .brightness(0.6)
+                        .brightness(-0.1)
                         .saturation(1.1)
                 }
                 .ignoresSafeArea()
@@ -241,6 +241,7 @@ struct EventDetailView: View {
             } label: {
                 Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
                       systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
+                .foregroundColor(.white)
                 .padding(13)
                 .scaleEffect(animatePulse ? 1.25 : 1.0)
             }
@@ -281,6 +282,7 @@ struct EventDetailView: View {
                 Text("Emoji:")
                     .font(.system(size: 18))
                     .fontWeight(.medium)
+                    .foregroundColor(.white)
                 Spacer()
                 Button {
                     isShowingEmojiPicker = true
@@ -332,7 +334,7 @@ struct EventDetailView: View {
                 Text("\(timeString)")
                     .font(.system(size: 28))
                     .fontWeight(.bold)
-                    .foregroundColor(event.color)
+                    .foregroundColor(.white)
                     .contentTransition(.numericText())
                     .multilineTextAlignment(.center)
                     .animation(.default, value: timeString)
@@ -351,6 +353,7 @@ struct EventDetailView: View {
             }
             .padding(.vertical, 20)
             .frame(maxWidth: .infinity, alignment: .center)
+            .foregroundColor(.white)
         }
         
         @ViewBuilder
@@ -359,6 +362,7 @@ struct EventDetailView: View {
                 Text("Display time as:")
                     .font(.system(size: 18))
                     .fontWeight(.medium)
+                    .foregroundColor(.white)
                 
                 Spacer()
                 
@@ -376,23 +380,23 @@ struct EventDetailView: View {
                                 .fixedSize()
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(event.color)
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
 //                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
-                                .glassEffect(.regular)
+                                .glassEffect(.clear)
                             
                         } else {
                             Text(viewModel.selectedDisplayMode.rawValue)
                                 .fixedSize()
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(event.color)
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
                                 .background(event.color.opacity(0.2))
                         }
                         Image(systemName: "chevron.down")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.5))
                     }
                     .contentTransition(.numericText())
                     .animation(.default, value: viewModel.selectedDisplayMode.rawValue)
@@ -408,14 +412,14 @@ struct EventDetailView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.9)
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
         }
         
         @ViewBuilder
         func repeatLabel() -> some View {
             Text("Repeats \(event.repeatFrequency.rawValue.lowercased())")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.white.opacity(0.7))
                 .transition(.opacity)
             
         }
@@ -426,7 +430,7 @@ struct EventDetailView: View {
                 if !event.descriptionText.isEmpty {
                     Text(event.descriptionText)
                         .font(.system(size: 18))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.7))
                         .lineLimit(3)
                         .multilineTextAlignment(.leading)
                         .onTapGesture {
@@ -445,6 +449,7 @@ struct EventDetailView: View {
                 Text(Strings.EventDetailViewStrings.priority)
                     .font(.system(size: 18))
                     .fontWeight(.medium)
+                    .foregroundColor(.white)
                 
                 Spacer()
                 
@@ -460,22 +465,22 @@ struct EventDetailView: View {
                             Text(event.priority.displayName)
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(event.color)
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
 //                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
-                                .glassEffect(.regular)
+                                .glassEffect(.clear)
 
                         } else {
                             Text(event.priority.displayName)
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(event.color)
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
                                 .background(event.color.opacity(0.2))
                         }
                         Image(systemName: "chevron.down")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.5))
                     }
                     .contentTransition(.numericText())
                     .animation(.default, value: event.priority.displayName)
@@ -490,6 +495,7 @@ struct EventDetailView: View {
                 Text("Color:")
                     .font(.system(size: 18))
                     .fontWeight(.medium)
+                    .foregroundColor(.white)
                 
                 Spacer()
                 
@@ -501,7 +507,7 @@ struct EventDetailView: View {
                     }) {
                         HStack(spacing: 8) {
                             Image(systemName: "chevron.\(isColorPickerExpanded ? "right" : "left")")
-                                .foregroundColor(.primary.opacity(0.6))
+                                .foregroundColor(.white.opacity(0.6))
                                 .font(.system(size: 16, weight: .bold))
                                 .animation(.default, value: isColorPickerExpanded)
                             
@@ -540,7 +546,7 @@ struct EventDetailView: View {
                     .frame(width: 34, height: 34)
                     .overlay(
                         Circle()
-                            .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
                     )
                 
                 if event.color == color {
@@ -636,12 +642,12 @@ struct EventDetailView: View {
                             VStack(spacing: 10) {
                                 Image(systemName: "photo.on.rectangle.angled")
                                     .font(.system(size: 20))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.white.opacity(0.7))
                                 
                                 Text("Tap to add image..")
                             }
                             .font(.headline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.white.opacity(0.7))
                             .padding()
                             .frame(height: 100)
                             .containerRelativeFrame(.horizontal) { size, axis in
@@ -654,12 +660,12 @@ struct EventDetailView: View {
                                 VStack(spacing: 10) {
                                     Image(systemName: "photo.on.rectangle.angled")
                                         .font(.system(size: 20))
-                                        .foregroundColor(.secondary)
+                                        .foregroundColor(.white.opacity(0.7))
                                     
                                     Text("Tap to add image..")
                                 }
                                 .font(.headline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.7))
                                 .padding()
                                 .frame(height: 100)
                                 .containerRelativeFrame(.horizontal) { size, axis in
