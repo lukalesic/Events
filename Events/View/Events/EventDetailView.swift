@@ -180,7 +180,6 @@ struct EventDetailView: View {
                 editButton()
             }
         }
-        .tint(event.color)
         .accentColor(.primary)
         .sheet(isPresented: $isPresentingEdit) {
             EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
