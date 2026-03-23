@@ -451,7 +451,7 @@ struct EventDetailView: View {
                 Text(Strings.EventDetailViewStrings.priority)
                     .font(.system(size: 18))
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
+                    .foregroundColor(textColor)
                 
                 Spacer()
                 
@@ -476,7 +476,7 @@ struct EventDetailView: View {
                             Text(event.priority.displayName)
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(.white)
+                                .foregroundColor(textColor)
                                 .cornerRadius(8)
                                 .background(event.color.opacity(0.2))
                         }
