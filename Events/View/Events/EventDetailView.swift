@@ -47,28 +47,8 @@ struct EventDetailView: View {
     
     var body: some View {
         ZStack {
-            // Full-screen blurred image background
-            if let bgImage = image ?? event.photo {
-                GeometryReader { geo in
-                    Image(uiImage: bgImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geo.size.width, height: geo.size.height)
-                        .clipped()
-                        .blur(radius: 55)
-                        .scaleEffect(1.3)
-                        .brightness(-0.1)
-                        .saturation(1.1)
-                }
-                .ignoresSafeArea()
-//                    .overlay(
-//                        Color.black.opacity(0.3)
-//                            .ignoresSafeArea()
-//                    )
-            } else {
-                Color(event.color).opacity(0.18)
-                    .ignoresSafeArea()
-            }
+            backgroundBlurView()
+
             ZStack(alignment: .top) {
                 // 1. Image as background header
                 imageHeaderView()
@@ -78,24 +58,22 @@ struct EventDetailView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         Spacer().frame(height: 160) // Height of image header
                         if #available(iOS 26.0, *) {
-                            VStack(alignment: .center, spacing: 3) {
-                                eventName()
-                                eventDescription()
-                            }
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.vertical)
-                            .padding(.horizontal)
+                            eventHeaderView()
                             .glassEffect(.clear.tint(.black.opacity(0.0)))
                         } else {
-                            // Fallback on earlier versions
+                            eventHeaderView()
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .foregroundStyle(.gray.opacity(0.2))
+                            )
                         }
                         
-                                timeRemainingLabel()
-                                timeDisplayModeMenu()
-                                priorityMenu()
-                                colorPickerMenu()
-                                emojiButton()
-                                addToCalendar()
+                        timeRemainingLabel()
+                        timeDisplayModeMenu()
+                        priorityMenu()
+                        colorPickerMenu()
+                        emojiButton()
+                        addToCalendar()
                         
                     }
                     .padding(.horizontal)
@@ -202,11 +180,31 @@ struct EventDetailView: View {
     private extension EventDetailView {
         
         @ViewBuilder
+        func backgroundBlurView() -> some View {
+            if let bgImage = image ?? event.photo {
+                GeometryReader { geo in
+                    Image(uiImage: bgImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipped()
+                        .blur(radius: 55)
+                        .scaleEffect(1.3)
+                        .brightness(-0.1)
+                        .saturation(1.1)
+                }
+                .ignoresSafeArea()
+            } else {
+                Color(event.color).opacity(0.18)
+                    .ignoresSafeArea()
+            }
+        }
+        
+        @ViewBuilder
         func addToCalendar() -> some View {
             VStack {
                 if #available(iOS 26.0, *) {
                     addToCalendarViewContent()
-//                        .glassEffect(.clear.tint(event.color.opacity(0.2)).interactive())
                         .glassEffect(.clear)
                 } else {
                     addToCalendarViewContent()
@@ -214,6 +212,17 @@ struct EventDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
+        }
+        
+        @ViewBuilder
+        func eventHeaderView() -> some View {
+            VStack(alignment: .center, spacing: 3) {
+                eventName()
+                eventDescription()
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical)
+            .padding(.horizontal)
         }
         
         @ViewBuilder
@@ -321,9 +330,8 @@ struct EventDetailView: View {
                 timeRemainingLabelContentView()
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                            .foregroundStyle(event.color.opacity(0.2))
+                            .foregroundStyle(.gray.opacity(0.2))
                     )
-                // Fallback on earlier versions
             }
         }
         
@@ -386,7 +394,6 @@ struct EventDetailView: View {
                                 .padding(.vertical, 6)
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
-//                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
                                 .glassEffect(.clear)
                             
                         } else {
@@ -396,7 +403,7 @@ struct EventDetailView: View {
                                 .padding(.vertical, 6)
                                 .foregroundColor(textColor)
                                 .cornerRadius(8)
-                                .background(event.color.opacity(0.2))
+                                .background(.gray.opacity(0.2))
                         }
                         Image(systemName: "chevron.down")
                             .font(.caption)
@@ -478,7 +485,7 @@ struct EventDetailView: View {
                                 .padding(.vertical, 6)
                                 .foregroundColor(textColor)
                                 .cornerRadius(8)
-                                .background(event.color.opacity(0.2))
+                                .background(.gray.opacity(0.2))
                         }
                         Image(systemName: "chevron.down")
                             .font(.caption)
@@ -563,7 +570,6 @@ struct EventDetailView: View {
         func imageHeaderView() -> some View {
             ZStack(alignment: .bottom) {
                 if let image = image ?? event.photo {
-                    if #available(iOS 26.0, *) {
                         // Main header image pinned to the top
                         GeometryReader { geo in
                             Image(uiImage: image)
@@ -593,9 +599,6 @@ struct EventDetailView: View {
                                 .frame(height: 160)
                             }
                         )
-                    } else {
-                        // Fallback on earlier versions
-                    }
                 } else {
                     Rectangle()
                         .fill(event.color.opacity(0.18))
