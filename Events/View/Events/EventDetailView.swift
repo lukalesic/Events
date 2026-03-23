@@ -72,9 +72,9 @@ struct EventDetailView: View {
                         timeRemainingLabel()
                         timeDisplayModeMenu()
                         priorityMenu()
-                        addToCalendar()
                         colorAndEmojiRow()
                             .scaleEffect(0.84)
+                        addToCalendar()
                         
                     }
                     .padding(.horizontal)
@@ -475,7 +475,7 @@ struct EventDetailView: View {
                 // Color bubble
                 if #available(iOS 26.0, *) {
                     colorBubbleContent()
-                        .glassEffect(.clear)
+                        .glassEffect(.clear.interactive())
                 } else {
                     colorBubbleContent()
                         .background(
@@ -487,7 +487,7 @@ struct EventDetailView: View {
                 // Emoji bubble
                 if #available(iOS 26.0, *) {
                     emojiBubbleContent()
-                        .glassEffect(.clear)
+                        .glassEffect(.clear.interactive())
                 } else {
                     emojiBubbleContent()
                         .background(
@@ -514,7 +514,7 @@ struct EventDetailView: View {
                                     withAnimation(.easeOut(duration: 0.2)) {
                                         event.color = color
                                     }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
                                         withAnimation(.easeInOut(duration: 0.25)) {
                                             isColorPickerExpanded = false
                                         }
@@ -532,7 +532,7 @@ struct EventDetailView: View {
                 }
             }
             .padding(.vertical, 14)
-            .padding(.horizontal, 25)
+            .padding(.horizontal, 37)
         }
         
         @ViewBuilder
@@ -562,7 +562,7 @@ struct EventDetailView: View {
                 }
             }
             .padding(.vertical, 14)
-            .padding(.horizontal, 27)
+            .padding(.horizontal, 40)
         }
         
         @ViewBuilder
