@@ -84,6 +84,7 @@ struct EventDetailView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical)
+                            .padding(.horizontal)
                             .glassEffect(.clear.tint(.black.opacity(0.0)))
                         } else {
                             // Fallback on earlier versions
@@ -286,7 +287,7 @@ struct EventDetailView: View {
                 Text("Emoji:")
                     .font(.system(size: 18))
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
+                    .foregroundColor(textColor)
                 Spacer()
                 Button {
                     isShowingEmojiPicker = true
@@ -315,7 +316,6 @@ struct EventDetailView: View {
         func timeRemainingLabel() -> some View {
             if #available(iOS 26.0, *) {
                 timeRemainingLabelContentView()
-//                    .glassEffect(.clear.tint(event.color.opacity(0.65)))
                     .glassEffect(.clear)
                 
             } else {
@@ -338,7 +338,7 @@ struct EventDetailView: View {
                 Text("\(timeString)")
                     .font(.system(size: 28))
                     .fontWeight(.bold)
-                    .foregroundColor(.white)
+                    .foregroundColor(textColor)
                     .contentTransition(.numericText())
                     .multilineTextAlignment(.center)
                     .animation(.default, value: timeString)
@@ -356,8 +356,9 @@ struct EventDetailView: View {
                 }
             }
             .padding(.vertical, 20)
+            .padding(.horizontal)
             .frame(maxWidth: .infinity, alignment: .center)
-            .foregroundColor(.white)
+            .foregroundColor(textColor)
         }
         
         @ViewBuilder
@@ -366,8 +367,8 @@ struct EventDetailView: View {
                 Text("Display time as:")
                     .font(.system(size: 18))
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
-                
+                    .foregroundColor(textColor)
+
                 Spacer()
                 
                 Menu {
@@ -394,7 +395,7 @@ struct EventDetailView: View {
                                 .fixedSize()
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(.white)
+                                .foregroundColor(textColor)
                                 .cornerRadius(8)
                                 .background(event.color.opacity(0.2))
                         }
@@ -415,8 +416,10 @@ struct EventDetailView: View {
                 .fontWeight(.semibold)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
-                .minimumScaleFactor(0.9)
-                .foregroundStyle(.white)
+                .minimumScaleFactor(0.85)
+                .foregroundColor(textColor)
+                .padding(.horizontal)
+                .padding(.vertical, 4)
         }
         
         @ViewBuilder
@@ -434,15 +437,11 @@ struct EventDetailView: View {
                 if !event.descriptionText.isEmpty {
                     Text(event.descriptionText)
                         .font(.system(size: 18))
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(textColor)
                         .lineLimit(3)
-                        .multilineTextAlignment(.leading)
-                        .onTapGesture {
-                            editedDescription = event.descriptionText
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                isEditingDescription = true
-                            }
-                        }
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.85)
+                        .padding(.horizontal)
                 }
             }
         }
@@ -469,7 +468,7 @@ struct EventDetailView: View {
                             Text(event.priority.displayName)
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(.white)
+                                .foregroundColor(textColor)
                                 .cornerRadius(8)
 //                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
                                 .glassEffect(.clear)
@@ -499,8 +498,8 @@ struct EventDetailView: View {
                 Text("Color:")
                     .font(.system(size: 18))
                     .fontWeight(.medium)
-                    .foregroundColor(.white)
-                
+                    .foregroundColor(textColor)
+
                 Spacer()
                 
                 HStack(spacing: isColorPickerExpanded ? 12 : 0) {
