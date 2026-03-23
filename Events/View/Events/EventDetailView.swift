@@ -485,15 +485,19 @@ struct EventDetailView: View {
                 }
                 
                 // Emoji bubble
-                if #available(iOS 26.0, *) {
-                    emojiBubbleContent()
-                        .glassEffect(.clear.interactive())
-                } else {
-                    emojiBubbleContent()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.gray.opacity(0.2))
-                        )
+                if !isColorPickerExpanded {
+                    if #available(iOS 26.0, *) {
+                        emojiBubbleContent()
+                            .glassEffect(.clear.interactive())
+                            .transition(.opacity.combined(with: .scale))
+                    } else {
+                        emojiBubbleContent()
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .foregroundStyle(.gray.opacity(0.2))
+                            )
+                            .transition(.opacity.combined(with: .scale))
+                    }
                 }
             }
         }
@@ -532,7 +536,8 @@ struct EventDetailView: View {
                 }
             }
             .padding(.vertical, 14)
-            .padding(.horizontal, 37)
+//            .padding(.horizontal, 37)
+            .frame(maxWidth: .infinity)
         }
         
         @ViewBuilder
@@ -562,7 +567,9 @@ struct EventDetailView: View {
                 }
             }
             .padding(.vertical, 14)
-            .padding(.horizontal, 40)
+//            .padding(.horizontal, 40)
+            .frame(maxWidth: .infinity)
+            
         }
         
         @ViewBuilder
