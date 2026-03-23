@@ -254,7 +254,7 @@ struct EventDetailView: View {
             } label: {
                 Label(event.isAddedToCalendar ? "Added to Calendar" : "Add to Calendar",
                       systemImage: event.isAddedToCalendar ? "checkmark.circle" : "calendar.badge.plus")
-                .foregroundColor(.white)
+                .foregroundColor(textColor)
                 .padding(13)
                 .scaleEffect(animatePulse ? 1.25 : 1.0)
             }
