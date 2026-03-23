@@ -518,7 +518,7 @@ struct EventDetailView: View {
                                     withAnimation(.easeOut(duration: 0.2)) {
                                         event.color = color
                                     }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                                         withAnimation(.easeInOut(duration: 0.25)) {
                                             isColorPickerExpanded = false
                                         }
