@@ -20,7 +20,8 @@ struct EventDetailView: View {
             .green,
             .red,
             .blue,
-            .purple
+            .purple,
+            .yellow,
         ]
     }
     
@@ -55,7 +56,7 @@ struct EventDetailView: View {
 
                 ScrollView {
                     // 2. Content overlays image, starts below header
-                    VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .center, spacing: 20) {
                         Spacer().frame(height: 160) // Height of image header
                         if #available(iOS 26.0, *) {
                             eventHeaderView()
@@ -71,9 +72,9 @@ struct EventDetailView: View {
                         timeRemainingLabel()
                         timeDisplayModeMenu()
                         priorityMenu()
-                        colorPickerMenu()
-                        emojiButton()
                         addToCalendar()
+                        colorAndEmojiRow()
+                            .scaleEffect(0.84)
                         
                     }
                     .padding(.horizontal)
@@ -289,36 +290,6 @@ struct EventDetailView: View {
             }
         }
         
-        @ViewBuilder
-        func emojiButton() -> some View {
-            HStack {
-                Text("Emoji:")
-                    .font(.system(size: 18))
-                    .fontWeight(.medium)
-                    .foregroundColor(textColor)
-                Spacer()
-                Button {
-                    isShowingEmojiPicker = true
-                } label: {
-                    HStack {
-                        Text(event.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : event.emoji)
-                            .font(.system(size: 26))
-                    }
-                    .sheet(isPresented: $isShowingEmojiPicker) {
-                        NavigationStack {
-                            EmojiPickerView(selectedEmoji: Binding(
-                                get: { self.event.emoji },
-                                set: { newValue in
-                                    self.event.emoji = newValue
-                                    try? modelContext.save()
-                                }
-                            ))
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-        }
         
         @ViewBuilder
         func timeRemainingLabel() -> some View {
@@ -499,52 +470,99 @@ struct EventDetailView: View {
         }
         
         @ViewBuilder
-        func colorPickerMenu() -> some View {
-            HStack {
-                Text("Color:")
-                    .font(.system(size: 18))
-                    .fontWeight(.medium)
-                    .foregroundColor(textColor)
-
-                Spacer()
+        func colorAndEmojiRow() -> some View {
+            HStack(spacing: 17) {
+                // Color bubble
+                if #available(iOS 26.0, *) {
+                    colorBubbleContent()
+                        .glassEffect(.clear)
+                } else {
+                    colorBubbleContent()
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .foregroundStyle(.gray.opacity(0.2))
+                        )
+                }
                 
-                HStack(spacing: isColorPickerExpanded ? 12 : 0) {
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            isColorPickerExpanded.toggle()
-                        }
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "chevron.\(isColorPickerExpanded ? "right" : "left")")
-                                .foregroundColor(.white.opacity(0.6))
-                                .font(.system(size: 16, weight: .bold))
-                                .animation(.default, value: isColorPickerExpanded)
-                            
-                            colorCircle(color: event.color)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    
+                // Emoji bubble
+                if #available(iOS 26.0, *) {
+                    emojiBubbleContent()
+                        .glassEffect(.clear)
+                } else {
+                    emojiBubbleContent()
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .foregroundStyle(.gray.opacity(0.2))
+                        )
+                }
+            }
+        }
+        
+        @ViewBuilder
+        func colorBubbleContent() -> some View {
+            VStack(spacing: 10) {
+                Text("Color")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(textColor.opacity(0.7))
+                
+                HStack(spacing: 10) {
                     if isColorPickerExpanded {
                         ForEach(predefinedColors, id: \.self) { color in
                             colorCircle(color: color)
-                                .transition(.opacity)
+                                .transition(.scale.combined(with: .opacity))
                                 .onTapGesture {
                                     withAnimation(.easeOut(duration: 0.2)) {
-                                        event.color = color // Update color immediately
+                                        event.color = color
                                     }
-                                    // Add a slight delay before collapsing the picker to prevent lag
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                         withAnimation(.easeInOut(duration: 0.25)) {
-                                            isColorPickerExpanded = false // Collapse after color change
+                                            isColorPickerExpanded = false
                                         }
                                     }
                                 }
                         }
+                    } else {
+                        colorCircle(color: event.color)
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    isColorPickerExpanded.toggle()
+                                }
+                            }
                     }
                 }
-                //            .padding(.vertical, 4)
             }
+            .padding(.vertical, 14)
+            .padding(.horizontal, 25)
+        }
+        
+        @ViewBuilder
+        func emojiBubbleContent() -> some View {
+            VStack(spacing: 10) {
+                Text("Emoji")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(textColor.opacity(0.7))
+                
+                Button {
+                    isShowingEmojiPicker = true
+                } label: {
+                    Text(event.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : event.emoji)
+                        .font(.system(size: 32))
+                }
+                .buttonStyle(.plain)
+                .sheet(isPresented: $isShowingEmojiPicker) {
+                    NavigationStack {
+                        EmojiPickerView(selectedEmoji: Binding(
+                            get: { self.event.emoji },
+                            set: { newValue in
+                                self.event.emoji = newValue
+                                try? modelContext.save()
+                            }
+                        ))
+                    }
+                }
+            }
+            .padding(.vertical, 14)
+            .padding(.horizontal, 27)
         }
         
         @ViewBuilder
