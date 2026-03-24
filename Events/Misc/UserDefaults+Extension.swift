@@ -12,6 +12,7 @@ extension UserDefaults {
         static let selectedDisplayMode = "selectedDisplayMode"
         static let gridState = "gridState"
         static let showEventPreviewBackground = "showEventPreviewBackground"
+        static let showPastEvents = "showPastEvents"
     }
 
     var savedDisplayMode: TimeDisplayMode {
@@ -46,6 +47,15 @@ extension UserDefaults {
         }
         set {
             set(newValue, forKey: Keys.showEventPreviewBackground)
+        }
+    }
+    
+    var savedShowPastEvents: Bool {
+        get {
+            object(forKey: Keys.showPastEvents) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Keys.showPastEvents)
         }
     }
 }

@@ -10,7 +10,7 @@ struct EventsListView: View {
     @Environment(EventViewModel.self) private var viewModel
     @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
     @Namespace private var eventsNamespace
-    @State private var showPastEvents: Bool = true
+    @State private var showPastEvents: Bool = UserDefaults.standard.savedShowPastEvents
     @State private var isGridButtonDisabled = false
     @State private var isShowingAddSheet = false
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
@@ -71,6 +71,7 @@ struct EventsListView: View {
                                             Button {
                                                 withAnimation(.easeInOut(duration: 0.45)) {
                                                     showPastEvents.toggle()
+                                                    UserDefaults.standard.savedShowPastEvents = showPastEvents
                                                 }
                                             } label: {
                                                 HStack(spacing: 4) {
@@ -80,6 +81,7 @@ struct EventsListView: View {
                                                         .font(.system(size: 16, weight: .semibold))
                                                         .rotationEffect(.degrees(showPastEvents ? 90 : 0))
                                                 }
+                                                .frame(maxWidth: .infinity, alignment: .leading)
                                                 .foregroundStyle(.primary)
                                             }
                                             
