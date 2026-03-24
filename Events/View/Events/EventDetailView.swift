@@ -196,8 +196,17 @@ struct EventDetailView: View {
                 }
                 .ignoresSafeArea()
             } else {
-                Color(event.color).opacity(0.18)
+                Color(event.color).opacity(0.33)
                     .ignoresSafeArea()
+//                GeometryReader { geo in
+//                    EmojiPatternView(emoji: event.emoji, color: event.color, seed: event.name.hashValue)
+//                        .frame(width: geo.size.width, height: geo.size.height)
+//                        .blur(radius: 55)
+//                        .scaleEffect(1.3)
+//                        .brightness(-0.15)
+//                        .saturation(1.1)
+//                }
+                .ignoresSafeArea()
             }
         }
         
@@ -624,10 +633,27 @@ struct EventDetailView: View {
                             }
                         )
                 } else {
-                    Rectangle()
-                        .fill(event.color.opacity(0.18))
-                        .frame(height: 220)
-                        .frame(maxWidth: .infinity)
+                    // Emoji pattern header matching image header layout
+                    EmojiPatternView(emoji: event.emoji, color: event.color, seed: event.name.hashValue)
+                        .containerRelativeFrame(.vertical) { size, axis in
+                            size * 0.55
+                        }
+                        .ignoresSafeArea(edges: .top)
+                        .mask(
+                            VStack(spacing: 0) {
+                                Color.white
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: .white, location: 0.0),
+                                        .init(color: .white.opacity(0.4), location: 0.35),
+                                        .init(color: .clear, location: 1.0)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .frame(height: 160)
+                            }
+                        )
                 }
             }
             .ignoresSafeArea(edges: .top)
@@ -771,4 +797,3 @@ struct EventDetailView: View {
             .accessibilityLabel("Share Countdown")
         }
     }
-
