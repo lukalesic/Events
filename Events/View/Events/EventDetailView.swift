@@ -363,7 +363,7 @@ struct EventDetailView: View {
                                 .fixedSize()
                                 .padding(.horizontal, 15)
                                 .padding(.vertical, 6)
-                                .foregroundColor(.white)
+                                .foregroundColor(textColor)
                                 .cornerRadius(8)
                                 .glassEffect(.clear)
                             
@@ -403,9 +403,8 @@ struct EventDetailView: View {
         func repeatLabel() -> some View {
             Text("Repeats \(event.repeatFrequency.rawValue.lowercased())")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(textColor.opacity(0.7))
                 .transition(.opacity)
-            
         }
         
         @ViewBuilder
