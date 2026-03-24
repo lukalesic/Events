@@ -22,7 +22,7 @@ struct EmojiPatternView: View {
                     y: Double.random(in: 0...1, using: &rng),
                     size: Double.random(in: 22...48, using: &rng),
                     rotation: Double.random(in: -30...30, using: &rng),
-                    opacity: Double.random(in: 0.15...0.45, using: &rng)
+                    opacity: Double.random(in: 0.15...0.70, using: &rng)
                 )
             )
         }
