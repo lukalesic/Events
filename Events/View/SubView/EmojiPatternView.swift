@@ -35,9 +35,9 @@ struct EmojiPatternView: View {
                 // Rich gradient background using the event color
                 LinearGradient(
                     colors: [
-                        color.opacity(0.85),
-                        color.opacity(0.75),
-                        color.opacity(0.65)
+                        color.opacity(0.55),
+                        color.opacity(0.40),
+                        color.opacity(0.35)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
