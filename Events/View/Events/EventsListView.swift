@@ -74,16 +74,18 @@ struct EventsListView: View {
                                                     UserDefaults.standard.savedShowPastEvents = showPastEvents
                                                 }
                                             } label: {
-                                                HStack(spacing: 4) {
+                                                HStack(spacing: 12) {
                                                     Text(Strings.EventListViewStrings.pastEvents)
                                                         .font(.headline)
                                                     Image(systemName: "chevron.right")
-                                                        .font(.system(size: 16, weight: .semibold))
+                                                        .font(.system(size: 14, weight: .semibold))
                                                         .rotationEffect(.degrees(showPastEvents ? 90 : 0))
+                                                        .background(Color.gray.opacity(0.2).clipShape(Circle()).scaleEffect(2.12))
                                                 }
                                                 .frame(maxWidth: .infinity, alignment: .leading)
                                                 .foregroundStyle(.primary)
                                             }
+                                            .buttonStyle(.plain)
                                             
                                             if showPastEvents {
                                                 LazyVGrid(columns: columns, spacing: blockSpacing) {
@@ -91,7 +93,6 @@ struct EventsListView: View {
                                                         eventPreviewLink(for: event, index: index)
                                                     }
                                                 }
-                                                .transition(.opacity)
                                             }
                                         }
                                     }
@@ -266,7 +267,7 @@ private extension EventsListView {
             if hasPastEvents {
                 deletePastEventsButton()
             }
-            showPreviewImagesButton()
+//            showPreviewImagesButton()
             
         } label: {
             Label(Strings.GeneralStrings.options, systemImage: "gear")
