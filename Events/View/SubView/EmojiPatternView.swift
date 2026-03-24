@@ -13,7 +13,7 @@ struct EmojiPatternView: View {
         self.color = color
         
         // Use a seeded random generator for deterministic layout
-        var rng = SeededRandomNumberGenerator(seed: UInt64(seed))
+        var rng = SeededRandomNumberGenerator(seed: UInt64(bitPattern: Int64(seed)))
         var generated: [EmojiItem] = []
         for _ in 0..<count {
             generated.append(
@@ -35,8 +35,8 @@ struct EmojiPatternView: View {
                 // Rich gradient background using the event color
                 LinearGradient(
                     colors: [
-                        color,
                         color.opacity(0.85),
+                        color.opacity(0.75),
                         color.opacity(0.65)
                     ],
                     startPoint: .topLeading,
