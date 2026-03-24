@@ -66,15 +66,30 @@ struct EventsListView: View {
                                     }
                                     
                                     // MARK: Past
-                                    if hasPastEvents && showPastEvents {
+                                    if hasPastEvents {
                                         VStack(alignment: .leading) {
-                                            Text(Strings.EventListViewStrings.pastEvents)
-                                                .font(.headline)
-                                            
-                                            LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                                ForEach(Array(pastCountdowns.enumerated()), id: \.element.id) { index, event in
-                                                    eventPreviewLink(for: event, index: index)
+                                            Button {
+                                                withAnimation(.easeInOut(duration: 0.45)) {
+                                                    showPastEvents.toggle()
                                                 }
+                                            } label: {
+                                                HStack(spacing: 4) {
+                                                    Text(Strings.EventListViewStrings.pastEvents)
+                                                        .font(.headline)
+                                                    Image(systemName: "chevron.right")
+                                                        .font(.system(size: 16, weight: .semibold))
+                                                        .rotationEffect(.degrees(showPastEvents ? 90 : 0))
+                                                }
+                                                .foregroundStyle(.primary)
+                                            }
+                                            
+                                            if showPastEvents {
+                                                LazyVGrid(columns: columns, spacing: blockSpacing) {
+                                                    ForEach(Array(pastCountdowns.enumerated()), id: \.element.id) { index, event in
+                                                        eventPreviewLink(for: event, index: index)
+                                                    }
+                                                }
+                                                .transition(.opacity)
                                             }
                                         }
                                     }
@@ -247,7 +262,6 @@ private extension EventsListView {
     func toolbarMenu() -> some View {
         Menu {
             if hasPastEvents {
-                togglePastEventsButton()
                 deletePastEventsButton()
             }
             showPreviewImagesButton()
@@ -272,14 +286,6 @@ private extension EventsListView {
     }
     
     //MARK: Menu buttons
-    
-    @ViewBuilder
-    func togglePastEventsButton() -> some View {
-        menuButton(label: showPastEvents ? Strings.EventListViewStrings.hidePastEvents : Strings.EventListViewStrings.showPastEvents,
-                   icon: showPastEvents ? "eye.slash" : "eye",
-                   action: { showPastEvents.toggle() })
-        
-    }
     
     @ViewBuilder
     func deletePastEventsButton() -> some View {

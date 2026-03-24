@@ -36,8 +36,6 @@ struct Strings {
         static let addNewEvent = "Add an event"
         static let emptyListHint = "When you add a new event, it will appear here."
         static let noEvents = "No events"
-        static let hidePastEvents = "Hide past events"
-        static let showPastEvents = "Show past events"
     }
     
     // Event Form
