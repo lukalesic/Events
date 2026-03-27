@@ -22,6 +22,7 @@ struct EventDetailView: View {
             .blue,
             .purple,
             .yellow,
+            .gray,
         ]
     }
     
@@ -533,6 +534,17 @@ struct EventDetailView: View {
                                     }
                                 }
                         }
+                        
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                isColorPickerExpanded = false
+                            }
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 20))
+                                .foregroundStyle(.white.opacity(0.5))
+                        }
+                        .transition(.scale.combined(with: .opacity))
                     } else {
                         colorCircle(color: event.color)
                             .onTapGesture {
