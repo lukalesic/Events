@@ -16,6 +16,7 @@ struct EventsListView: View {
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
     
     @State private var isConfirmingDelete = false
+    @State private var isShowingSettings = false
     
     private var columns: [GridItem] {
         let isIpad = UIDevice.current.userInterfaceIdiom == .pad
@@ -261,12 +262,15 @@ private extension EventsListView {
     
     @ViewBuilder
     func toolbarMenu() -> some View {
-        Menu {
 //            showPreviewImagesButton()
-            
+        Button {
+            isShowingSettings = true
         } label: {
             Label(Strings.GeneralStrings.options, systemImage: "gear")
                 .labelStyle(.iconOnly)
+        }
+        .sheet(isPresented: $isShowingSettings) {
+            SettingsView()
         }
     }
     
