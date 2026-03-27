@@ -83,10 +83,10 @@ struct EmojiPatternView: View {
                 )
                 // Layer 2: Breathing — gentle drift + scale loop
                 .offset(
-                    x: animate ? 8 : -8,
-                    y: animate ? -6 : 6
+                    x: animate ? 15 : -13,
+                    y: animate ? -9 : 9
                 )
-                .scaleEffect(animate ? 1.03 : 0.97)
+                .scaleEffect(animate ? 1.03 : 0.95)
                 // Spring for parallax so tilt feels responsive
                 .animation(.interpolatingSpring(stiffness: 60, damping: 15), value: motion.xTilt)
                 .animation(.interpolatingSpring(stiffness: 60, damping: 15), value: motion.yTilt)
