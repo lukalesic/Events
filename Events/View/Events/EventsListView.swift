@@ -68,24 +68,31 @@ struct EventsListView: View {
                                     // MARK: Past
                                     if hasPastEvents {
                                         VStack(alignment: .leading) {
-                                            Button {
-                                                withAnimation(.easeInOut(duration: 0.45)) {
-                                                    showPastEvents.toggle()
-                                                    UserDefaults.standard.savedShowPastEvents = showPastEvents
+                                            HStack {
+                                                Button {
+                                                    withAnimation(.easeInOut(duration: 0.45)) {
+                                                        showPastEvents.toggle()
+                                                        UserDefaults.standard.savedShowPastEvents = showPastEvents
+                                                    }
+                                                } label: {
+                                                    HStack(spacing: 12) {
+                                                        Text(Strings.EventListViewStrings.pastEvents)
+                                                            .font(.headline)
+                                                        Image(systemName: "chevron.right")
+                                                            .font(.system(size: 14, weight: .semibold))
+                                                            .rotationEffect(.degrees(showPastEvents ? 90 : 0))
+                                                            .background(Color.gray.opacity(0.2).clipShape(Circle()).scaleEffect(2.12))
+                                                    }
+                                                    .foregroundStyle(.primary)
                                                 }
-                                            } label: {
-                                                HStack(spacing: 12) {
-                                                    Text(Strings.EventListViewStrings.pastEvents)
-                                                        .font(.headline)
-                                                    Image(systemName: "chevron.right")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .rotationEffect(.degrees(showPastEvents ? 90 : 0))
-                                                        .background(Color.gray.opacity(0.2).clipShape(Circle()).scaleEffect(2.12))
+                                                
+                                                Spacer()
+                                                
+                                                if showPastEvents {
+                                                    deletePastEventsView()
                                                 }
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                                .foregroundStyle(.primary)
                                             }
-                                            .buttonStyle(.plain)
+                                            
                                             
                                             if showPastEvents {
                                                 LazyVGrid(columns: columns, spacing: blockSpacing) {
@@ -104,16 +111,7 @@ struct EventsListView: View {
                                                dampingFraction: 0.75,
                                                blendDuration: 0.2),
                                        value: gridState)
-                            .confirmationDialog(Strings.EventListViewStrings.deletePastEventsConfirmationTitle,
-                                                isPresented: $isConfirmingDelete,
-                                                titleVisibility: .visible) {
-                                Button(Strings.EventListViewStrings.deleteAllPastEventsButton, role: .destructive) {
-                                    withAnimation {
-                                        viewModel.deleteAllPastCountdowns()
-                                    }
-                                }
-                                Button(Strings.GeneralStrings.cancel, role: .cancel) {}
-                            }
+                        
                         }
                     }
                     .navigationTitle(Strings.GeneralStrings.events)
@@ -264,14 +262,33 @@ private extension EventsListView {
     @ViewBuilder
     func toolbarMenu() -> some View {
         Menu {
-            if hasPastEvents {
-                deletePastEventsButton()
-            }
 //            showPreviewImagesButton()
             
         } label: {
             Label(Strings.GeneralStrings.options, systemImage: "gear")
                 .labelStyle(.iconOnly)
+        }
+    }
+    
+    @ViewBuilder
+    func deletePastEventsView() -> some View {
+        Button {
+            isConfirmingDelete = true
+        } label: {
+            Image(systemName: "trash")
+                .font(.system(size: 14))
+                .foregroundStyle(.red)
+        }
+        .transition(.opacity.combined(with: .scale))
+        .confirmationDialog(Strings.EventListViewStrings.deletePastEventsConfirmationTitle,
+                            isPresented: $isConfirmingDelete,
+                            titleVisibility: .visible) {
+            Button(Strings.EventListViewStrings.deleteAllPastEventsButton, role: .destructive) {
+                withAnimation {
+                    viewModel.deleteAllPastCountdowns()
+                }
+            }
+            Button(Strings.GeneralStrings.cancel, role: .cancel) {}
         }
     }
     
@@ -289,16 +306,7 @@ private extension EventsListView {
     }
     
     //MARK: Menu buttons
-    
-    @ViewBuilder
-    func deletePastEventsButton() -> some View {
-        menuButton(label: Strings.EventListViewStrings.deleteAllPastEventsButton,
-                   icon: "trash",
-                   action: { isConfirmingDelete = true })
-        .foregroundStyle(.red)
         
-    }
-    
     @ViewBuilder
     func showPreviewImagesButton() -> some View {
         menuButton(
