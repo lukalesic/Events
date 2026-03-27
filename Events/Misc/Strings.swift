@@ -51,7 +51,7 @@ struct Strings {
         static let name = "Name"
         static let description = "Description"
         static let emoji = "Emoji"
-        static let defaultEmoji = "📅"
+        static let defaultEmoji = "🗓️"
         static let priorityColorSection = "Priority & Color"
         static let priority = "Priority"
         static let color = "Color"
