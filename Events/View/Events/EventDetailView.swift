@@ -584,6 +584,7 @@ struct EventDetailView: View {
                             }
                         ))
                     }
+                    .presentationDetents([.fraction(0.7), .large])
                 }
             }
             .padding(.vertical, 14)
