@@ -540,9 +540,9 @@ struct EventDetailView: View {
                                 isColorPickerExpanded = false
                             }
                         } label: {
-                            Image(systemName: "chevron.left")
+                            Image(systemName: "chevron.backward")
                                 .font(.system(size: 20))
-                                .foregroundStyle(.white.opacity(0.5))
+                                .foregroundStyle(.white)
                         }
                         .transition(.scale.combined(with: .opacity))
                     } else {
