@@ -10,6 +10,7 @@ struct EventsListView: View {
     @Environment(EventViewModel.self) private var viewModel
     @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
     @Namespace private var eventsNamespace
+    @Namespace private var settingsNamespace
     @State private var showPastEvents: Bool = UserDefaults.standard.savedShowPastEvents
     @State private var isGridButtonDisabled = false
     @State private var isShowingAddSheet = false
@@ -40,6 +41,7 @@ struct EventsListView: View {
                                     
                                     // MARK: Today's Events
                                     if !todaysEvents.isEmpty {
+                                                                                
                                         VStack(alignment: .leading) {
                                             Text(Strings.EventListViewStrings.todaysEvents)
                                                 .font(.headline)
@@ -118,7 +120,7 @@ struct EventsListView: View {
                     .navigationTitle(Strings.GeneralStrings.events)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarLeading) {
-                            toolbarMenu()
+                            settingsButton()
                         }
                         
                         ToolbarItem(placement: .navigationBarTrailing) {
@@ -133,7 +135,10 @@ struct EventsListView: View {
                         EventFormSheetView()
                             .navigationTransition(.zoom(sourceID: "addEventButton", in: eventsNamespace))
                     }
-                    
+                    .sheet(isPresented: $isShowingSettings) {
+                        SettingsView()
+                            .navigationTransition(.zoom(sourceID: "settingsButton", in: settingsNamespace))
+                    }
                     .overlay(
                         floatingAddEventButton()
                             .padding([.trailing])
@@ -261,16 +266,15 @@ private extension EventsListView {
     }
     
     @ViewBuilder
-    func toolbarMenu() -> some View {
-//            showPreviewImagesButton()
+    func settingsButton() -> some View {
         Button {
             isShowingSettings = true
         } label: {
             Label(Strings.GeneralStrings.options, systemImage: "gear")
                 .labelStyle(.iconOnly)
-        }
-        .sheet(isPresented: $isShowingSettings) {
-            SettingsView()
+                .background(Color.clear)
+                .matchedTransitionSource(id: "settingsButton", in: settingsNamespace)
+
         }
     }
     
