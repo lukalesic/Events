@@ -602,13 +602,7 @@ struct EventDetailView: View {
                         Circle()
                             .stroke(Color.white.opacity(0.2), lineWidth: 1)
                     )
-                
-                if event.color == color {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
                 }
-            }
         }
         
         @ViewBuilder
