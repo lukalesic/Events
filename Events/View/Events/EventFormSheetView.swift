@@ -38,6 +38,9 @@ struct EventFormSheetView: View {
                 Section(header: Text(Strings.EventFormStrings.priorityColorSection)) {
                     priorityPicker()
                     ColorPicker(Strings.EventFormStrings.color, selection: $formData.color)
+                        .onChange(of: formData.color) { _, newColor in
+                            formData.color = newColor.clamped()
+                        }
                 }
 
                 Section(header: Text(Strings.EventFormStrings.dateSection)) {

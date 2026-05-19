@@ -169,6 +169,27 @@ extension Color {
         
         self.init(red: r, green: g, blue: b)
     }
+    
+    /// Clamps the color so it's not too close to pure white or pure black.
+    func clamped() -> Color {
+        let uiColor = UIColor(self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+        
+        let brightness = (r + g + b) / 3.0
+        
+        // Too close to white — darken
+        if brightness > 0.95 {
+            return Color(red: r * 0.85, green: g * 0.85, blue: b * 0.85)
+        }
+        // Too close to black — lighten
+        if brightness < 0.05 {
+            let minVal: CGFloat = 0.18
+            return Color(red: max(r, minVal), green: max(g, minVal), blue: max(b, minVal))
+        }
+        
+        return self
+    }
 }
 
 
