@@ -46,6 +46,11 @@ struct EmojiPickerView: View {
             }
             .padding(.top)
         }
+        .toolbar {
+            CloseButton {
+                dismiss()
+            }
+        }
         .navigationTitle("Pick an Emoji")
     }
 }

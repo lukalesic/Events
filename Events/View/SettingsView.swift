@@ -43,11 +43,8 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
+                CloseButton {
+                    dismiss()
                 }
             }
             .onChange(of: selectedDisplayMode) { _, newValue in

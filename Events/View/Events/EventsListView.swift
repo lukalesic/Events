@@ -108,6 +108,7 @@ struct EventsListView: View {
                                     }
                                 }
                                 .padding()
+                                .padding(.bottom, 55)
                             }
                             
                             .animation(.spring(response: 0.4,
