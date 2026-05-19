@@ -70,13 +70,21 @@ struct EventFormSheetView: View {
                         dismiss()
                     }
                 }
-
+                
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(Strings.EventFormStrings.save) {
-                        viewModel.save(from: formData, existing: event)
-                        dismiss()
+                    if #available(iOS 26.0, *) {
+                        Button(role: .confirm) {
+                            viewModel.save(from: formData, existing: event)
+                            dismiss()
+                        }                    .disabled(formData.name.trimmingCharacters(in: .whitespaces).isEmpty)
+                        
+                    } else {
+                        Button(Strings.EventFormStrings.save) {
+                            viewModel.save(from: formData, existing: event)
+                            dismiss()
+                        }
+                        .disabled(formData.name.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
-                    .disabled(formData.name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }
