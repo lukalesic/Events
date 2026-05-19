@@ -543,6 +543,7 @@ struct EventDetailView: View {
                             Image(systemName: "chevron.backward")
                                 .font(.system(size: 20))
                                 .foregroundStyle(.white)
+                            
                         }
                         .transition(.scale.combined(with: .opacity))
                     } else {

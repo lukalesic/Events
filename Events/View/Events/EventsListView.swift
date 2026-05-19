@@ -123,12 +123,7 @@ struct EventsListView: View {
                             settingsButton()
                         }
                         
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            HStack(spacing: 5) {
-                                gridButton()
-                            }
-                            .padding(.horizontal, 4)
-                        }
+
                         
                     }
                     .sheet(isPresented: $isShowingAddSheet) {
@@ -138,6 +133,11 @@ struct EventsListView: View {
                     .sheet(isPresented: $isShowingSettings) {
                         SettingsView()
                             .navigationTransition(.zoom(sourceID: "settingsButton", in: settingsNamespace))
+                            .onDisappear {
+                                withAnimation {
+                                    gridState = UserDefaults.standard.savedGridState
+                                }
+                            }
                     }
                     .overlay(
                         floatingAddEventButton()
