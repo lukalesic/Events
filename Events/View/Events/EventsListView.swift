@@ -119,12 +119,16 @@ struct EventsListView: View {
                     }
                     .navigationTitle(Strings.GeneralStrings.events)
                     .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            settingsButton()
+                        if #available(iOS 26.0, *) {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                settingsButton()
+                            }
+                            .matchedTransitionSource(id: "settingsButton", in: settingsNamespace)
+                        } else {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                settingsButton()
+                            }
                         }
-                        
-
-                        
                     }
                     .sheet(isPresented: $isShowingAddSheet) {
                         EventFormSheetView()
@@ -273,8 +277,6 @@ private extension EventsListView {
             Label(Strings.GeneralStrings.options, systemImage: "gear")
                 .labelStyle(.iconOnly)
                 .background(Color.clear)
-                .matchedTransitionSource(id: "settingsButton", in: settingsNamespace)
-
         }
     }
     
