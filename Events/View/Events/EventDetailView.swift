@@ -164,6 +164,9 @@ struct EventDetailView: View {
         .sheet(isPresented: $isPresentingEdit) {
             EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
         }
+        .onChange(of: event.photoData) { _ in
+            image = event.photo
+        }
         .onChange(of: shouldNavigateToRoot) { navigateToRoot in
             if navigateToRoot {
                 withAnimation {
