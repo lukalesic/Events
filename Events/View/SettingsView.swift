@@ -9,25 +9,20 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section {
-                    HStack {
-                        Label("Layout", systemImage: gridState == .grid ? "square.grid.2x2" : "list.bullet")
-                        
+                    HStack(spacing: 40) {
                         Spacer()
-                        
-                        Picker("", selection: $gridState) {
-                            Text("Grid").tag(GridState.grid)
-                            Text("List").tag(GridState.rows)
-                        }
-                        .pickerStyle(.menu)
-                        .tint(.gray)
+                        layoutOption(icon: "list.bullet", label: "List", state: .rows)
+                        layoutOption(icon: "square.grid.2x2", label: "Grid", state: .grid)
+                        Spacer()
                     }
+                    .padding(.vertical, 12)
                 } header: {
-                    Text("Layout")
+                    Text("Event Layout")
                 }
                 
                 Section {
                     HStack {
-                        Label("Time Display", systemImage: "clock")
+                        Label("Display Time Left as", systemImage: "clock")
                         
                         Spacer()
                         
@@ -62,5 +57,30 @@ struct SettingsView: View {
                 UserDefaults.standard.savedGridState = newValue
             }
         }
+    }
+    
+    private func layoutOption(icon: String, label: String, state: GridState) -> some View {
+        let isSelected = gridState == state
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                gridState = state
+            }
+        } label: {
+            VStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                    .frame(width: 60, height: 50)
+                
+                Text(label)
+                    .font(.caption)
+                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22))
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.gray.opacity(0.3))
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
