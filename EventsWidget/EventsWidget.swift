@@ -161,5 +161,5 @@ struct EventsWidgetEntryView: View {
 }
 
 extension Event {
-    static let sample = Event(id: UUID(), color: .green, daysLeft: 35, name: "Test", descriptionText: "", emoji: "😀", priority: .medium, date: .now, includesTime: true, isAddedToCalendar: false, photo: nil, repeatFrequency: .none)
+    static let sample = Event(color: .green, daysLeft: 35, name: "Test", descriptionText: "", emoji: "😀", priority: .medium, date: .now, includesTime: true, isAddedToCalendar: false, photo: nil, repeatFrequency: .none)
 }
