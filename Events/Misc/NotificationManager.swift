@@ -1,5 +1,6 @@
 import Foundation
 import UserNotifications
+import UIKit
 
 final class NotificationManager {
     static let shared = NotificationManager()
@@ -31,7 +32,7 @@ final class NotificationManager {
         let eventDate = event.date
         
         // Notification 1: On the event date/time
-        let onDayContent = makeContent(title: event.name, body: "Today is the day! \(event.emoji)")
+        let onDayContent = makeContent(title: event.name, body: "Today is the day! \(event.emoji)", photoData: event.photoData)
         let onDayTrigger: UNNotificationTrigger
         
         if event.includesTime {
@@ -54,7 +55,7 @@ final class NotificationManager {
         // Notification 2: Day before
         guard let dayBefore = calendar.date(byAdding: .day, value: -1, to: eventDate) else { return }
         
-        let reminderContent = makeContent(title: event.name, body: "Tomorrow! \(event.emoji)")
+        let reminderContent = makeContent(title: event.name, body: "Tomorrow! \(event.emoji)", photoData: event.photoData)
         let reminderTrigger: UNNotificationTrigger
         
         if event.includesTime {
@@ -87,11 +88,28 @@ final class NotificationManager {
         "event_\(event.id.uuidString)_\(suffix)"
     }
     
-    private func makeContent(title: String, body: String) -> UNMutableNotificationContent {
+    private func makeContent(title: String, body: String, photoData: Data?) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
+        
+        if let photoData, let attachment = imageAttachment(from: photoData) {
+            content.attachments = [attachment]
+        }
+        
         return content
+    }
+    
+    private func imageAttachment(from data: Data) -> UNNotificationAttachment? {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent(UUID().uuidString + ".jpg")
+        
+        do {
+            try data.write(to: fileURL)
+            return try UNNotificationAttachment(identifier: UUID().uuidString, url: fileURL, options: nil)
+        } catch {
+            return nil
+        }
     }
 }
