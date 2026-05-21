@@ -18,6 +18,8 @@ struct EventsListView: View {
     
     @State private var isConfirmingDelete = false
     @State private var isShowingSettings = false
+    @State private var hasFinishedInitialLoad = false
+    @State private var navigateToEvent: Event?
     
     private var columns: [GridItem] {
         let isIpad = UIDevice.current.userInterfaceIdiom == .pad
@@ -161,6 +163,14 @@ struct EventsListView: View {
                 refreshOnAppResume.toggle()
             }
             .accentColor(.primary)
+            .navigationDestination(item: $navigateToEvent) { event in
+                EventDetailView(event: event)
+            }
+            .onAppear {
+                NotificationManager.shared.onNotificationTapped = { eventID in
+                    navigateToEvent = events.first(where: { $0.id == eventID })
+                }
+            }
         }
     }
 }

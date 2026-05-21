@@ -2,9 +2,17 @@ import Foundation
 import UserNotifications
 import UIKit
 
-final class NotificationManager {
+final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationManager()
-    private init() {}
+    
+    /// Published event ID when user taps a notification
+    var tappedEventID: UUID?
+    var onNotificationTapped: ((UUID) -> Void)?
+    
+    private override init() {
+        super.init()
+        UNUserNotificationCenter.current().delegate = self
+    }
     
     func requestPermissionIfNeeded(completion: @escaping (Bool) -> Void) {
         let center = UNUserNotificationCenter.current()
@@ -25,14 +33,13 @@ final class NotificationManager {
     func scheduleNotifications(for event: Event) {
         let center = UNUserNotificationCenter.current()
         
-        // Remove old notifications for this event
         removeNotifications(for: event)
         
         let calendar = Calendar.current
         let eventDate = event.date
         
         // Notification 1: On the event date/time
-        let onDayContent = makeContent(title: event.name, body: "Today is the day! \(event.emoji)", photoData: event.photoData)
+        let onDayContent = makeContent(title: event.name, body: "Today is the day! \(event.emoji)", photoData: event.photoData, eventID: event.id)
         let onDayTrigger: UNNotificationTrigger
         
         if event.includesTime {
@@ -55,7 +62,7 @@ final class NotificationManager {
         // Notification 2: Day before
         guard let dayBefore = calendar.date(byAdding: .day, value: -1, to: eventDate) else { return }
         
-        let reminderContent = makeContent(title: event.name, body: "Tomorrow! \(event.emoji)", photoData: event.photoData)
+        let reminderContent = makeContent(title: event.name, body: "Tomorrow! \(event.emoji)", photoData: event.photoData, eventID: event.id)
         let reminderTrigger: UNNotificationTrigger
         
         if event.includesTime {
@@ -84,15 +91,36 @@ final class NotificationManager {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
     
+    // MARK: - UNUserNotificationCenterDelegate
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        if let eventIDString = userInfo["eventID"] as? String,
+           let eventID = UUID(uuidString: eventIDString) {
+            DispatchQueue.main.async {
+                self.tappedEventID = eventID
+                self.onNotificationTapped?(eventID)
+            }
+        }
+        completionHandler()
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
+    
+    // MARK: - Private
+    
     private func notificationID(for event: Event, suffix: String) -> String {
         "event_\(event.id.uuidString)_\(suffix)"
     }
     
-    private func makeContent(title: String, body: String, photoData: Data?) -> UNMutableNotificationContent {
+    private func makeContent(title: String, body: String, photoData: Data?, eventID: UUID) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
+        content.userInfo = ["eventID": eventID.uuidString]
         
         if let photoData, let attachment = imageAttachment(from: photoData) {
             content.attachments = [attachment]
