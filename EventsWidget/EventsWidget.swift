@@ -147,6 +147,7 @@ struct EventsWidgetEntryView: View {
                 }
                 .padding()
             }
+            .widgetURL(URL(string: "events://open/\(event.id.uuidString)"))
         }
         else {
             ZStack {

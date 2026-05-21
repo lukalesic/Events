@@ -171,6 +171,13 @@ struct EventsListView: View {
                     navigateToEvent = events.first(where: { $0.id == eventID })
                 }
             }
+            .onOpenURL { url in
+                guard url.scheme == "events",
+                      url.host == "open",
+                      let idString = url.pathComponents.last,
+                      let eventID = UUID(uuidString: idString) else { return }
+                navigateToEvent = events.first(where: { $0.id == eventID })
+            }
         }
     }
 }
