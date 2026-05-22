@@ -99,6 +99,10 @@ struct EventEditSheet: View {
                 // MARK: - Photo
                 Section {
                     photoPicker()
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                } header: {
+                    Text("Photo")
                 }
 
                 if event != nil {
@@ -182,7 +186,7 @@ private extension EventEditSheet {
                     .resizable()
                     .scaledToFill()
                     .frame(height: 150)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             } else {
                 VStack(spacing: 12) {
                     Image(systemName: "photo.on.rectangle.angled")
@@ -195,9 +199,10 @@ private extension EventEditSheet {
                 .frame(maxWidth: .infinity)
                 .frame(height: 150)
                 .background(Color(.systemGray5))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
             }
         }
+        .buttonStyle(.plain)
         .onChange(of: photoItem) { newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self),
