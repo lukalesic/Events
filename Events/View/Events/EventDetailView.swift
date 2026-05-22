@@ -45,6 +45,11 @@ struct EventDetailView: View {
     
     @Environment(\.colorScheme) private var colorScheme
     
+    private var isImageLight: Bool {
+        guard let img = image ?? event.photo else { return false }
+        return img.isLight ?? false
+    }
+    
     private var textColor: Color {
         (image ?? event.photo) != nil ? .white : (colorScheme == .dark ? .white : .black)
     }
@@ -197,7 +202,7 @@ struct EventDetailView: View {
                         .clipped()
                         .blur(radius: 55)
                         .scaleEffect(1.3)
-                        .brightness(-0.1)
+                        .brightness(isImageLight ? -0.35 : -0.1)
                         .saturation(1.1)
                 }
                 .ignoresSafeArea()
@@ -623,6 +628,11 @@ struct EventDetailView: View {
                                 .scaledToFill()
                                 .frame(width: geo.size.width, height: geo.size.height)
                                 .clipped()
+                                .overlay(
+                                    isImageLight
+                                    ? Color.black.opacity(0.35)
+                                    : Color.clear
+                                )
                         }
                         .containerRelativeFrame(.vertical) { size, axis in
                             size * 0.55
