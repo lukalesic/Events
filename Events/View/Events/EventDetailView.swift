@@ -43,8 +43,10 @@ struct EventDetailView: View {
     @State private var editedDescription: String = ""
     @FocusState private var isDescriptionFocused: Bool
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     private var textColor: Color {
-        (image ?? event.photo) != nil ? .white : .black
+        (image ?? event.photo) != nil ? .white : (colorScheme == .dark ? .white : .black)
     }
     
     var body: some View {
