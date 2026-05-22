@@ -169,7 +169,7 @@ struct EventDetailView: View {
         }
         .accentColor(.primary)
         .sheet(isPresented: $isPresentingEdit) {
-            EventFormSheetView(event: event, navigateToRoot: $shouldNavigateToRoot)
+            EventEditSheet(event: event, navigateToRoot: $shouldNavigateToRoot)
         }
         .onChange(of: event.photoData) { _ in
             image = event.photo

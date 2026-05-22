@@ -8,7 +8,7 @@
 import SwiftUI
 import _PhotosUI_SwiftUI
 
-struct EventFormSheetView: View {
+struct EventEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(EventViewModel.self) private var viewModel
     
@@ -92,7 +92,7 @@ struct EventFormSheetView: View {
     }
 }
 
-private extension EventFormSheetView {
+private extension EventEditSheet {
     
     @ViewBuilder
     func emojiButton() -> some View {

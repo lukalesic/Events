@@ -134,7 +134,7 @@ struct EventsListView: View {
                         }
                     }
                     .sheet(isPresented: $isShowingAddSheet) {
-                        EventFormSheetView()
+                        EventEditSheet()
                             .navigationTransition(.zoom(sourceID: "addEventButton", in: eventsNamespace))
                     }
                     .sheet(isPresented: $isShowingSettings) {
