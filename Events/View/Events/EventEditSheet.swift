@@ -20,10 +20,6 @@ struct EventEditSheet: View {
     @State private var showDeleteConfirmation = false
     @State private var isShowingEmojiPicker = false
 
-    private var predefinedColors: [Color] {
-        [.green, .red, .blue, .purple, .yellow, .gray]
-    }
-
     init(event: Event? = nil, navigateToRoot: Binding<Bool> = .constant(false)) {
         self.event = event
         self._navigateToRoot = navigateToRoot
@@ -37,43 +33,50 @@ struct EventEditSheet: View {
                 Section {
                     TextField(Strings.EventFormStrings.name, text: $formData.name)
                     TextField(Strings.EventFormStrings.description, text: $formData.description)
-                    emojiButton()
                 } header: {
                     Text(Strings.EventFormStrings.basicsSection)
                 }
 
 
-                // MARK: - Color
+                // MARK: - Color & Emoji
                 Section {
-                    HStack(spacing: 12) {
-                        ForEach(predefinedColors, id: \.self) { color in
-                            Circle()
-                                .fill(color)
+                    HStack(spacing: 16) {
+                        // Color
+                        VStack(spacing: 8) {
+                            Text("Color")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            ColorPicker("", selection: $formData.color)
+                                .labelsHidden()
                                 .frame(width: 32, height: 32)
-                                .overlay(
-                                    Circle()
-                                        .strokeBorder(Color.primary, lineWidth: formData.color.roughlyEquals(color) ? 2.5 : 0)
-                                )
-                                .onTapGesture {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        formData.color = color
-                                    }
+                                .onChange(of: formData.color) { _, newColor in
+                                    formData.color = newColor.clamped()
                                 }
                         }
+                        .frame(maxWidth: .infinity)
                         
                         Divider()
-                            .frame(width: 1)
                         
-                        ColorPicker("", selection: $formData.color)
-                            .labelsHidden()
-                            .frame(width: 44, height: 44)
-                            .onChange(of: formData.color) { _, newColor in
-                                formData.color = newColor.clamped()
+                        // Emoji
+                        VStack(spacing: 8) {
+                            Text("Emoji")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Button {
+                                isShowingEmojiPicker = true
+                            } label: {
+                                Text(formData.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : formData.emoji)
+                                    .font(.system(size: 28))
                             }
+                        }
+                        .frame(maxWidth: .infinity)
                     }
-                    .padding(.vertical, 4)
-                } header: {
-                    Text("Color")
+                    .padding(.vertical, 1)
+                }
+                .sheet(isPresented: $isShowingEmojiPicker) {
+                    NavigationStack {
+                        EmojiPickerView(selectedEmoji: $formData.emoji)
+                    }
                 }
 
                 
@@ -85,17 +88,7 @@ struct EventEditSheet: View {
                     Text(Strings.EventFormStrings.dateSection)
                 }
                 
-                // MARK: - Priority
-                Section {
-                    Picker(Strings.EventFormStrings.priority, selection: $formData.priority) {
-                        ForEach(EventPriority.allCases, id: \.self) { priority in
-                            Text(priority.displayName).tag(priority)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                } header: {
-                    Text(Strings.EventFormStrings.priorityColorSection)
-                }
+                
 
                 // MARK: - Repeat
                 Section {
@@ -107,7 +100,6 @@ struct EventEditSheet: View {
                 // MARK: - Photo
                 Section {
                     photoPicker()
-                } header: {
                     Text(Strings.EventFormStrings.photoSection)
                 }
 
@@ -203,20 +195,6 @@ private extension EventEditSheet {
             DeleteButtonWithDialog(event: event, showDeleteConfirmation: $showDeleteConfirmation, navigateToRoot: $navigateToRoot)
                 .listRowBackground(Color.clear)
         }
-    }
-}
-
-// MARK: - Color comparison helper
-private extension Color {
-    func roughlyEquals(_ other: Color) -> Bool {
-        let lhs = UIColor(self)
-        let rhs = UIColor(other)
-        var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
-        var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
-        lhs.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
-        rhs.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
-        let threshold: CGFloat = 0.05
-        return abs(r1 - r2) < threshold && abs(g1 - g2) < threshold && abs(b1 - b2) < threshold
     }
 }
 
