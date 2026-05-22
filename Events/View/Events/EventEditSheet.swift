@@ -34,9 +34,8 @@ struct EventEditSheet: View {
                     TextField(Strings.EventFormStrings.name, text: $formData.name)
                     TextField(Strings.EventFormStrings.description, text: $formData.description)
                 } header: {
-                    Text(Strings.EventFormStrings.basicsSection)
+                    Text("Basics")
                 }
-
 
                 // MARK: - Color & Emoji
                 Section {
@@ -82,8 +81,8 @@ struct EventEditSheet: View {
                 
                 // MARK: - Date
                 Section {
-                    Toggle("Includes Time", isOn: $formData.includesTime)
                     DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, in: Date()..., displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
+                    Toggle("Includes Time", isOn: $formData.includesTime)
                 } header: {
                     Text(Strings.EventFormStrings.dateSection)
                 }
@@ -92,6 +91,7 @@ struct EventEditSheet: View {
 
                 // MARK: - Repeat
                 Section {
+                    priorityPicker()
                     repeatFrequencyPicker()
                 } header: {
                     Text(Strings.EventFormStrings.repeatSection)
@@ -100,13 +100,13 @@ struct EventEditSheet: View {
                 // MARK: - Photo
                 Section {
                     photoPicker()
-                    Text(Strings.EventFormStrings.photoSection)
                 }
 
                 if event != nil {
                     deleteSection()
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
             .navigationTitle(event == nil ? Strings.EventFormStrings.newTitle : Strings.EventFormStrings.editTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -158,6 +158,15 @@ private extension EventEditSheet {
     }
 
     @ViewBuilder
+    func priorityPicker() -> some View {
+        Picker(Strings.EventFormStrings.priority, selection: $formData.priority) {
+            ForEach(EventPriority.allCases, id: \.self) { priority in
+                Text(priority.displayName).tag(priority)
+            }
+        }
+    }
+
+    @ViewBuilder
     func repeatFrequencyPicker() -> some View {
         Picker(Strings.EventFormStrings.repeatEvery, selection: $formData.repeatFrequency) {
             ForEach(RepeatFrequency.allCases) { freq in
@@ -176,7 +185,18 @@ private extension EventEditSheet {
                     .frame(height: 150)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             } else {
-                Label(Strings.EventFormStrings.pickPhoto, systemImage: "photo")
+                VStack(spacing: 12) {
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 36))
+                        .foregroundStyle(.secondary)
+                    Text(Strings.EventFormStrings.pickPhoto)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 150)
+                .background(Color(.systemGray5))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
         .onChange(of: photoItem) { newItem in
