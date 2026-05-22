@@ -41,7 +41,7 @@ struct EventEditSheet: View {
                 
                 // MARK: - Date
                 Section {
-                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, in: Date()..., displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
+                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
                     Toggle("Includes Time", isOn: $formData.includesTime)
                 } header: {
                     Text(Strings.EventFormStrings.dateSection)
@@ -162,10 +162,17 @@ private extension EventEditSheet {
 
     @ViewBuilder
     func priorityPicker() -> some View {
-        Picker(Strings.EventFormStrings.priority, selection: $formData.priority) {
-            ForEach(EventPriority.allCases, id: \.self) { priority in
-                Text(priority.displayName).tag(priority)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(Strings.EventFormStrings.priority)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Picker(Strings.EventFormStrings.priority, selection: $formData.priority) {
+                ForEach(EventPriority.allCases, id: \.self) { priority in
+                    Text(priority.displayName).tag(priority)
+                }
             }
+            .pickerStyle(.segmented)
+            .labelsHidden()
         }
     }
 
