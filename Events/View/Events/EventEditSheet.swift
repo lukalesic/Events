@@ -38,6 +38,14 @@ struct EventEditSheet: View {
                 } header: {
                     Text("Basics")
                 }
+                
+                // MARK: - Date
+                Section {
+                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, in: Date()..., displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
+                    Toggle("Includes Time", isOn: $formData.includesTime)
+                } header: {
+                    Text(Strings.EventFormStrings.dateSection)
+                }
 
                 // MARK: - Color & Emoji
                 Section {
@@ -79,17 +87,6 @@ struct EventEditSheet: View {
                         EmojiPickerView(selectedEmoji: $formData.emoji)
                     }
                 }
-
-                
-                // MARK: - Date
-                Section {
-                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, in: Date()..., displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
-                    Toggle("Includes Time", isOn: $formData.includesTime)
-                } header: {
-                    Text(Strings.EventFormStrings.dateSection)
-                }
-                
-                
 
                 // MARK: - Repeat
                 Section {
@@ -170,7 +167,7 @@ private extension EventEditSheet {
 
     @ViewBuilder
     func repeatFrequencyPicker() -> some View {
-        Picker(Strings.EventFormStrings.repeatEvery, selection: $formData.repeatFrequency) {
+        Picker(Strings.EventFormStrings.repeatText, selection: $formData.repeatFrequency) {
             ForEach(RepeatFrequency.allCases) { freq in
                 Text(freq.rawValue).tag(freq)
             }
