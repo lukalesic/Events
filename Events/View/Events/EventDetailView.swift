@@ -398,7 +398,7 @@ struct EventDetailView: View {
                         }
                         Image(systemName: "chevron.down")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(textColor.opacity(0.8))
                     }
                     .contentTransition(.numericText())
                     .animation(.default, value: viewModel.selectedDisplayMode.rawValue)
@@ -466,7 +466,6 @@ struct EventDetailView: View {
                                 .padding(.vertical, 6)
                                 .foregroundColor(textColor)
                                 .cornerRadius(8)
-//                                .glassEffect(.regular.tint(event.color.opacity(0.2)).interactive())
                                 .glassEffect(.clear)
 
                         } else {
@@ -552,23 +551,25 @@ struct EventDetailView: View {
                         } label: {
                             Image(systemName: "chevron.backward")
                                 .font(.system(size: 20))
-                                .foregroundStyle(.white)
-                            
+                                .foregroundColor(textColor.opacity(0.8))
+
                         }
                         .transition(.scale.combined(with: .opacity))
                     } else {
                         colorCircle(color: event.color)
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                    isColorPickerExpanded.toggle()
-                                }
-                            }
                     }
                 }
             }
             .padding(.vertical, 14)
-//            .padding(.horizontal, 37)
             .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if !isColorPickerExpanded {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        isColorPickerExpanded.toggle()
+                    }
+                }
+            }
         }
         
         @ViewBuilder
@@ -578,30 +579,27 @@ struct EventDetailView: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(textColor.opacity(0.7))
                 
-                Button {
-                    isShowingEmojiPicker = true
-                } label: {
-                    Text(event.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : event.emoji)
-                        .font(.system(size: 32))
-                }
-                .buttonStyle(.plain)
-                .sheet(isPresented: $isShowingEmojiPicker) {
-                    NavigationStack {
-                        EmojiPickerView(selectedEmoji: Binding(
-                            get: { self.event.emoji },
-                            set: { newValue in
-                                self.event.emoji = newValue
-                                try? modelContext.save()
-                            }
-                        ))
-                    }
-                    .presentationDetents([.fraction(0.7), .large])
-                }
+                Text(event.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : event.emoji)
+                    .font(.system(size: 32))
             }
             .padding(.vertical, 14)
-//            .padding(.horizontal, 40)
             .frame(maxWidth: .infinity)
-            
+            .contentShape(Rectangle())
+            .onTapGesture {
+                isShowingEmojiPicker = true
+            }
+            .sheet(isPresented: $isShowingEmojiPicker) {
+                NavigationStack {
+                    EmojiPickerView(selectedEmoji: Binding(
+                        get: { self.event.emoji },
+                        set: { newValue in
+                            self.event.emoji = newValue
+                            try? modelContext.save()
+                        }
+                    ))
+                }
+                .presentationDetents([.fraction(0.7), .large])
+            }
         }
         
         @ViewBuilder
