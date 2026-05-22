@@ -32,7 +32,9 @@ struct EventEditSheet: View {
                 // MARK: - Basics
                 Section {
                     TextField(Strings.EventFormStrings.name, text: $formData.name)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     TextField(Strings.EventFormStrings.description, text: $formData.description)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 } header: {
                     Text("Basics")
                 }
@@ -47,12 +49,12 @@ struct EventEditSheet: View {
                                 .foregroundStyle(.secondary)
                             ColorPicker("", selection: $formData.color)
                                 .labelsHidden()
-                                .frame(width: 32, height: 32)
                                 .onChange(of: formData.color) { _, newColor in
                                     formData.color = newColor.clamped()
                                 }
                         }
                         .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                         
                         Divider()
                         
@@ -61,14 +63,14 @@ struct EventEditSheet: View {
                             Text("Emoji")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Button {
-                                isShowingEmojiPicker = true
-                            } label: {
-                                Text(formData.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : formData.emoji)
-                                    .font(.system(size: 28))
-                            }
+                            Text(formData.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : formData.emoji)
+                                .font(.system(size: 28))
                         }
                         .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            isShowingEmojiPicker = true
+                        }
                     }
                     .padding(.vertical, 1)
                 }
