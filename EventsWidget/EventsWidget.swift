@@ -113,7 +113,7 @@ struct EventsWidgetEntryView: View {
                 ContainerRelativeShape().fill(event.color.gradient)
                 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(event.name)
+                    Text(event.displayName)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                         .font(.headline)

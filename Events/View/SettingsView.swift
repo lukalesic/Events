@@ -129,11 +129,14 @@ struct SettingsView: View {
                 let name = "\(contact.givenName) \(contact.familyName)".trimmingCharacters(in: .whitespaces)
                 guard !name.isEmpty, !existingNames.contains(name) else { return }
                 
+                let year = birthday.year // nil if no year provided
+                
                 DispatchQueue.main.async {
                     var form = EventFormData()
                     form.name = name
                     form.date = date
                     form.isBirthday = true
+                    form.birthYear = year
                     viewModel.save(from: form)
                 }
                 imported += 1

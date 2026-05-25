@@ -81,6 +81,7 @@ extension EventViewModel {
             existingEvent.photo = form.photo
             existingEvent.repeatFrequency = finalRepeat
             existingEvent.isBirthday = form.isBirthday
+            existingEvent.birthYear = form.birthYear
             existingEvent.includesTime = form.isBirthday ? false : form.includesTime
             reloadWidget()
             scheduleNotifications(for: existingEvent)
@@ -99,6 +100,7 @@ extension EventViewModel {
             event.photo = form.photo
             event.repeatFrequency = finalRepeat
             event.isBirthday = form.isBirthday
+            event.birthYear = form.birthYear
 
             addCountdown(event)
             scheduleNotifications(for: event)

@@ -64,7 +64,7 @@ private extension EventPreview {
     
     @ViewBuilder
     func titleView() -> some View {
-        Text(event.name)
+        Text(event.displayName)
             .fontWeight(.semibold)
             .lineLimit(gridState == .grid ? 2 : 1)
             .fixedSize(horizontal: false, vertical: true)

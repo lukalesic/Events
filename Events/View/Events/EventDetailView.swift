@@ -408,7 +408,7 @@ struct EventDetailView: View {
         
         @ViewBuilder
         func eventName() -> some View {
-            Text(event.name)
+            Text(event.displayName)
                 .font(.largeTitle)
                 .fontWeight(.semibold)
                 .multilineTextAlignment(.center)

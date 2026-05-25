@@ -25,6 +25,7 @@ class Event {
     var photoData: Data? = nil
     var repeatFrequency: RepeatFrequency = RepeatFrequency.none
     var isBirthday: Bool = false
+    var birthYear: Int? = nil
     
     // Computed property for color
     var color: Color {
@@ -108,31 +109,59 @@ class Event {
 // Extensions for calculated properties
 extension Event {
     var nextDate: Date {
+        let calendar = Calendar.current
+        
+        if repeatFrequency != .none {
+            let now = Date.now
+            switch repeatFrequency {
+            case .daily:
+                if includesTime {
+                    return calendar.nextDate(after: now, matching: calendar.dateComponents([.hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+                }
+                return calendar.startOfDay(for: now)
+            case .weekly:
+                let comps = calendar.dateComponents([.weekday], from: date)
+                return calendar.nextDate(after: now.addingTimeInterval(-86400), matching: comps, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+            case .monthly:
+                let comps = calendar.dateComponents([.day], from: date)
+                return calendar.nextDate(after: now.addingTimeInterval(-86400), matching: comps, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+            case .yearly:
+                let comps = calendar.dateComponents([.month, .day], from: date)
+                return calendar.nextDate(after: now.addingTimeInterval(-86400), matching: comps, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
+            case .none:
+                return date
+            }
+        }
         
         if !includesTime {
-            return Calendar.current.startOfDay(for: date)
+            return calendar.startOfDay(for: date)
         }
-
-        switch repeatFrequency {
-        case .daily:
-            return Calendar.current.nextDate(after: .now, matching: Calendar.current.dateComponents([.hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .weekly:
-            return Calendar.current.nextDate(after: .now, matching: Calendar.current.dateComponents([.weekday, .hour, .minute, .second], from: date), matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .monthly:
-            let components = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: date)
-            return Calendar.current.nextDate(after: .now, matching: components, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .yearly:
-            let components = Calendar.current.dateComponents([.month, .day, .hour, .minute, .second], from: date)
-            return Calendar.current.nextDate(after: .now, matching: components, matchingPolicy: .nextTimePreservingSmallerComponents) ?? date
-        case .none:
-            return date
-        }
+        
+        return date
     }
 
     var daysLeftUntilNextDate: Int {
         let today = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: nextDate)
         return Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
+    }
+    
+    var displayName: String {
+        guard isBirthday else { return name }
+        if let birthYear = birthYear {
+            let nextBirthdayYear = Calendar.current.component(.year, from: nextDate)
+            let age = nextBirthdayYear - birthYear
+            return "\(name)'s \(age.ordinal) Birthday"
+        }
+        return "\(name)'s Birthday"
+    }
+}
+
+extension Int {
+    var ordinal: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .ordinal
+        return formatter.string(from: NSNumber(value: self)) ?? "\(self)"
     }
 }
 

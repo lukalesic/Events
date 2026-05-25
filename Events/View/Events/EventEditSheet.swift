@@ -296,6 +296,7 @@ struct EventFormData {
     var color: Color = Event.randomColor()
     var repeatFrequency: RepeatFrequency = .none
     var isBirthday: Bool = false
+    var birthYear: Int? = nil
     
     init(from countdown: Event? = nil) {
         if let countdown = countdown {
@@ -309,6 +310,7 @@ struct EventFormData {
             color = countdown.color
             repeatFrequency = countdown.repeatFrequency
             isBirthday = countdown.isBirthday
+            birthYear = countdown.birthYear
         }
     }
 }
