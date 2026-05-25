@@ -24,6 +24,7 @@ class Event {
     var isAddedToCalendar: Bool = false
     var photoData: Data? = nil
     var repeatFrequency: RepeatFrequency = RepeatFrequency.none
+    var isBirthday: Bool = false
     
     // Computed property for color
     var color: Color {

@@ -5,14 +5,16 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.events.open</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>events</string>
 			</array>
-			<key>CFBundleURLName</key>
-			<string>com.events.open</string>
 		</dict>
 	</array>
+	<key>NSContactsUsageDescription</key>
+	<string>Events needs access to your contacts to import birthdays.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

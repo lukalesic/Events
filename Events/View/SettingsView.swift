@@ -1,8 +1,10 @@
 import SwiftUI
 import SwiftData
+import Contacts
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(EventViewModel.self) private var viewModel
     @Query private var events: [Event]
     @State private var selectedDisplayMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
@@ -14,6 +16,8 @@ struct SettingsView: View {
         components.minute = UserDefaults.standard.defaultNotificationMinute
         return Calendar.current.date(from: components) ?? Date()
     }()
+    @State private var importedCount: Int = 0
+    @State private var showImportAlert = false
     
     var body: some View {
         NavigationStack {
@@ -60,6 +64,23 @@ struct SettingsView: View {
                 } footer: {
                     Text("Default alert time is used for events without a specific time. Extra reminders will notify you ahead of each event.")
                 }
+                
+                Section {
+                    Button {
+                        importContactBirthdays()
+                    } label: {
+                        Label("Import Contact Birthdays", systemImage: "person.crop.circle.badge.plus")
+                    }
+                } header: {
+                    Text("Birthdays")
+                } footer: {
+                    Text("Import birthdays from your contacts. Duplicates will be skipped.")
+                }
+            }
+            .alert("Birthdays Imported", isPresented: $showImportAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("\(importedCount) birthday(s) imported from Contacts.")
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -87,6 +108,40 @@ struct SettingsView: View {
                 UserDefaults.standard.defaultNotificationHour = components.hour ?? 10
                 UserDefaults.standard.defaultNotificationMinute = components.minute ?? 0
                 NotificationManager.shared.rescheduleAllNotifications(for: events)
+            }
+        }
+    }
+    
+    private func importContactBirthdays() {
+        let store = CNContactStore()
+        store.requestAccess(for: .contacts) { granted, _ in
+            guard granted else { return }
+            let keys = [CNContactGivenNameKey, CNContactFamilyNameKey, CNContactBirthdayKey] as [CNKeyDescriptor]
+            let request = CNContactFetchRequest(keysToFetch: keys)
+            
+            var imported = 0
+            let existingNames = Set(events.filter { $0.isBirthday }.map { $0.name })
+            
+            try? store.enumerateContacts(with: request) { contact, _ in
+                guard let birthday = contact.birthday,
+                      let date = Calendar.current.date(from: birthday) else { return }
+                
+                let name = "\(contact.givenName) \(contact.familyName)".trimmingCharacters(in: .whitespaces)
+                guard !name.isEmpty, !existingNames.contains(name) else { return }
+                
+                DispatchQueue.main.async {
+                    var form = EventFormData()
+                    form.name = name
+                    form.date = date
+                    form.isBirthday = true
+                    viewModel.save(from: form)
+                }
+                imported += 1
+            }
+            
+            DispatchQueue.main.async {
+                importedCount = imported
+                showImportAlert = true
             }
         }
     }

@@ -58,7 +58,8 @@ extension EventViewModel {
         let today = Calendar.current.startOfDay(for: .now)
         let target = Calendar.current.startOfDay(for: form.date)
         let newDaysLeft = Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
-        let finalEmoji = form.emoji.isEmpty ? "📅" : form.emoji
+        let finalEmoji = form.isBirthday ? "🎁" : (form.emoji.isEmpty ? "📅" : form.emoji)
+        let finalRepeat: RepeatFrequency = form.isBirthday ? .yearly : form.repeatFrequency
         
         if let existingEvent = existing {
             // Update existing countdown
@@ -76,10 +77,11 @@ extension EventViewModel {
             existingEvent.descriptionText = form.description
             existingEvent.emoji = finalEmoji
             existingEvent.priority = form.priority
-            existingEvent.includesTime = form.includesTime
             existingEvent.date = form.date
             existingEvent.photo = form.photo
-            existingEvent.repeatFrequency = form.repeatFrequency
+            existingEvent.repeatFrequency = finalRepeat
+            existingEvent.isBirthday = form.isBirthday
+            existingEvent.includesTime = form.isBirthday ? false : form.includesTime
             reloadWidget()
             scheduleNotifications(for: existingEvent)
         } else {
@@ -93,9 +95,10 @@ extension EventViewModel {
             event.emoji = finalEmoji
             event.priority = form.priority
             event.date = form.date
-            event.includesTime = form.includesTime
+            event.includesTime = form.isBirthday ? false : form.includesTime
             event.photo = form.photo
-            event.repeatFrequency = form.repeatFrequency
+            event.repeatFrequency = finalRepeat
+            event.isBirthday = form.isBirthday
 
             addCountdown(event)
             scheduleNotifications(for: event)

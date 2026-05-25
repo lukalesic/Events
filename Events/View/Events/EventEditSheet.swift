@@ -29,6 +29,15 @@ struct EventEditSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: - Type Picker
+                Section {
+                    Picker("Type", selection: $formData.isBirthday) {
+                        Text("Event").tag(false)
+                        Text("Birthday").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                }
+                
                 // MARK: - Basics
                 Section {
                     TextField(Strings.EventFormStrings.name, text: $formData.name)
@@ -41,13 +50,16 @@ struct EventEditSheet: View {
                 
                 // MARK: - Date
                 Section {
-                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
-                    Toggle("Includes Time", isOn: $formData.includesTime)
+                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, displayedComponents: formData.isBirthday ? .date : (formData.includesTime ? [.date, .hourAndMinute] : .date))
+                    if !formData.isBirthday {
+                        Toggle("Includes Time", isOn: $formData.includesTime)
+                    }
                 } header: {
                     Text(Strings.EventFormStrings.dateSection)
                 }
 
                 // MARK: - Color & Emoji
+                if !formData.isBirthday {
                 Section {
                     HStack(spacing: 16) {
                         // Color
@@ -87,13 +99,16 @@ struct EventEditSheet: View {
                         EmojiPickerView(selectedEmoji: $formData.emoji)
                     }
                 }
+                }
 
                 // MARK: - Repeat
+                if !formData.isBirthday {
                 Section {
                     priorityPicker()
                     repeatFrequencyPicker()
                 } header: {
                     Text(Strings.EventFormStrings.repeatSection)
+                }
                 }
 
                 // MARK: - Photo
@@ -280,6 +295,7 @@ struct EventFormData {
     var photo: UIImage? = nil
     var color: Color = Event.randomColor()
     var repeatFrequency: RepeatFrequency = .none
+    var isBirthday: Bool = false
     
     init(from countdown: Event? = nil) {
         if let countdown = countdown {
@@ -292,6 +308,7 @@ struct EventFormData {
             photo = countdown.photo
             color = countdown.color
             repeatFrequency = countdown.repeatFrequency
+            isBirthday = countdown.isBirthday
         }
     }
 }
