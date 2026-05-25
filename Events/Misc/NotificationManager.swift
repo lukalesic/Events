@@ -112,10 +112,17 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
+    func rescheduleAllNotifications(for events: [Event]) {
+        for event in events where event.date > Date() {
+            scheduleNotifications(for: event)
+        }
+    }
+    
     func removeNotifications(for event: Event) {
         let ids = [
             notificationID(for: event, suffix: "onday"),
             notificationID(for: event, suffix: "daybefore"),
+            notificationID(for: event, suffix: "3daysbefore"),
             notificationID(for: event, suffix: "3daysbefore")
         ]
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)

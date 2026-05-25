@@ -1,7 +1,9 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Query private var events: [Event]
     @State private var selectedDisplayMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
     @State private var remind1DayBefore: Bool = UserDefaults.standard.remind1DayBefore
@@ -74,14 +76,17 @@ struct SettingsView: View {
             }
             .onChange(of: remind1DayBefore) { _, newValue in
                 UserDefaults.standard.remind1DayBefore = newValue
+                NotificationManager.shared.rescheduleAllNotifications(for: events)
             }
             .onChange(of: remind3DaysBefore) { _, newValue in
                 UserDefaults.standard.remind3DaysBefore = newValue
+                NotificationManager.shared.rescheduleAllNotifications(for: events)
             }
             .onChange(of: defaultNotificationTime) { _, newValue in
                 let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
                 UserDefaults.standard.defaultNotificationHour = components.hour ?? 10
                 UserDefaults.standard.defaultNotificationMinute = components.minute ?? 0
+                NotificationManager.shared.rescheduleAllNotifications(for: events)
             }
         }
     }
