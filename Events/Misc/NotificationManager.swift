@@ -37,6 +37,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         
         let calendar = Calendar.current
         let eventDate = event.date
+        let defaultHour = UserDefaults.standard.defaultNotificationHour
+        let defaultMinute = UserDefaults.standard.defaultNotificationMinute
         
         // Notification 1: On the event date/time
         let onDayContent = makeContent(title: event.name, body: "Today is the day! \(event.emoji)", photoData: event.photoData, eventID: event.id)
@@ -47,8 +49,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
             onDayTrigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         } else {
             var components = calendar.dateComponents([.year, .month, .day], from: eventDate)
-            components.hour = 10
-            components.minute = 0
+            components.hour = defaultHour
+            components.minute = defaultMinute
             onDayTrigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         }
         
@@ -59,34 +61,62 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         )
         center.add(onDayRequest)
         
-        // Notification 2: Day before
-        guard let dayBefore = calendar.date(byAdding: .day, value: -1, to: eventDate) else { return }
-        
-        let reminderContent = makeContent(title: event.name, body: "Tomorrow! \(event.emoji)", photoData: event.photoData, eventID: event.id)
-        let reminderTrigger: UNNotificationTrigger
-        
-        if event.includesTime {
-            let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: dayBefore)
-            reminderTrigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-        } else {
-            var components = calendar.dateComponents([.year, .month, .day], from: dayBefore)
-            components.hour = 10
-            components.minute = 0
-            reminderTrigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        // Notification 2: Day before (if enabled)
+        if UserDefaults.standard.remind1DayBefore {
+            guard let dayBefore = calendar.date(byAdding: .day, value: -1, to: eventDate) else { return }
+            
+            let reminderContent = makeContent(title: event.name, body: "Tomorrow! \(event.emoji)", photoData: event.photoData, eventID: event.id)
+            let reminderTrigger: UNNotificationTrigger
+            
+            if event.includesTime {
+                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: dayBefore)
+                reminderTrigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            } else {
+                var components = calendar.dateComponents([.year, .month, .day], from: dayBefore)
+                components.hour = defaultHour
+                components.minute = defaultMinute
+                reminderTrigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            }
+            
+            let reminderRequest = UNNotificationRequest(
+                identifier: notificationID(for: event, suffix: "daybefore"),
+                content: reminderContent,
+                trigger: reminderTrigger
+            )
+            center.add(reminderRequest)
         }
         
-        let reminderRequest = UNNotificationRequest(
-            identifier: notificationID(for: event, suffix: "daybefore"),
-            content: reminderContent,
-            trigger: reminderTrigger
-        )
-        center.add(reminderRequest)
+        // Notification 3: 3 days before (if enabled)
+        if UserDefaults.standard.remind3DaysBefore {
+            guard let threeDaysBefore = calendar.date(byAdding: .day, value: -3, to: eventDate) else { return }
+            
+            let content = makeContent(title: event.name, body: "3 days to go! \(event.emoji)", photoData: event.photoData, eventID: event.id)
+            let trigger: UNNotificationTrigger
+            
+            if event.includesTime {
+                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: threeDaysBefore)
+                trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            } else {
+                var components = calendar.dateComponents([.year, .month, .day], from: threeDaysBefore)
+                components.hour = defaultHour
+                components.minute = defaultMinute
+                trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            }
+            
+            let request = UNNotificationRequest(
+                identifier: notificationID(for: event, suffix: "3daysbefore"),
+                content: content,
+                trigger: trigger
+            )
+            center.add(request)
+        }
     }
     
     func removeNotifications(for event: Event) {
         let ids = [
             notificationID(for: event, suffix: "onday"),
-            notificationID(for: event, suffix: "daybefore")
+            notificationID(for: event, suffix: "daybefore"),
+            notificationID(for: event, suffix: "3daysbefore")
         ]
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }

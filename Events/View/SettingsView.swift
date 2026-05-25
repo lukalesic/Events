@@ -4,6 +4,14 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedDisplayMode: TimeDisplayMode = UserDefaults.standard.savedDisplayMode
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
+    @State private var remind1DayBefore: Bool = UserDefaults.standard.remind1DayBefore
+    @State private var remind3DaysBefore: Bool = UserDefaults.standard.remind3DaysBefore
+    @State private var defaultNotificationTime: Date = {
+        var components = DateComponents()
+        components.hour = UserDefaults.standard.defaultNotificationHour
+        components.minute = UserDefaults.standard.defaultNotificationMinute
+        return Calendar.current.date(from: components) ?? Date()
+    }()
     
     var body: some View {
         NavigationStack {
@@ -39,6 +47,17 @@ struct SettingsView: View {
                 } footer: {
                     Text("Choose how countdowns display time by default. \"Automatic\" adapts based on how far away the event is.")
                 }
+                
+                Section {
+                    DatePicker("Default Alert Time", selection: $defaultNotificationTime, displayedComponents: .hourAndMinute)
+                    
+                    Toggle("Remind 1 Day Before", isOn: $remind1DayBefore)
+                    Toggle("Remind 3 Days Before", isOn: $remind3DaysBefore)
+                } header: {
+                    Text("Notifications")
+                } footer: {
+                    Text("Default alert time is used for events without a specific time. Extra reminders will notify you ahead of each event.")
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -52,6 +71,17 @@ struct SettingsView: View {
             }
             .onChange(of: gridState) { _, newValue in
                 UserDefaults.standard.savedGridState = newValue
+            }
+            .onChange(of: remind1DayBefore) { _, newValue in
+                UserDefaults.standard.remind1DayBefore = newValue
+            }
+            .onChange(of: remind3DaysBefore) { _, newValue in
+                UserDefaults.standard.remind3DaysBefore = newValue
+            }
+            .onChange(of: defaultNotificationTime) { _, newValue in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                UserDefaults.standard.defaultNotificationHour = components.hour ?? 10
+                UserDefaults.standard.defaultNotificationMinute = components.minute ?? 0
             }
         }
     }
