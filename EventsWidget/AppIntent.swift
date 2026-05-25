@@ -14,8 +14,24 @@ struct ConfigurationAppIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource { "Choose an event" }
     static var description: IntentDescription { "Choose your favorite event." }
     
+    @Parameter(title: "Next Upcoming Event", default: false)
+    var showNextUpcoming: Bool
+    
     @Parameter(title: "Event", default: nil)
     var event: EventEntity?
+    
+    static var parameterSummary: some ParameterSummary {
+        When(\.$showNextUpcoming, .equalTo, true) {
+            Summary("Next Upcoming Event") {
+                \.$showNextUpcoming
+            }
+        } otherwise: {
+            Summary("Event: \(\.$event)") {
+                \.$showNextUpcoming
+                \.$event
+            }
+        }
+    }
 }
 
 struct EventEntity: AppEntity {

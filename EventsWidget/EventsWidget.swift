@@ -22,7 +22,12 @@ struct Provider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        let selectedEvent = try? await getEvent(name: configuration.event?.name)
+        let selectedEvent: Event?
+        if configuration.showNextUpcoming {
+            selectedEvent = try? await getNextUpcomingEvent()
+        } else {
+            selectedEvent = try? await getEvent(name: configuration.event?.name)
+        }
         
         return SimpleEntry(date: Date(), configuration: configuration, event: selectedEvent)
     }
@@ -30,14 +35,27 @@ struct Provider: AppIntentTimelineProvider {
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         let currentDate = Date.now
 
-        let selectedEvent = try? await getEvent(name: configuration.event?.name)
+        let selectedEvent: Event?
+        if configuration.showNextUpcoming {
+            selectedEvent = try? await getNextUpcomingEvent()
+        } else {
+            selectedEvent = try? await getEvent(name: configuration.event?.name)
+        }
         
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: currentDate)
         let nextMidnight = calendar.date(byAdding: .day, value: 1, to: startOfToday)!
+        
+        // For next upcoming mode, also refresh when the event's date passes
+        var refreshDate = nextMidnight
+        if configuration.showNextUpcoming, let event = selectedEvent {
+            if event.date > currentDate && event.date < nextMidnight {
+                refreshDate = event.date
+            }
+        }
 
         let entry = SimpleEntry(date: currentDate, configuration: configuration, event: selectedEvent)
-        return Timeline(entries: [entry], policy: .after(nextMidnight))
+        return Timeline(entries: [entry], policy: .after(refreshDate))
     }
     
     @MainActor
@@ -50,6 +68,16 @@ struct Provider: AppIntentTimelineProvider {
         let descriptor = FetchDescriptor<Event>(predicate: predicate)
         let foundEvents = try? container.mainContext.fetch(descriptor)
         return foundEvents?.first
+    }
+    
+    @MainActor
+    func getNextUpcomingEvent() throws -> Event? {
+        let now = Date.now
+        let predicate = #Predicate<Event> { $0.date >= now }
+        var descriptor = FetchDescriptor<Event>(predicate: predicate, sortBy: [SortDescriptor(\Event.date, order: .forward)])
+        descriptor.fetchLimit = 1
+        let results = try? container.mainContext.fetch(descriptor)
+        return results?.first
     }
 }
 
@@ -153,9 +181,15 @@ struct EventsWidgetEntryView: View {
             ZStack {
                 ContainerRelativeShape().fill(.thinMaterial)
 
-                ContentUnavailableView("No Event",
-                                       systemImage: "calendar",
-                                       description: Text("Edit this widget to select an event"))
+                if entry.configuration.showNextUpcoming {
+                    ContentUnavailableView("No Upcoming Events",
+                                           systemImage: "calendar",
+                                           description: Text("All events have passed"))
+                } else {
+                    ContentUnavailableView("No Event",
+                                           systemImage: "calendar",
+                                           description: Text("Edit this widget to select an event"))
+                }
             }
         }
     }
