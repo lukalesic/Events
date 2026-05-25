@@ -1,4 +1,4 @@
-//
+ //
 //  EventsApp.swift
 //  Events
 //
@@ -10,6 +10,10 @@ import SwiftData
 
 @main
 struct EventsApp: App {
+    init() {
+        _ = NotificationManager.shared
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -17,3 +21,4 @@ struct EventsApp: App {
         .modelContainer(for: Event.self)
     }
 }
+

@@ -12,18 +12,18 @@ import SwiftData
 
 @Model
 class Event {
-    var id: UUID
-    var colorHex: String
-    var daysLeft: Int
-    var name: String
-    var descriptionText: String
-    var emoji: String
-    var priority: EventPriority
-    var date: Date
-    var includesTime: Bool
-    var isAddedToCalendar: Bool
-    var photoData: Data?
-    var repeatFrequency: RepeatFrequency
+    var id: UUID = UUID()
+    var colorHex: String = "#808080"
+    var daysLeft: Int = 0
+    var name: String = ""
+    var descriptionText: String = ""
+    var emoji: String = ""
+    var priority: EventPriority = EventPriority.medium
+    var date: Date = Date.now
+    var includesTime: Bool = false
+    var isAddedToCalendar: Bool = false
+    var photoData: Data? = nil
+    var repeatFrequency: RepeatFrequency = RepeatFrequency.none
     
     // Computed property for color
     var color: Color {
@@ -68,7 +68,7 @@ class Event {
         return resized.applyBlur(radius: 1.5)
     }
     
-    init(id: UUID = UUID(),
+    init(
          color: Color = Event.randomColor(),
          daysLeft: Int = 0,
          name: String = "",
@@ -80,7 +80,6 @@ class Event {
          isAddedToCalendar: Bool = false,
          photo: UIImage? = nil,
          repeatFrequency: RepeatFrequency = .none) {
-        self.id = id
         self.colorHex = color.toHex() ?? "#808080"
         self.daysLeft = daysLeft
         self.name = name
@@ -168,6 +167,27 @@ extension Color {
         let b = Double(rgb & 0xFF) / 255.0
         
         self.init(red: r, green: g, blue: b)
+    }
+    
+    /// Clamps the color so it's not too close to pure white or pure black.
+    func clamped() -> Color {
+        let uiColor = UIColor(self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+        
+        let brightness = (r + g + b) / 3.0
+        
+        // Too close to white — darken
+        if brightness > 0.95 {
+            return Color(red: r * 0.85, green: g * 0.85, blue: b * 0.85)
+        }
+        // Too close to black — lighten
+        if brightness < 0.05 {
+            let minVal: CGFloat = 0.18
+            return Color(red: max(r, minVal), green: max(g, minVal), blue: max(b, minVal))
+        }
+        
+        return self
     }
 }
 

@@ -36,8 +36,6 @@ struct Strings {
         static let addNewEvent = "Add an event"
         static let emptyListHint = "When you add a new event, it will appear here."
         static let noEvents = "No events"
-        static let hidePastEvents = "Hide past events"
-        static let showPastEvents = "Show past events"
     }
     
     // Event Form
@@ -53,13 +51,14 @@ struct Strings {
         static let name = "Name"
         static let description = "Description"
         static let emoji = "Emoji"
-        static let defaultEmoji = "📅"
-        static let priorityColorSection = "Priority & Color"
+        static let defaultEmoji = "🗓️"
+        static let priorityColorSection = "Priority"
         static let priority = "Priority"
         static let color = "Color"
         static let dateSection = "Event Date"
         static let selectDate = "Select date"
-        static let repeatSection = "Repeat"
+        static let repeatSection = "Repeat and Priority"
+        static let repeatText = "Repeat"
         static let repeatEvery = "Repeat Every"
         static let photoSection = "Photo"
         static let pickPhoto = "Pick a Photo"

@@ -8,7 +8,7 @@
 import SwiftUI
 import _PhotosUI_SwiftUI
 
-struct EventFormSheetView: View {
+struct EventEditSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(EventViewModel.self) private var viewModel
     
@@ -29,37 +29,87 @@ struct EventFormSheetView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text(Strings.EventFormStrings.basicsSection)) {
+                // MARK: - Basics
+                Section {
                     TextField(Strings.EventFormStrings.name, text: $formData.name)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     TextField(Strings.EventFormStrings.description, text: $formData.description)
-                    emojiButton()
-                }
-
-                Section(header: Text(Strings.EventFormStrings.priorityColorSection)) {
-                    priorityPicker()
-                    ColorPicker(Strings.EventFormStrings.color, selection: $formData.color)
-                }
-
-                Section(header: Text(Strings.EventFormStrings.dateSection)) {
-                    
-                    Toggle("Includes Time", isOn: $formData.includesTime)
-
-                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, in: Date()..., displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } header: {
+                    Text("Basics")
                 }
                 
-
-                Section(header: Text(Strings.EventFormStrings.repeatSection)) {
-                    repeatFrequencyPicker()
+                // MARK: - Date
+                Section {
+                    DatePicker(Strings.EventFormStrings.selectDate, selection: $formData.date, displayedComponents: formData.includesTime ? [.date, .hourAndMinute] : .date)
+                    Toggle("Includes Time", isOn: $formData.includesTime)
+                } header: {
+                    Text(Strings.EventFormStrings.dateSection)
                 }
 
-                Section(header: Text(Strings.EventFormStrings.photoSection)) {
+                // MARK: - Color & Emoji
+                Section {
+                    HStack(spacing: 16) {
+                        // Color
+                        VStack(spacing: 8) {
+                            Text("Color")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            ColorPicker("", selection: $formData.color)
+                                .labelsHidden()
+                                .onChange(of: formData.color) { _, newColor in
+                                    formData.color = newColor.clamped()
+                                }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
+                        
+                        Divider()
+                        
+                        // Emoji
+                        VStack(spacing: 8) {
+                            Text("Emoji")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(formData.emoji.isEmpty ? Strings.EventFormStrings.defaultEmoji : formData.emoji)
+                                .font(.system(size: 28))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            isShowingEmojiPicker = true
+                        }
+                    }
+                    .padding(.vertical, 1)
+                }
+                .sheet(isPresented: $isShowingEmojiPicker) {
+                    NavigationStack {
+                        EmojiPickerView(selectedEmoji: $formData.emoji)
+                    }
+                }
+
+                // MARK: - Repeat
+                Section {
+                    priorityPicker()
+                    repeatFrequencyPicker()
+                } header: {
+                    Text(Strings.EventFormStrings.repeatSection)
+                }
+
+                // MARK: - Photo
+                Section {
                     photoPicker()
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                } header: {
+                    Text("Photo")
                 }
 
                 if event != nil {
                     deleteSection()
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
             .navigationTitle(event == nil ? Strings.EventFormStrings.newTitle : Strings.EventFormStrings.editTitle)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -67,13 +117,21 @@ struct EventFormSheetView: View {
                         dismiss()
                     }
                 }
-
+                
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(Strings.EventFormStrings.save) {
-                        viewModel.save(from: formData, existing: event)
-                        dismiss()
+                    if #available(iOS 26.0, *) {
+                        Button(role: .confirm) {
+                            viewModel.save(from: formData, existing: event)
+                            dismiss()
+                        }
+                        .disabled(formData.name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    } else {
+                        Button(Strings.EventFormStrings.save) {
+                            viewModel.save(from: formData, existing: event)
+                            dismiss()
+                        }
+                        .disabled(formData.name.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
-                    .disabled(formData.name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }
@@ -81,7 +139,7 @@ struct EventFormSheetView: View {
     }
 }
 
-private extension EventFormSheetView {
+private extension EventEditSheet {
     
     @ViewBuilder
     func emojiButton() -> some View {
@@ -101,19 +159,26 @@ private extension EventFormSheetView {
             }
         }
     }
-    
+
     @ViewBuilder
     func priorityPicker() -> some View {
-        Picker(Strings.EventFormStrings.priority, selection: $formData.priority) {
-            ForEach(EventPriority.allCases, id: \.self) { priority in
-                Text(priority.displayName).tag(priority)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(Strings.EventFormStrings.priority)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Picker(Strings.EventFormStrings.priority, selection: $formData.priority) {
+                ForEach(EventPriority.allCases, id: \.self) { priority in
+                    Text(priority.displayName).tag(priority)
+                }
             }
+            .pickerStyle(.segmented)
+            .labelsHidden()
         }
     }
 
     @ViewBuilder
     func repeatFrequencyPicker() -> some View {
-        Picker(Strings.EventFormStrings.repeatEvery, selection: $formData.repeatFrequency) {
+        Picker(Strings.EventFormStrings.repeatText, selection: $formData.repeatFrequency) {
             ForEach(RepeatFrequency.allCases) { freq in
                 Text(freq.rawValue).tag(freq)
             }
@@ -128,11 +193,23 @@ private extension EventFormSheetView {
                     .resizable()
                     .scaledToFill()
                     .frame(height: 150)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             } else {
-                Label(Strings.EventFormStrings.pickPhoto, systemImage: "photo")
+                VStack(spacing: 12) {
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 36))
+                        .foregroundStyle(.secondary)
+                    Text(Strings.EventFormStrings.pickPhoto)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 150)
+                .background(Color(.systemGray5))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
             }
         }
+        .buttonStyle(.plain)
         .onChange(of: photoItem) { newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -174,7 +251,6 @@ struct DeleteButtonWithDialog: View {
                     .background(Color.red.opacity(0.2))
                     .cornerRadius(15)
                     .frame(maxWidth: .infinity, alignment: .center)
-                
             }
         }
         .confirmationDialog(Strings.EventFormStrings.deleteConfirmTitle,

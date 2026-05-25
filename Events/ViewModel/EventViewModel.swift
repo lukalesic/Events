@@ -25,7 +25,9 @@ class EventViewModel {
     func fetchCountdowns() -> [Event] {
         let descriptor = FetchDescriptor<Event>()
         do {
+            print("*1")
             return try modelContext.fetch(descriptor)
+        
         } catch {
             print("Failed to fetch countdowns: \(error)")
             return []
@@ -47,6 +49,7 @@ extension EventViewModel {
     }
     
     func delete(_ countdown: Event) {
+        NotificationManager.shared.removeNotifications(for: countdown)
         modelContext.delete(countdown)
         saveContext()
     }
@@ -78,6 +81,7 @@ extension EventViewModel {
             existingEvent.photo = form.photo
             existingEvent.repeatFrequency = form.repeatFrequency
             reloadWidget()
+            scheduleNotifications(for: existingEvent)
         } else {
             // Create new countdown
             let event = Event()
@@ -94,6 +98,14 @@ extension EventViewModel {
             event.repeatFrequency = form.repeatFrequency
 
             addCountdown(event)
+            scheduleNotifications(for: event)
+        }
+    }
+    
+    private func scheduleNotifications(for event: Event) {
+        NotificationManager.shared.requestPermissionIfNeeded { granted in
+            guard granted else { return }
+            NotificationManager.shared.scheduleNotifications(for: event)
         }
     }
     
@@ -120,6 +132,7 @@ extension EventViewModel {
         do {
             let pastCountdowns = try modelContext.fetch(descriptor)
             for countdown in pastCountdowns {
+                NotificationManager.shared.removeNotifications(for: countdown)
                 modelContext.delete(countdown)
             }
             saveContext()

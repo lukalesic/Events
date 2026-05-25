@@ -10,12 +10,16 @@ struct EventsListView: View {
     @Environment(EventViewModel.self) private var viewModel
     @Query(sort: \Event.daysLeft, animation: .bouncy) private var events: [Event]
     @Namespace private var eventsNamespace
-    @State private var showPastEvents: Bool = true
+    @Namespace private var settingsNamespace
+    @State private var showPastEvents: Bool = UserDefaults.standard.savedShowPastEvents
     @State private var isGridButtonDisabled = false
     @State private var isShowingAddSheet = false
     @State private var gridState: GridState = UserDefaults.standard.savedGridState
     
     @State private var isConfirmingDelete = false
+    @State private var isShowingSettings = false
+    @State private var hasFinishedInitialLoad = false
+    @State private var navigateToEvent: Event?
     
     private var columns: [GridItem] {
         let isIpad = UIDevice.current.userInterfaceIdiom == .pad
@@ -39,6 +43,7 @@ struct EventsListView: View {
                                     
                                     // MARK: Today's Events
                                     if !todaysEvents.isEmpty {
+                                                                                
                                         VStack(alignment: .leading) {
                                             Text(Strings.EventListViewStrings.todaysEvents)
                                                 .font(.headline)
@@ -66,57 +71,81 @@ struct EventsListView: View {
                                     }
                                     
                                     // MARK: Past
-                                    if hasPastEvents && showPastEvents {
+                                    if hasPastEvents {
                                         VStack(alignment: .leading) {
-                                            Text(Strings.EventListViewStrings.pastEvents)
-                                                .font(.headline)
+                                            HStack {
+                                                Button {
+                                                    withAnimation(.easeInOut(duration: 0.45)) {
+                                                        showPastEvents.toggle()
+                                                        UserDefaults.standard.savedShowPastEvents = showPastEvents
+                                                    }
+                                                } label: {
+                                                    HStack(spacing: 12) {
+                                                        Text(Strings.EventListViewStrings.pastEvents)
+                                                            .font(.headline)
+                                                        Image(systemName: "chevron.right")
+                                                            .font(.system(size: 14, weight: .semibold))
+                                                            .rotationEffect(.degrees(showPastEvents ? 90 : 0))
+                                                            .background(Color.gray.opacity(0.2).clipShape(Circle()).scaleEffect(2.12))
+                                                    }
+                                                    .foregroundStyle(.primary)
+                                                }
+                                                
+                                                Spacer()
+                                                
+                                                if showPastEvents {
+                                                    deletePastEventsView()
+                                                }
+                                            }
                                             
-                                            LazyVGrid(columns: columns, spacing: blockSpacing) {
-                                                ForEach(Array(pastCountdowns.enumerated()), id: \.element.id) { index, event in
-                                                    eventPreviewLink(for: event, index: index)
+                                            
+                                            if showPastEvents {
+                                                LazyVGrid(columns: columns, spacing: blockSpacing) {
+                                                    ForEach(Array(pastCountdowns.enumerated()), id: \.element.id) { index, event in
+                                                        eventPreviewLink(for: event, index: index)
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
                                 .padding()
+                                .padding(.bottom, 55)
                             }
                             
                             .animation(.spring(response: 0.4,
                                                dampingFraction: 0.75,
                                                blendDuration: 0.2),
                                        value: gridState)
-                            .confirmationDialog(Strings.EventListViewStrings.deletePastEventsConfirmationTitle,
-                                                isPresented: $isConfirmingDelete,
-                                                titleVisibility: .visible) {
-                                Button(Strings.EventListViewStrings.deleteAllPastEventsButton, role: .destructive) {
-                                    withAnimation {
-                                        viewModel.deleteAllPastCountdowns()
-                                    }
-                                }
-                                Button(Strings.GeneralStrings.cancel, role: .cancel) {}
-                            }
+                        
                         }
                     }
                     .navigationTitle(Strings.GeneralStrings.events)
                     .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            toolbarMenu()
-                        }
-                        
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            HStack(spacing: 5) {
-                                gridButton()
+                        if #available(iOS 26.0, *) {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                settingsButton()
                             }
-                            .padding(.horizontal, 4)
+                            .matchedTransitionSource(id: "settingsButton", in: settingsNamespace)
+                        } else {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                settingsButton()
+                            }
                         }
-                        
                     }
                     .sheet(isPresented: $isShowingAddSheet) {
-                        EventFormSheetView()
+                        EventEditSheet()
                             .navigationTransition(.zoom(sourceID: "addEventButton", in: eventsNamespace))
                     }
-                    
+                    .sheet(isPresented: $isShowingSettings) {
+                        SettingsView()
+                            .navigationTransition(.zoom(sourceID: "settingsButton", in: settingsNamespace))
+                            .onDisappear {
+                                withAnimation {
+                                    gridState = UserDefaults.standard.savedGridState
+                                }
+                            }
+                    }
                     .overlay(
                         floatingAddEventButton()
                             .padding([.trailing])
@@ -134,6 +163,21 @@ struct EventsListView: View {
                 refreshOnAppResume.toggle()
             }
             .accentColor(.primary)
+            .navigationDestination(item: $navigateToEvent) { event in
+                EventDetailView(event: event)
+            }
+            .onAppear {
+                NotificationManager.shared.onNotificationTapped = { eventID in
+                    navigateToEvent = events.first(where: { $0.id == eventID })
+                }
+            }
+            .onOpenURL { url in
+                guard url.scheme == "events",
+                      url.host == "open",
+                      let idString = url.pathComponents.last,
+                      let eventID = UUID(uuidString: idString) else { return }
+                navigateToEvent = events.first(where: { $0.id == eventID })
+            }
         }
     }
 }
@@ -244,17 +288,35 @@ private extension EventsListView {
     }
     
     @ViewBuilder
-    func toolbarMenu() -> some View {
-        Menu {
-            if hasPastEvents {
-                togglePastEventsButton()
-                deletePastEventsButton()
-            }
-            showPreviewImagesButton()
-            
+    func settingsButton() -> some View {
+        Button {
+            isShowingSettings = true
         } label: {
             Label(Strings.GeneralStrings.options, systemImage: "gear")
                 .labelStyle(.iconOnly)
+                .background(Color.clear)
+        }
+    }
+    
+    @ViewBuilder
+    func deletePastEventsView() -> some View {
+        Button {
+            isConfirmingDelete = true
+        } label: {
+            Image(systemName: "trash")
+                .font(.system(size: 14))
+                .foregroundStyle(.red)
+        }
+        .transition(.opacity.combined(with: .scale))
+        .confirmationDialog(Strings.EventListViewStrings.deletePastEventsConfirmationTitle,
+                            isPresented: $isConfirmingDelete,
+                            titleVisibility: .visible) {
+            Button(Strings.EventListViewStrings.deleteAllPastEventsButton, role: .destructive) {
+                withAnimation {
+                    viewModel.deleteAllPastCountdowns()
+                }
+            }
+            Button(Strings.GeneralStrings.cancel, role: .cancel) {}
         }
     }
     
@@ -272,24 +334,7 @@ private extension EventsListView {
     }
     
     //MARK: Menu buttons
-    
-    @ViewBuilder
-    func togglePastEventsButton() -> some View {
-        menuButton(label: showPastEvents ? Strings.EventListViewStrings.hidePastEvents : Strings.EventListViewStrings.showPastEvents,
-                   icon: showPastEvents ? "eye.slash" : "eye",
-                   action: { showPastEvents.toggle() })
         
-    }
-    
-    @ViewBuilder
-    func deletePastEventsButton() -> some View {
-        menuButton(label: Strings.EventListViewStrings.deleteAllPastEventsButton,
-                   icon: "trash",
-                   action: { isConfirmingDelete = true })
-        .foregroundStyle(.red)
-        
-    }
-    
     @ViewBuilder
     func showPreviewImagesButton() -> some View {
         menuButton(

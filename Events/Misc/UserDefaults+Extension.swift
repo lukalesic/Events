@@ -12,6 +12,11 @@ extension UserDefaults {
         static let selectedDisplayMode = "selectedDisplayMode"
         static let gridState = "gridState"
         static let showEventPreviewBackground = "showEventPreviewBackground"
+        static let showPastEvents = "showPastEvents"
+        static let remind1DayBefore = "remind1DayBefore"
+        static let remind3DaysBefore = "remind3DaysBefore"
+        static let defaultNotificationHour = "defaultNotificationHour"
+        static let defaultNotificationMinute = "defaultNotificationMinute"
     }
 
     var savedDisplayMode: TimeDisplayMode {
@@ -46,6 +51,51 @@ extension UserDefaults {
         }
         set {
             set(newValue, forKey: Keys.showEventPreviewBackground)
+        }
+    }
+    
+    var savedShowPastEvents: Bool {
+        get {
+            object(forKey: Keys.showPastEvents) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Keys.showPastEvents)
+        }
+    }
+    
+    var remind1DayBefore: Bool {
+        get {
+            object(forKey: Keys.remind1DayBefore) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Keys.remind1DayBefore)
+        }
+    }
+    
+    var remind3DaysBefore: Bool {
+        get {
+            object(forKey: Keys.remind3DaysBefore) as? Bool ?? false
+        }
+        set {
+            set(newValue, forKey: Keys.remind3DaysBefore)
+        }
+    }
+    
+    var defaultNotificationHour: Int {
+        get {
+            object(forKey: Keys.defaultNotificationHour) as? Int ?? 10
+        }
+        set {
+            set(newValue, forKey: Keys.defaultNotificationHour)
+        }
+    }
+    
+    var defaultNotificationMinute: Int {
+        get {
+            object(forKey: Keys.defaultNotificationMinute) as? Int ?? 0
+        }
+        set {
+            set(newValue, forKey: Keys.defaultNotificationMinute)
         }
     }
 }
