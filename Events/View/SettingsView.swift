@@ -117,7 +117,7 @@ struct SettingsView: View {
         let store = CNContactStore()
         store.requestAccess(for: .contacts) { granted, _ in
             guard granted else { return }
-            let keys = [CNContactGivenNameKey, CNContactFamilyNameKey, CNContactBirthdayKey, CNContactThumbnailImageDataKey] as [CNKeyDescriptor]
+            let keys = [CNContactGivenNameKey, CNContactFamilyNameKey, CNContactBirthdayKey, CNContactImageDataKey] as [CNKeyDescriptor]
             let request = CNContactFetchRequest(keysToFetch: keys)
             
             var imported = 0
@@ -131,7 +131,7 @@ struct SettingsView: View {
                 guard !name.isEmpty, !existingNames.contains(name) else { return }
                 
                 let year = birthday.year // nil if no year provided
-                let photo: UIImage? = contact.thumbnailImageData.flatMap { UIImage(data: $0) }
+                let photo: UIImage? = contact.imageData.flatMap { UIImage(data: $0) }
                 
                 DispatchQueue.main.async {
                     var form = EventFormData()
