@@ -19,6 +19,7 @@ struct SettingsView: View {
     }()
     @State private var importedCount: Int = 0
     @State private var showImportAlert = false
+    @State private var showDeleteAllConfirmation = false
     
     var body: some View {
         NavigationStack {
@@ -76,6 +77,24 @@ struct SettingsView: View {
                     Text("Birthdays")
                 } footer: {
                     Text("Import birthdays from your contacts. Duplicates will be skipped.")
+                }
+                
+                Section {
+                    Button(role: .destructive) {
+                        showDeleteAllConfirmation = true
+                    } label: {
+                        Label("Delete All Events", systemImage: "trash")
+                    }
+                }
+                .confirmationDialog("Delete All Events?", isPresented: $showDeleteAllConfirmation, titleVisibility: .visible) {
+                    Button("Delete All", role: .destructive) {
+                        for event in events {
+                            viewModel.delete(event)
+                        }
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text("This will permanently delete all events and birthdays. This cannot be undone.")
                 }
             }
             .alert("Birthdays Imported", isPresented: $showImportAlert) {
