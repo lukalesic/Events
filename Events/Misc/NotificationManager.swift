@@ -41,7 +41,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         let defaultMinute = UserDefaults.standard.defaultNotificationMinute
         
         // Notification 1: On the event date/time
-        let onDayContent = makeContent(title: event.name, body: "Today is the day! \(event.emoji)", photoData: event.photoData, eventID: event.id)
+        let onDayContent = makeContent(title: event.displayName, body: "Today is the day! \(event.emoji)", photoData: event.photoData, eventID: event.id)
         let onDayTrigger: UNNotificationTrigger
         
         if event.includesTime {
@@ -65,7 +65,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         if UserDefaults.standard.remind1DayBefore {
             guard let dayBefore = calendar.date(byAdding: .day, value: -1, to: eventDate) else { return }
             
-            let reminderContent = makeContent(title: event.name, body: "Tomorrow! \(event.emoji)", photoData: event.photoData, eventID: event.id)
+            let reminderContent = makeContent(title: event.displayName, body: "Tomorrow! \(event.emoji)", photoData: event.photoData, eventID: event.id)
             let reminderTrigger: UNNotificationTrigger
             
             if event.includesTime {
@@ -90,7 +90,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         if UserDefaults.standard.remind3DaysBefore {
             guard let threeDaysBefore = calendar.date(byAdding: .day, value: -3, to: eventDate) else { return }
             
-            let content = makeContent(title: event.name, body: "3 days to go! \(event.emoji)", photoData: event.photoData, eventID: event.id)
+            let content = makeContent(title: event.displayName, body: "3 days to go! \(event.emoji)", photoData: event.photoData, eventID: event.id)
             let trigger: UNNotificationTrigger
             
             if event.includesTime {
