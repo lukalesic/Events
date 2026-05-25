@@ -20,6 +20,13 @@ struct EventsListView: View {
     @State private var isShowingSettings = false
     @State private var hasFinishedInitialLoad = false
     @State private var navigateToEvent: Event?
+    @State private var filterMode: EventFilterMode = .all
+    
+    enum EventFilterMode: String, CaseIterable {
+        case all = "All"
+        case events = "Events"
+        case birthdays = "Birthdays"
+    }
     
     private var columns: [GridItem] {
         let isIpad = UIDevice.current.userInterfaceIdiom == .pad
@@ -34,6 +41,7 @@ struct EventsListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
+                if #available(iOS 26.0, *) {
                     VStack(spacing: 0) {
                         if events.isEmpty {
                             contentUnavailableView()
@@ -43,7 +51,7 @@ struct EventsListView: View {
                                     
                                     // MARK: Today's Events
                                     if !todaysEvents.isEmpty {
-                                                                                
+                                        
                                         VStack(alignment: .leading) {
                                             Text(Strings.EventListViewStrings.todaysEvents)
                                                 .font(.headline)
@@ -110,14 +118,14 @@ struct EventsListView: View {
                                     }
                                 }
                                 .padding()
-                                .padding(.bottom, 55)
+                                .padding(.bottom, 80)
                             }
                             
                             .animation(.spring(response: 0.4,
                                                dampingFraction: 0.75,
                                                blendDuration: 0.2),
                                        value: gridState)
-                        
+                            
                         }
                     }
                     .navigationTitle(Strings.GeneralStrings.events)
@@ -132,6 +140,18 @@ struct EventsListView: View {
                                 settingsButton()
                             }
                         }
+                        
+                        //                        if #available(iOS 26.0, *) {
+                        //                            ToolbarItem(placement: .bottomBar) {
+                        ////                                bottomBar()
+                        //                                Button("A") {
+                        //                                    //
+                        //                                }
+                        ////                                .buttonStyle(.glassProminent)
+                        //                                .glassEffect(.regular)
+                        //                            }
+                        //                            .sharedBackgroundVisibility(.hidden)
+                        //                        }
                     }
                     .sheet(isPresented: $isShowingAddSheet) {
                         EventEditSheet()
@@ -146,12 +166,22 @@ struct EventsListView: View {
                                 }
                             }
                     }
-                    .overlay(
-                        floatingAddEventButton()
-                            .padding([.trailing])
-                            .offset(y: 10),
-                        alignment: .bottomTrailing
-                    )
+                    .safeAreaBar(edge: .bottom, alignment: .center, content: {
+                        bottomBar()
+                            .padding(.horizontal)
+                            .padding(.top, 30)
+                            .padding(.bottom, -20)
+
+                    })
+                } else {
+                    // Fallback on earlier versions
+                }
+//                    .overlay(
+//                        bottomBar()
+//                            .padding(.horizontal)
+//                            .padding(.bottom, 8),
+//                        alignment: .bottom
+//                    )
                     
                 }
             .task {
@@ -185,16 +215,24 @@ struct EventsListView: View {
 extension EventsListView {
     //Filtering options specific to the View
     
+    var filteredEvents: [Event] {
+        switch filterMode {
+        case .all: return events
+        case .events: return events.filter { !$0.isBirthday }
+        case .birthdays: return events.filter { $0.isBirthday }
+        }
+    }
+    
     var upcomingEvents: [Event] {
-        events.filter { $0.isUpcoming  }
+        filteredEvents.filter { $0.isUpcoming }
     }
     
     var pastCountdowns: [Event] {
-        events.filter { $0.isPast  }
+        filteredEvents.filter { $0.isPast }
     }
     
     var todaysEvents: [Event] {
-        events.filter { $0.isToday }
+        filteredEvents.filter { $0.isToday }
     }
     
     var hasPastEvents: Bool {
@@ -348,6 +386,43 @@ private extension EventsListView {
         )
     }
     
+    // MARK: - Bottom Bar
+    @ViewBuilder
+    func bottomBar() -> some View {
+        HStack {
+            Spacer()
+            
+            if #available(iOS 26.0, *) {
+                Picker("Filter", selection: $filterMode.animation()) {
+                    ForEach(EventFilterMode.allCases, id: \.self) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .glassEffect(.clear.interactive())
+                .frame(maxWidth: 220)
+                .controlSize(.large)
+                .padding(.leading)
+                .padding(.top)
+
+            } else {
+                Picker("Filter", selection: $filterMode.animation()) {
+                    ForEach(EventFilterMode.allCases, id: \.self) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                .frame(maxWidth: 220)
+            }
+            
+            Spacer()
+            
+            floatingAddEventButton()
+        }
+        .padding(.bottom, 10)
+    }
+    
     @ViewBuilder
     func floatingAddEventButton() -> some View {
         let isIpad = UIDevice.current.userInterfaceIdiom == .pad
@@ -368,11 +443,11 @@ private extension EventsListView {
                     }
                 }
                 .frame(width: isIpad ? 220 : 64, height: isIpad ? 80 : 64)
-                .buttonStyle(.glass)
+//                .buttonStyle(.glass)
                 .buttonBorderShape(.capsule)
-                .glassEffect(.regular.interactive())
+//                .glassEffect(.regular.interactive())
+                .glassEffect(.clear.interactive())
                 .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
-                .offset(x: isIpad ? 0 : 13, y: isIpad ? 0 : 15)
             } else {
                 ZStack {
                     Capsule()
@@ -392,12 +467,9 @@ private extension EventsListView {
                 .buttonBorderShape(.capsule)
                 .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
                 .accessibilityLabel("Add New Event")
-                .offset(x: isIpad ? 0 : 13, y: isIpad ? 0 : 15)
             }
         }
         .allowsHitTesting(!isShowingAddSheet)
-        .padding(.bottom, 18)
-        .padding(.horizontal, isIpad ? 0 : 18)
-        .frame(maxWidth: .infinity, alignment: isIpad ? .center : .trailing)
     }
 }
+
