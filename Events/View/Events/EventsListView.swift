@@ -400,10 +400,11 @@ private extension EventsListView {
                 }
                 .pickerStyle(.segmented)
                 .glassEffect(.clear.interactive())
-                .frame(maxWidth: 220)
+//                .frame(maxWidth: 220)
+                .frame(maxWidth: .infinity)
                 .controlSize(.large)
                 .padding(.leading)
-                .padding(.top)
+//                .padding(.top)
 
             } else {
                 Picker("Filter", selection: $filterMode.animation()) {
@@ -445,8 +446,8 @@ private extension EventsListView {
                 .frame(width: isIpad ? 220 : 64, height: isIpad ? 80 : 64)
 //                .buttonStyle(.glass)
                 .buttonBorderShape(.capsule)
-//                .glassEffect(.regular.interactive())
-                .glassEffect(.clear.interactive())
+                .glassEffect(.regular.interactive())
+//                .glassEffect(.clear.interactive())
                 .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
             } else {
                 ZStack {
