@@ -478,7 +478,7 @@ struct EventDetailView: View {
                         }
                         Image(systemName: "chevron.down")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(textColor)
                     }
                     .contentTransition(.numericText())
                     .animation(.default, value: event.priority.displayName)
