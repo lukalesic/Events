@@ -223,16 +223,35 @@ extension EventsListView {
         }
     }
     
-    var upcomingEvents: [Event] {
-        filteredEvents.filter { $0.isUpcoming }
-    }
-    
-    var pastCountdowns: [Event] {
-        filteredEvents.filter { $0.isPast }
+    // Sort by the next upcoming occurrence date for consistent ordering across categories.
+    var sortedFilteredEvents: [Event] {
+        filteredEvents.sorted { lhs, rhs in
+            let lhsNext = lhs.nextDate
+            let rhsNext = rhs.nextDate
+            
+            if lhsNext != rhsNext {
+                return lhsNext < rhsNext
+            }
+            if lhs.priority != rhs.priority {
+                return lhs.priority.rawValue > rhs.priority.rawValue
+            }
+            if lhs.name.localizedCaseInsensitiveCompare(rhs.name) != .orderedSame {
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            }
+            return lhs.id.uuidString < rhs.id.uuidString
+        }
     }
     
     var todaysEvents: [Event] {
-        filteredEvents.filter { $0.isToday }
+        sortedFilteredEvents.filter { $0.isToday }
+    }
+    
+    var upcomingEvents: [Event] {
+        sortedFilteredEvents.filter { $0.isUpcoming && !$0.isToday }
+    }
+    
+    var pastCountdowns: [Event] {
+        sortedFilteredEvents.filter { $0.isPast }
     }
     
     var hasPastEvents: Bool {
@@ -447,8 +466,8 @@ private extension EventsListView {
                 .frame(width: isIpad ? 220 : 64, height: isIpad ? 80 : 64)
 //                .buttonStyle(.glass)
                 .buttonBorderShape(.capsule)
-//                .glassEffect(.regular.interactive())
-                .glassEffect(.clear.interactive())
+                .glassEffect(.regular.interactive())
+//                .glassEffect(.clear.interactive())
                 .matchedTransitionSource(id: "addEventButton", in: eventsNamespace)
                 .scaleEffect(0.9)
             } else {
@@ -475,4 +494,3 @@ private extension EventsListView {
         .allowsHitTesting(!isShowingAddSheet)
     }
 }
-
